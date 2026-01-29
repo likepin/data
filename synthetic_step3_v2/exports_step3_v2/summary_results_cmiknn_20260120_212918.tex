@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{l l l r r r r r r r}
+\hline
+Method & Mask & Score & TP & FP & FN & Prec & Rec & F1 & SHD \\
+\hline
+cmiknn & TRUE-mask & magdiff & 4 & 2 & 2 & 0.667 & 0.667 & 0.667 & 4 \\
+cmiknn & TRUE-mask & signflip & 3 & 3 & 3 & 0.500 & 0.500 & 0.500 & 6 \\
+cmiknn & PRED-mask & magdiff & 5 & 1 & 1 & 0.833 & 0.833 & 0.833 & 2 \\
+cmiknn & PRED-mask & signflip & 1 & 5 & 5 & 0.167 & 0.167 & 0.167 & 10 \\
+\hline
+\end{tabular}
+\caption{Summary (CMIKNN)}
+\label{tab:summary_cmiknn_20260120_212918}
+\end{table}

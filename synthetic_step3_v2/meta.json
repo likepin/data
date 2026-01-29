@@ -1,0 +1,14 @@
+{
+  "N": 10,
+  "L": 2,
+  "T": 6000,
+  "t_switch": 3600,
+  "switch_ratio": 0.6,
+  "indeg": 2,
+  "sigma": 0.25,
+  "gamma": 3.0,
+  "burnin": 200,
+  "K_change_edges": 6,
+  "gain": 2.5,
+  "flip_prob": 0.3
+}

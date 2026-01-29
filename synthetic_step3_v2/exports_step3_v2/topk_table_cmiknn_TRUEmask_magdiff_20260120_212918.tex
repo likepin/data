@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{r c r c c c c}
+\hline
+Rank & Edge ($i\to j$) & Score & $v_0$ & $v_1$ & True & Truth$(\ell^*,w,\Delta,w')$ \\
+\hline
+1 & $1\to3$ & 0.108 & +0.132(L2) & +0.023(L2) & 0 &  \\
+2 & $7\to0$ & 0.091 & +0.098(L2) & +0.007(L2) & 0 &  \\
+3 & $1\to2$ & 0.080 & +0.015(L1) & +0.095(L1) & 1 & L1, -0.39, -0.59, -0.99 \\
+4 & $2\to8$ & 0.060 & +0.006(L2) & +0.066(L2) & 1 & L2, -0.59, -0.88, -1.46 \\
+5 & $3\to0$ & 0.045 & +0.105(L1) & +0.061(L1) & 1 & L1, +0.49, -1.72, -1.23 \\
+6 & $8\to1$ & 0.040 & +0.060(L1) & +0.099(L1) & 1 & L1, +0.47, +0.71, +1.18 \\
+\hline
+\end{tabular}
+\caption{CMIKNN | TRUE-mask | magdiff | TP=4, FP=2, FN=2, F1=0.667}
+\label{tab:cmiknn_TRUEmask_magdiff_20260120_212918}
+\end{table}
