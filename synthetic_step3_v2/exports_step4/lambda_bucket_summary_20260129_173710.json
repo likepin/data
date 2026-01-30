@@ -1,0 +1,16 @@
+{
+  "data_dir": "synthetic_step3_v2",
+  "x_path": "synthetic_step3_v2\\X.npy",
+  "lambda_path": "synthetic_step3_v2\\exports_step4\\lambda_t.npy",
+  "T": 6000,
+  "N": 10,
+  "alpha": 1.0,
+  "fit_intercept": true,
+  "n_buckets": 5,
+  "corr_lambda_mse": 0.13559779545419953,
+  "corr_lambda_mae": 0.1519648412387745,
+  "outputs": {
+    "csv": "synthetic_step3_v2\\exports_step4\\lambda_bucket_stats_20260129_173710.csv",
+    "md": "synthetic_step3_v2\\exports_step4\\lambda_bucket_stats_20260129_173710.md"
+  }
+}

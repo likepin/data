@@ -1,0 +1,32 @@
+{
+  "data_dir": "synthetic_step3_v2",
+  "x_path": "synthetic_step3_v2\\X.npy",
+  "T": 6000,
+  "N": 10,
+  "window": 50,
+  "k": 3,
+  "seed": 123,
+  "kmeans_method": "sklearn",
+  "valid_count": 5951,
+  "t_switch": 3600,
+  "raw_dist_stats": {
+    "count": 5951,
+    "mean": 4.168696711480124,
+    "std": 1.7520060267691289,
+    "min": 1.2348947005323316,
+    "max": 10.835630965885239
+  },
+  "lambda_stats": {
+    "count": 5951,
+    "mean": 0.5,
+    "std": 0.2887236473477971,
+    "min": 0.0,
+    "max": 1.0
+  },
+  "outputs": {
+    "lambda_t": "synthetic_step3_v2\\exports_step4\\lambda_t.npy",
+    "lambda_raw_dist": "synthetic_step3_v2\\exports_step4\\lambda_raw_dist.npy",
+    "lambda_valid_mask": "synthetic_step3_v2\\exports_step4\\lambda_valid_mask.npy",
+    "curve_fig": "synthetic_step3_v2\\exports_step4\\lambda_curve_20260129_173652.png"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "window": 50,
+  "k": 3,
+  "sep_mean": 0.019723584777259218,
+  "sep_median": 0.09606716582918981,
+  "auc_regime": 0.6005531892424669,
+  "top10_in_reg1": 0.06386554621848739,
+  "reg1_top10_coverage": 0.015833333333333335,
+  "smooth_std_diff": 0.0426385378990429,
+  "smooth_mean_abs_diff": 0.02091078608929376,
+  "corr_mse": 0.09861920100268254,
+  "corr_mae": 0.1151114162607701,
+  "valid_count": 5951,
+  "score": 4.62402277842256,
+  "score_norm_auc": 0.9433902211049351,
+  "score_norm_top10": 0.22733093237294918,
+  "score_norm_corr_mse": 1.0,
+  "score_norm_sep_mean": 1.0,
+  "score_norm_smooth_std": 0.30889500731203784,
+  "score_norm_smooth_mean_abs": 0.23780336774328556
+}
