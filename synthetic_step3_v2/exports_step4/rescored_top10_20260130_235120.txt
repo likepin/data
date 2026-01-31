@@ -1,0 +1,17 @@
+Top configs by score_equal:
+ 1. window=80 k=3 score_equal=4.739464
+ 2. window=50 k=3 score_equal=4.736876
+ 3. window=50 k=2 score_equal=4.100294
+ 4. window=30 k=2 score_equal=3.969873
+
+Top configs by score_gating:
+ 1. window=50 k=3 score_gating=0.899789
+ 2. window=80 k=3 score_gating=0.855675
+ 3. window=30 k=2 score_gating=0.726349
+ 4. window=50 k=2 score_gating=0.657511
+
+Top configs by score_regime:
+ 1. window=50 k=3 score_regime=0.899789
+ 2. window=80 k=3 score_regime=0.877584
+ 3. window=50 k=2 score_regime=0.727038
+ 4. window=30 k=2 score_regime=0.720148
