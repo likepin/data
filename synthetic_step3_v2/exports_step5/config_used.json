@@ -1,0 +1,27 @@
+{
+  "data_dir": "synthetic_step3_v2",
+  "lambda_source": "synthetic_step3_v2\\exports_step4\\best_lambda_t.npy",
+  "lambda_config": "(50,3)",
+  "t_switch": 3600,
+  "true_change_path": "synthetic_step3_v2\\adj_change.npy",
+  "base_path": "synthetic_step3_v2\\adj_base.npy",
+  "pred_source": "adjhat_xor:parcorr",
+  "deltaA_source": "adjhat_xor_parcorr_topK26",
+  "K_true": 6,
+  "K_pred": 26,
+  "high_q": 0.9,
+  "low_q": 0.5,
+  "tau_list": [
+    0.7,
+    0.8,
+    0.9
+  ],
+  "soft_w_list": [
+    0.2,
+    0.3,
+    0.4
+  ],
+  "soft_mode": "mean_w",
+  "p_thresh": 0.5,
+  "top_k": 6
+}
