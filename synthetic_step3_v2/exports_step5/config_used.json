@@ -1,6 +1,6 @@
 {
   "data_dir": "synthetic_step3_v2",
-  "config_path": "step5_config.json",
+  "config_path": "synthetic_step3_v2\\step5_config.json",
   "lambda_source": "synthetic_step3_v2\\exports_step4\\best_lambda_t.npy",
   "lambda_config": "(50,3)",
   "t_switch": 3600,
@@ -24,5 +24,8 @@
   ],
   "soft_mode": "mean_w",
   "p_thresh": 0.5,
-  "top_k": 6
+  "top_k": 6,
+  "subset_strategy": "quantile",
+  "high_thr": 1.0,
+  "low_thr": 0.25780823826789856
 }

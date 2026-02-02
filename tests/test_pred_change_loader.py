@@ -1,5 +1,10 @@
 import os
+import sys
 import numpy as np
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
 
 from step5_utils import read_json, find_pred_change_adj, edges_from_adj, load_n_from_source
 

@@ -118,9 +118,10 @@ def detect_lambda_config(data_dir, fallback="(unknown)"):
     return fallback
 
 
-def find_true_change_adj(data_dir, logs):
+def find_true_change_adj(data_dir, logs, prefer_deltaA=True):
     delta_path = os.path.join(data_dir, "DeltaA.npy")
-    if os.path.isfile(delta_path):
+    if prefer_deltaA and os.path.isfile(delta_path):
+        log_append(logs, "true_change from DeltaA")
         return find_true_change_from_deltaA(data_dir, logs)
     candidates = [
         os.path.join(data_dir, "adj_change_true.npy"),
@@ -202,12 +203,13 @@ def shd_from_edges(pred_edges, true_edges):
 
 def find_pred_change_adj(data_dir, cfg, logs):
     from graph_io import load_adj, binarize_adj, assert_orientation
+    from step5_pred import compute_change_scores, binarize_topk_on_base
 
     pred_source = cfg.get("pred_change_source")
     pred_prefix = cfg.get("pred_prefix")
     bin_cfg = cfg.get("binarize", {"mode": "binary"})
 
-    if pred_source not in ("valdiff", "signflip", "adjhat_xor", "topk_csv", "valdiff_on_base"):
+    if pred_source not in ("valdiff", "signflip", "adjhat_xor", "topk_csv", "valdiff_on_base", "signflip_on_base"):
         raise ValueError(f"pred_change_source must be one of valdiff/signflip/adjhat_xor/topk_csv, got {pred_source}")
 
     if pred_source in ("valdiff", "signflip"):
@@ -228,34 +230,51 @@ def find_pred_change_adj(data_dir, cfg, logs):
         return pred, f"{pred_source}:{os.path.basename(candidates[0])}", pred_prefix, None
 
     if pred_source == "adjhat_xor":
-        if not pred_prefix:
-            raise ValueError("pred_prefix is required for adjhat_xor.")
-        reg0 = os.path.join(data_dir, f"{pred_prefix}_regime0_adj_hat.npy")
-        reg1 = os.path.join(data_dir, f"{pred_prefix}_regime1_adj_hat.npy")
-        if not (os.path.isfile(reg0) and os.path.isfile(reg1)):
-            candidates0 = search_files(data_dir, lambda n: n.lower().endswith("_regime0_adj_hat.npy"))
-            candidates1 = search_files(data_dir, lambda n: n.lower().endswith("_regime1_adj_hat.npy"))
-            raise FileNotFoundError(
-                f"adjhat_xor files not found for prefix={pred_prefix}. "
-                f"candidates0={candidates0}, candidates1={candidates1}"
-            )
-        adj0 = load_adj(reg0)
-        adj1 = load_adj(reg1)
-        assert_orientation(adj0, convention="tgt_src")
-        assert_orientation(adj1, convention="tgt_src")
-        adj0_bin = binarize_adj(adj0, **bin_cfg)
-        adj1_bin = binarize_adj(adj1, **bin_cfg)
-        pred = (adj0_bin != adj1_bin).astype(np.int32)
-        return pred, f"adjhat_xor:{pred_prefix}", pred_prefix, None
+        raise ValueError("Step3_v2 strength-change does NOT support adjhat_xor. Use valdiff/signflip.")
 
-    if pred_source == "valdiff_on_base":
+    if pred_source in ("valdiff_on_base", "signflip_on_base"):
         adj_base, _ = find_base_adj(data_dir, logs)
         if adj_base is None:
             raise FileNotFoundError("adj_base not found for valdiff_on_base.")
         top_k = int(cfg.get("top_k", len(edges_from_adj(adj_base, diag_excluded=True))))
-        prefix = cfg.get("pred_prefix", "cmiknn")
-        pred, scores = predict_change_valdiff_on_base(data_dir, prefix, adj_base, top_k, logs)
-        return pred, f"valdiff_on_base:{prefix}", prefix, scores
+        prefix = cfg.get("pred_prefix", None)
+        if not prefix:
+            raise ValueError("pred_prefix is required for *_on_base.")
+
+        # load weighted matrices, prefer val_matrix
+        v0 = os.path.join(data_dir, f"{prefix}_regime0_val_matrix.npy")
+        v1 = os.path.join(data_dir, f"{prefix}_regime1_val_matrix.npy")
+        a0 = os.path.join(data_dir, f"{prefix}_regime0_adj_hat.npy")
+        a1 = os.path.join(data_dir, f"{prefix}_regime1_adj_hat.npy")
+
+        if os.path.isfile(v0) and os.path.isfile(v1):
+            val0 = np.load(v0)
+            val1 = np.load(v1)
+            if val0.ndim != 3 or val1.ndim != 3:
+                raise ValueError("val_matrix must be 3D (src,tgt,lag).")
+            s0 = best_signed_val_over_lags(val0)  # (src,tgt)
+            s1 = best_signed_val_over_lags(val1)  # (src,tgt)
+            A0 = s0.T  # (tgt,src)
+            A1 = s1.T
+        elif os.path.isfile(a0) and os.path.isfile(a1):
+            A0 = np.load(a0)
+            A1 = np.load(a1)
+        else:
+            candidates = search_files(
+                data_dir,
+                lambda n: (
+                    n.lower().endswith("_regime0_val_matrix.npy") or
+                    n.lower().endswith("_regime1_val_matrix.npy") or
+                    n.lower().endswith("_regime0_adj_hat.npy") or
+                    n.lower().endswith("_regime1_adj_hat.npy")
+                )
+            )
+            raise FileNotFoundError(f"prefix {prefix} not found. candidates={candidates}")
+
+        mode = "valdiff" if pred_source == "valdiff_on_base" else "signflip"
+        score = compute_change_scores(A0, A1, mode=mode)
+        pred, scores = binarize_topk_on_base(score, adj_base, top_k, diag_excluded=True)
+        return pred, f"{pred_source}:{prefix}", prefix, scores
 
     # topk_csv
     n_source = cfg.get("N_source", "X.npy")

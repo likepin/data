@@ -163,7 +163,7 @@ def main():
     tau_list = parse_float_list(args.tau_list)
     soft_w_list = parse_float_list(args.soft_w_list)
 
-    # subset masks
+    # subset masks with saturation handling
     valid_vals = lambda_t[valid_mask]
     valid_vals = valid_vals[np.isfinite(valid_vals)]
     high_thr = float(np.quantile(valid_vals, args.high_q)) if valid_vals.size > 0 else np.nan
@@ -171,12 +171,47 @@ def main():
     high_mask = quantile_mask(lambda_t, valid_mask, args.high_q, mode="ge")
     low_mask = quantile_mask(lambda_t, valid_mask, args.low_q, mode="le")
     all_mask = valid_mask.copy()
+    subset_strategy = "quantile"
+    if valid_vals.size > 0:
+        if np.all(valid_vals == 1.0) or np.std(valid_vals) < 1e-6:
+            for q in (0.95, 0.98):
+                high_thr = float(np.quantile(valid_vals, q))
+                high_mask = valid_mask & (lambda_t >= high_thr)
+                if high_mask.sum() > 0:
+                    subset_strategy = f"quantile_{q:.2f}"
+                    break
+            if high_mask.sum() == 0:
+                non_sat = valid_mask & (lambda_t < 1.0)
+                non_vals = lambda_t[non_sat]
+                if non_vals.size > 0:
+                    high_thr = float(np.quantile(non_vals, args.high_q))
+                    high_mask = non_sat & (lambda_t >= high_thr)
+                    subset_strategy = "topk_non_saturated"
+                else:
+                    log_append(logs, "WARN: high subset saturated; using top-1 by lambda.")
+                    idx_max = int(np.argmax(lambda_t))
+                    high_mask = np.zeros_like(valid_mask, dtype=bool)
+                    high_mask[idx_max] = True
+                    subset_strategy = "top1_fallback"
 
     subset_info = {
         "high": high_mask,
         "low": low_mask,
         "all": all_mask,
     }
+
+    mean_lambda_high = mean_over_mask(lambda_t, high_mask)
+    mean_lambda_low = mean_over_mask(lambda_t, low_mask)
+    mean_lambda_all = mean_over_mask(lambda_t, all_mask)
+    mean_gate_high = mean_over_mask(1.0 - lambda_t, high_mask)
+    mean_gate_low = mean_over_mask(1.0 - lambda_t, low_mask)
+    mean_gate_all = mean_over_mask(1.0 - lambda_t, all_mask)
+    log_append(logs, f"mean_lambda_high={mean_lambda_high:.6f} mean_lambda_low={mean_lambda_low:.6f} mean_lambda_all={mean_lambda_all:.6f}")
+    log_append(logs, f"mean_gate_high={mean_gate_high:.6f} mean_gate_low={mean_gate_low:.6f} mean_gate_all={mean_gate_all:.6f}")
+    if tau_list:
+        p_active_high = float((lambda_t[high_mask] < tau_list[0]).mean()) if high_mask.sum() > 0 else 0.0
+        p_active_low = float((lambda_t[low_mask] < tau_list[0]).mean()) if low_mask.sum() > 0 else 0.0
+        log_append(logs, f"p_active_high={p_active_high:.6f} p_active_low={p_active_low:.6f} tau0={tau_list[0]}")
 
     summary_rows = []
     retention_rows = []
@@ -185,7 +220,7 @@ def main():
         den_is_zero = False
         if den <= 0:
             den_is_zero = True
-            den = 1e-12
+            return 0.0, den_is_zero
         return float(num / den), den_is_zero
 
     def mean_gate_weight_hard(mask, tau):
@@ -547,6 +582,9 @@ def main():
         "soft_mode": args.soft_mode,
         "p_thresh": args.p_thresh,
         "top_k": top_k,
+        "subset_strategy": subset_strategy,
+        "high_thr": high_thr,
+        "low_thr": low_thr,
     }
     with open(os.path.join(out_dir, "config_used.json"), "w", encoding="utf-8") as f:
         json.dump(config_used, f, indent=2)
@@ -590,6 +628,16 @@ def main():
         subset_stats("high", high_mask)
         subset_stats("low", low_mask)
         subset_stats("all", all_mask)
+
+        mean_lambda_high = mean_over_mask(lambda_t, high_mask)
+        mean_lambda_low = mean_over_mask(lambda_t, low_mask)
+        mean_gate_high = mean_over_mask(1.0 - lambda_t, high_mask)
+        mean_gate_low = mean_over_mask(1.0 - lambda_t, low_mask)
+        p_active_high = float((lambda_t[high_mask] < tau_list[0]).mean()) if tau_list and high_mask.sum() > 0 else 0.0
+        p_active_low = float((lambda_t[low_mask] < tau_list[0]).mean()) if tau_list and low_mask.sum() > 0 else 0.0
+        print(f"mean_lambda_high={mean_lambda_high:.6f} mean_lambda_low={mean_lambda_low:.6f}")
+        print(f"mean_gate_high={mean_gate_high:.6f} mean_gate_low={mean_gate_low:.6f}")
+        print(f"p_active_high={p_active_high:.6f} p_active_low={p_active_low:.6f}")
 
         print("ratio sanity per setting:")
         for r in retention_rows:

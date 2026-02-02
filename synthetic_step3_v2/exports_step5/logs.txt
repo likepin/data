@@ -1,5 +1,7 @@
-[21:26:47] WARN: using config from CWD: step5_config.json
-[21:26:47] DeltaA shape=(2, 10, 10)
-[21:26:47] K_true_from_DeltaA=6
-[21:26:47] violations=0
-[21:26:47] K_pred_from_valdiff_on_base=6
+[14:43:06] true_change from DeltaA
+[14:43:06] DeltaA shape=(2, 10, 10)
+[14:43:06] K_true_from_DeltaA=6
+[14:43:06] violations=0
+[14:43:06] mean_lambda_high=1.000000 mean_lambda_low=0.105766 mean_lambda_all=0.342089
+[14:43:06] mean_gate_high=0.000000 mean_gate_low=0.894234 mean_gate_all=0.657911
+[14:43:06] p_active_high=0.000000 p_active_low=1.000000 tau0=0.7
