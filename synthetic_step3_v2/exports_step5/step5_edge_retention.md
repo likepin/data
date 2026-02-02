@@ -1,25 +1,25 @@
 ## Table 5-3: Edge Retention
 
-| lambda_config | deltaA_source | gate_type | tau | subset | K_pred | TP_change | FP_change | retained_ratio | true_retained_ratio | fp_removed_ratio |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| (50,3) | adjhat_xor_parcorr_topK26 | ungated |  | high | 26 | 0 | 26 | 1.0 | nan | 0.0 |
-| (50,3) | adjhat_xor_parcorr_topK26 | ungated |  | low | 26 | 0 | 26 | 1.0 | nan | 0.0 |
-| (50,3) | adjhat_xor_parcorr_topK26 | ungated |  | all | 26 | 0 | 26 | 1.0 | nan | 0.0 |
-| (50,3) | adjhat_xor_parcorr_topK26 | hard | 0.7 | high | 26 | 0.0 | 0.0 | 0.0 | nan | 1.0 |
-| (50,3) | adjhat_xor_parcorr_topK26 | hard | 0.7 | low | 26 | 0.0 | 26.0 | 1.0 | nan | 0.0 |
-| (50,3) | adjhat_xor_parcorr_topK26 | hard | 0.7 | all | 26 | 0.0 | 22.115946899680726 | 0.8506133422954125 | nan | 0.14938665770458748 |
-| (50,3) | adjhat_xor_parcorr_topK26 | hard | 0.8 | high | 26 | 0.0 | 0.0 | 0.0 | nan | 1.0 |
-| (50,3) | adjhat_xor_parcorr_topK26 | hard | 0.8 | low | 26 | 0.0 | 26.0 | 1.0 | nan | 0.0 |
-| (50,3) | adjhat_xor_parcorr_topK26 | hard | 0.8 | all | 26 | 0.0 | 22.688287682742395 | 0.872626449336246 | nan | 0.127373550663754 |
-| (50,3) | adjhat_xor_parcorr_topK26 | hard | 0.9 | high | 26 | 0.0 | 0.0 | 0.0 | nan | 1.0 |
-| (50,3) | adjhat_xor_parcorr_topK26 | hard | 0.9 | low | 26 | 0.0 | 26.0 | 1.0 | nan | 0.0 |
-| (50,3) | adjhat_xor_parcorr_topK26 | hard | 0.9 | all | 26 | 0.0 | 23.103343975802385 | 0.8885901529154764 | nan | 0.11140984708452362 |
-| (50,3) | adjhat_xor_parcorr_topK26 | soft | 0.2 | high | 26 | 0.0 | 0.0 | 0.0 | nan | 1.0 |
-| (50,3) | adjhat_xor_parcorr_topK26 | soft | 0.2 | low | 26 | 0.0 | 23.25007474422455 | 0.8942336440086365 | nan | 0.10576635599136353 |
-| (50,3) | adjhat_xor_parcorr_topK26 | soft | 0.2 | all | 26 | 0.0 | 17.10567831993103 | 0.6579107046127319 | nan | 0.34208929538726807 |
-| (50,3) | adjhat_xor_parcorr_topK26 | soft | 0.3 | high | 26 | 0.0 | 0.0 | 0.0 | nan | 1.0 |
-| (50,3) | adjhat_xor_parcorr_topK26 | soft | 0.3 | low | 26 | 0.0 | 23.25007474422455 | 0.8942336440086365 | nan | 0.10576635599136353 |
-| (50,3) | adjhat_xor_parcorr_topK26 | soft | 0.3 | all | 26 | 0.0 | 17.10567831993103 | 0.6579107046127319 | nan | 0.34208929538726807 |
-| (50,3) | adjhat_xor_parcorr_topK26 | soft | 0.4 | high | 26 | 0.0 | 0.0 | 0.0 | nan | 1.0 |
-| (50,3) | adjhat_xor_parcorr_topK26 | soft | 0.4 | low | 26 | 0.0 | 23.25007474422455 | 0.8942336440086365 | nan | 0.10576635599136353 |
-| (50,3) | adjhat_xor_parcorr_topK26 | soft | 0.4 | all | 26 | 0.0 | 17.10567831993103 | 0.6579107046127319 | nan | 0.34208929538726807 |
+| lambda_config | deltaA_source | gate_type | tau | subset | K_pred | TP_change | FP_change | retained_ratio | true_retained_ratio | fp_removed_ratio | retained_den_zero | true_retained_den_zero | fp_removed_den_zero | n_true_edges_subset | n_true_retained | n_fp_edges_subset | n_fp_removed | n_pred_edges | n_true_edges | n_active_edges_high | n_active_edges_low |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | ungated |  | high | 6 | 4 | 2 | 1.0 | 0.6666666666666666 | 0.0 | False | False | False | 6 | 4 | 2 | 0.0 | 6 | 6 | 6 | 6 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | ungated |  | low | 6 | 4 | 2 | 1.0 | 0.6666666666666666 | 0.0 | False | False | False | 6 | 4 | 2 | 0.0 | 6 | 6 | 6 | 6 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | ungated |  | all | 6 | 4 | 2 | 1.0 | 0.6666666666666666 | 0.0 | False | False | False | 6 | 4 | 2 | 0.0 | 6 | 6 | 6 | 6 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | hard | 0.7 | high | 6 | 0.0 | 0.0 | 0.0 | 0.0 | 1.0 | False | False | False | 6 | 0.0 | 2 | 2.0 | 6 | 6 | 0.0 | 6.0 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | hard | 0.7 | low | 6 | 4.0 | 2.0 | 1.0 | 0.6666666666666666 | 0.0 | False | False | False | 6 | 4.0 | 2 | 0.0 | 6 | 6 | 0.0 | 6.0 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | hard | 0.7 | all | 6 | 3.40245336918165 | 1.701226684590825 | 0.8506133422954125 | 0.567075561530275 | 0.14938665770458748 | False | False | False | 6 | 3.40245336918165 | 2 | 0.29877331540917496 | 6 | 6 | 0.0 | 6.0 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | hard | 0.8 | high | 6 | 0.0 | 0.0 | 0.0 | 0.0 | 1.0 | False | False | False | 6 | 0.0 | 2 | 2.0 | 6 | 6 | 0.0 | 6.0 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | hard | 0.8 | low | 6 | 4.0 | 2.0 | 1.0 | 0.6666666666666666 | 0.0 | False | False | False | 6 | 4.0 | 2 | 0.0 | 6 | 6 | 0.0 | 6.0 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | hard | 0.8 | all | 6 | 3.490505797344984 | 1.745252898672492 | 0.872626449336246 | 0.581750966224164 | 0.127373550663754 | False | False | False | 6 | 3.490505797344984 | 2 | 0.254747101327508 | 6 | 6 | 0.0 | 6.0 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | hard | 0.9 | high | 6 | 0.0 | 0.0 | 0.0 | 0.0 | 1.0 | False | False | False | 6 | 0.0 | 2 | 2.0 | 6 | 6 | 0.0 | 6.0 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | hard | 0.9 | low | 6 | 4.0 | 2.0 | 1.0 | 0.6666666666666666 | 0.0 | False | False | False | 6 | 4.0 | 2 | 0.0 | 6 | 6 | 0.0 | 6.0 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | hard | 0.9 | all | 6 | 3.5543606116619055 | 1.7771803058309528 | 0.8885901529154764 | 0.5923934352769843 | 0.11140984708452362 | False | False | False | 6 | 3.5543606116619055 | 2 | 0.22281969416904723 | 6 | 6 | 0.0 | 6.0 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | soft | 0.2 | high | 6 | 0.0 | 0.0 | 0.0 | 0.0 | 1.0 | False | False | False | 6 | 0.0 | 2 | 2.0 | 6 | 6 | 0.0 | 5.365401864051819 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | soft | 0.2 | low | 6 | 3.576934576034546 | 1.788467288017273 | 0.8942336440086365 | 0.5961557626724243 | 0.10576635599136353 | False | False | False | 6 | 3.576934576034546 | 2 | 0.21153271198272705 | 6 | 6 | 0.0 | 5.365401864051819 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | soft | 0.2 | all | 6 | 2.6316428184509277 | 1.3158214092254639 | 0.6579107046127319 | 0.438607136408488 | 0.34208929538726807 | False | False | False | 6 | 2.6316428184509277 | 2 | 0.6841785907745361 | 6 | 6 | 0.0 | 5.365401864051819 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | soft | 0.3 | high | 6 | 0.0 | 0.0 | 0.0 | 0.0 | 1.0 | False | False | False | 6 | 0.0 | 2 | 2.0 | 6 | 6 | 0.0 | 5.365401864051819 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | soft | 0.3 | low | 6 | 3.576934576034546 | 1.788467288017273 | 0.8942336440086365 | 0.5961557626724243 | 0.10576635599136353 | False | False | False | 6 | 3.576934576034546 | 2 | 0.21153271198272705 | 6 | 6 | 0.0 | 5.365401864051819 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | soft | 0.3 | all | 6 | 2.6316428184509277 | 1.3158214092254639 | 0.6579107046127319 | 0.438607136408488 | 0.34208929538726807 | False | False | False | 6 | 2.6316428184509277 | 2 | 0.6841785907745361 | 6 | 6 | 0.0 | 5.365401864051819 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | soft | 0.4 | high | 6 | 0.0 | 0.0 | 0.0 | 0.0 | 1.0 | False | False | False | 6 | 0.0 | 2 | 2.0 | 6 | 6 | 0.0 | 5.365401864051819 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | soft | 0.4 | low | 6 | 3.576934576034546 | 1.788467288017273 | 0.8942336440086365 | 0.5961557626724243 | 0.10576635599136353 | False | False | False | 6 | 3.576934576034546 | 2 | 0.21153271198272705 | 6 | 6 | 0.0 | 5.365401864051819 |
+| (50,3) | valdiff_on_base_cmiknn_topK6 | soft | 0.4 | all | 6 | 2.6316428184509277 | 1.3158214092254639 | 0.6579107046127319 | 0.438607136408488 | 0.34208929538726807 | False | False | False | 6 | 2.6316428184509277 | 2 | 0.6841785907745361 | 6 | 6 | 0.0 | 5.365401864051819 |

@@ -10,6 +10,7 @@ from step5_utils import (
     safe_mkdir,
     log_append,
     write_logs,
+    read_json,
     load_lambda_and_mask,
     detect_lambda_config,
     find_true_change_adj,
@@ -23,6 +24,8 @@ from step5_utils import (
     active_fraction_hard,
     active_fraction_soft,
     load_valdiff_scores,
+    find_true_change_from_deltaA,
+    gated_change_from_deltaA,
 )
 
 
@@ -110,6 +113,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", type=str, default="synthetic_step3_v2")
     parser.add_argument("--out_dir", type=str, default=None)
+    parser.add_argument("--config", type=str, default=None)
     parser.add_argument("--high_q", type=float, default=0.90)
     parser.add_argument("--low_q", type=float, default=0.50)
     parser.add_argument("--tau_list", type=str, default="0.7,0.8,0.9")
@@ -118,6 +122,7 @@ def main():
     parser.add_argument("--p_thresh", type=float, default=0.5)
     parser.add_argument("--lambda_config", type=str, default=None)
     parser.add_argument("--top_k", type=int, default=None)
+    parser.add_argument("--sanity", action="store_true")
     args = parser.parse_args()
 
     logs = []
@@ -125,12 +130,24 @@ def main():
     out_dir = args.out_dir or os.path.join(data_dir, "exports_step5")
     safe_mkdir(out_dir)
 
+    cfg_path = args.config or os.path.join(data_dir, "step5_config.json")
+    if not os.path.isfile(cfg_path):
+        alt_cfg = "step5_config.json"
+        if os.path.isfile(alt_cfg):
+            cfg_path = alt_cfg
+            log_append(logs, f"WARN: using config from CWD: {cfg_path}")
+        else:
+            raise FileNotFoundError(f"step5_config.json not found: {cfg_path} (and no ./step5_config.json)")
+    cfg = read_json(cfg_path)
+
     lambda_t, valid_mask, lambda_source, t_switch = load_lambda_and_mask(data_dir, logs)
     lambda_config = args.lambda_config or detect_lambda_config(data_dir, fallback="(unknown)")
 
     adj_true, true_path = find_true_change_adj(data_dir, logs)
-    _, base_path = find_base_adj(data_dir, logs)
-    pred_adj, pred_source, pred_prefix, pred_scores = find_pred_change_adj(data_dir, logs)
+    adj_base, base_path = find_base_adj(data_dir, logs)
+    a_base_path = os.path.join(data_dir, "A_base.npy")
+    A_base = np.load(a_base_path) if os.path.isfile(a_base_path) else None
+    pred_adj, pred_source, pred_prefix, pred_scores = find_pred_change_adj(data_dir, cfg, logs)
 
     if pred_adj is None:
         raise RuntimeError("pred_adj is None (no predicted change edges found).")
@@ -147,6 +164,10 @@ def main():
     soft_w_list = parse_float_list(args.soft_w_list)
 
     # subset masks
+    valid_vals = lambda_t[valid_mask]
+    valid_vals = valid_vals[np.isfinite(valid_vals)]
+    high_thr = float(np.quantile(valid_vals, args.high_q)) if valid_vals.size > 0 else np.nan
+    low_thr = float(np.quantile(valid_vals, args.low_q)) if valid_vals.size > 0 else np.nan
     high_mask = quantile_mask(lambda_t, valid_mask, args.high_q, mode="ge")
     low_mask = quantile_mask(lambda_t, valid_mask, args.low_q, mode="le")
     all_mask = valid_mask.copy()
@@ -160,9 +181,40 @@ def main():
     summary_rows = []
     retention_rows = []
 
+    def safe_ratio(num, den):
+        den_is_zero = False
+        if den <= 0:
+            den_is_zero = True
+            den = 1e-12
+        return float(num / den), den_is_zero
+
+    def mean_gate_weight_hard(mask, tau):
+        vals = lambda_t[mask]
+        vals = vals[np.isfinite(vals)]
+        if vals.size == 0:
+            return 0.0
+        return float((vals < tau).mean())
+
+    def mean_gate_weight_soft(mask):
+        vals = lambda_t[mask]
+        vals = vals[np.isfinite(vals)]
+        if vals.size == 0:
+            return 0.0
+        return float(np.clip(1.0 - vals, 0.0, 1.0).mean())
+
     # ungated baseline (p_active=1)
     for subset_name, mask in subset_info.items():
         tp, fp, fn, prec, rec, f1, shd = compute_expected_metrics(tp0, fp0, K_true, p_active=1.0)
+        mean_lambda_subset = mean_over_mask(lambda_t, mask)
+        mean_gate_weight_subset = 1.0
+        if A_base is not None and os.path.isfile(os.path.join(data_dir, "DeltaA.npy")):
+            DeltaA = np.load(os.path.join(data_dir, "DeltaA.npy"))
+            change_gated = gated_change_from_deltaA(A_base, DeltaA, gate_weight=1.0)
+            edges_gated = edges_from_adj(change_gated, diag_excluded=True)
+            rt_tp, rt_fp, rt_fn, rt_prec, rt_rec, rt_f1 = confusion(edges_gated, true_edges)
+            rt_shd = rt_fp + rt_fn
+        else:
+            rt_tp = rt_fp = rt_fn = rt_prec = rt_rec = rt_f1 = rt_shd = np.nan
         summary_rows.append({
             "lambda_config": lambda_config,
             "deltaA_source": delta_source,
@@ -180,7 +232,21 @@ def main():
             "SHD": shd,
             "SHD_gain_vs_ungated": "",
             "F1_delta_vs_ungated": "",
+            "mean_lambda_subset": mean_lambda_subset,
+            "mean_gate_weight_subset": mean_gate_weight_subset,
+            "real_TP": rt_tp,
+            "real_FP": rt_fp,
+            "real_FN": rt_fn,
+            "real_Prec": rt_prec,
+            "real_Rec": rt_rec,
+            "real_F1": rt_f1,
+            "real_SHD": rt_shd,
         })
+        retained_ratio, retained_den_zero = safe_ratio(K_pred, K_pred)
+        n_true_retained = tp0
+        true_retained_ratio, true_den_zero = safe_ratio(n_true_retained, K_true)
+        n_fp_removed = 0.0
+        fp_removed_ratio, fp_den_zero = safe_ratio(n_fp_removed, fp0)
         retention_rows.append({
             "lambda_config": lambda_config,
             "deltaA_source": delta_source,
@@ -190,16 +256,41 @@ def main():
             "K_pred": K_pred,
             "TP_change": tp0,
             "FP_change": fp0,
-            "retained_ratio": 1.0,
-            "true_retained_ratio": 1.0 if tp0 > 0 else np.nan,
-            "fp_removed_ratio": 0.0,
+            "retained_ratio": retained_ratio,
+            "true_retained_ratio": true_retained_ratio,
+            "fp_removed_ratio": fp_removed_ratio,
+            "retained_den_zero": retained_den_zero,
+            "true_retained_den_zero": true_den_zero,
+            "fp_removed_den_zero": fp_den_zero,
+            "n_true_edges_subset": K_true,
+            "n_true_retained": n_true_retained,
+            "n_fp_edges_subset": fp0,
+            "n_fp_removed": n_fp_removed,
+            "n_pred_edges": K_pred,
+            "n_true_edges": K_true,
+            "n_active_edges_high": K_pred,
+            "n_active_edges_low": K_pred,
         })
 
     # hard gate
     for tau in tau_list:
+        p_active_high, _ = active_fraction_hard(lambda_t, high_mask, tau)
+        p_active_low, _ = active_fraction_hard(lambda_t, low_mask, tau)
+        n_active_high = K_pred * p_active_high
+        n_active_low = K_pred * p_active_low
         for subset_name, mask in subset_info.items():
             p_active, count_active = active_fraction_hard(lambda_t, mask, tau)
             tp, fp, fn, prec, rec, f1, shd = compute_expected_metrics(tp0, fp0, K_true, p_active=p_active)
+            mean_lambda_subset = mean_over_mask(lambda_t, mask)
+            mean_gate_weight_subset = mean_gate_weight_hard(mask, tau)
+            if A_base is not None and os.path.isfile(os.path.join(data_dir, "DeltaA.npy")):
+                DeltaA = np.load(os.path.join(data_dir, "DeltaA.npy"))
+                change_gated = gated_change_from_deltaA(A_base, DeltaA, gate_weight=mean_gate_weight_subset)
+                edges_gated = edges_from_adj(change_gated, diag_excluded=True)
+                rt_tp, rt_fp, rt_fn, rt_prec, rt_rec, rt_f1 = confusion(edges_gated, true_edges)
+                rt_shd = rt_fp + rt_fn
+            else:
+                rt_tp = rt_fp = rt_fn = rt_prec = rt_rec = rt_f1 = rt_shd = np.nan
             summary_rows.append({
                 "lambda_config": lambda_config,
                 "deltaA_source": delta_source,
@@ -217,7 +308,21 @@ def main():
                 "SHD": shd,
                 "SHD_gain_vs_ungated": "",
                 "F1_delta_vs_ungated": "",
+                "mean_lambda_subset": mean_lambda_subset,
+                "mean_gate_weight_subset": mean_gate_weight_subset,
+                "real_TP": rt_tp,
+                "real_FP": rt_fp,
+                "real_FN": rt_fn,
+                "real_Prec": rt_prec,
+                "real_Rec": rt_rec,
+                "real_F1": rt_f1,
+                "real_SHD": rt_shd,
             })
+            retained_ratio, retained_den_zero = safe_ratio(K_pred * p_active, K_pred)
+            n_true_retained = tp0 * p_active
+            true_retained_ratio, true_den_zero = safe_ratio(n_true_retained, K_true)
+            n_fp_removed = fp0 - fp0 * p_active
+            fp_removed_ratio, fp_den_zero = safe_ratio(n_fp_removed, fp0)
             retention_rows.append({
                 "lambda_config": lambda_config,
                 "deltaA_source": delta_source,
@@ -227,13 +332,32 @@ def main():
                 "K_pred": K_pred,
                 "TP_change": tp0 * p_active,
                 "FP_change": fp0 * p_active,
-                "retained_ratio": p_active,
-                "true_retained_ratio": (p_active if tp0 > 0 else np.nan),
-                "fp_removed_ratio": 1.0 - p_active,
+                "retained_ratio": retained_ratio,
+                "true_retained_ratio": true_retained_ratio,
+                "fp_removed_ratio": fp_removed_ratio,
+                "retained_den_zero": retained_den_zero,
+                "true_retained_den_zero": true_den_zero,
+                "fp_removed_den_zero": fp_den_zero,
+                "n_true_edges_subset": K_true,
+                "n_true_retained": n_true_retained,
+                "n_fp_edges_subset": fp0,
+                "n_fp_removed": n_fp_removed,
+                "n_pred_edges": K_pred,
+                "n_true_edges": K_true,
+                "n_active_edges_high": n_active_high,
+                "n_active_edges_low": n_active_low,
             })
 
     # soft gate
     for w_thresh in soft_w_list:
+        p_active_high = active_fraction_soft(
+            lambda_t, high_mask, w_thresh, mode=args.soft_mode, p_thresh=args.p_thresh
+        )
+        p_active_low = active_fraction_soft(
+            lambda_t, low_mask, w_thresh, mode=args.soft_mode, p_thresh=args.p_thresh
+        )
+        n_active_high = K_pred * p_active_high
+        n_active_low = K_pred * p_active_low
         for subset_name, mask in subset_info.items():
             p_active = active_fraction_soft(
                 lambda_t, mask, w_thresh,
@@ -241,6 +365,16 @@ def main():
                 p_thresh=args.p_thresh
             )
             tp, fp, fn, prec, rec, f1, shd = compute_expected_metrics(tp0, fp0, K_true, p_active=p_active)
+            mean_lambda_subset = mean_over_mask(lambda_t, mask)
+            mean_gate_weight_subset = mean_gate_weight_soft(mask)
+            if A_base is not None and os.path.isfile(os.path.join(data_dir, "DeltaA.npy")):
+                DeltaA = np.load(os.path.join(data_dir, "DeltaA.npy"))
+                change_gated = gated_change_from_deltaA(A_base, DeltaA, gate_weight=mean_gate_weight_subset)
+                edges_gated = edges_from_adj(change_gated, diag_excluded=True)
+                rt_tp, rt_fp, rt_fn, rt_prec, rt_rec, rt_f1 = confusion(edges_gated, true_edges)
+                rt_shd = rt_fp + rt_fn
+            else:
+                rt_tp = rt_fp = rt_fn = rt_prec = rt_rec = rt_f1 = rt_shd = np.nan
             summary_rows.append({
                 "lambda_config": lambda_config,
                 "deltaA_source": delta_source,
@@ -258,7 +392,21 @@ def main():
                 "SHD": shd,
                 "SHD_gain_vs_ungated": "",
                 "F1_delta_vs_ungated": "",
+                "mean_lambda_subset": mean_lambda_subset,
+                "mean_gate_weight_subset": mean_gate_weight_subset,
+                "real_TP": rt_tp,
+                "real_FP": rt_fp,
+                "real_FN": rt_fn,
+                "real_Prec": rt_prec,
+                "real_Rec": rt_rec,
+                "real_F1": rt_f1,
+                "real_SHD": rt_shd,
             })
+            retained_ratio, retained_den_zero = safe_ratio(K_pred * p_active, K_pred)
+            n_true_retained = tp0 * p_active
+            true_retained_ratio, true_den_zero = safe_ratio(n_true_retained, K_true)
+            n_fp_removed = fp0 - fp0 * p_active
+            fp_removed_ratio, fp_den_zero = safe_ratio(n_fp_removed, fp0)
             retention_rows.append({
                 "lambda_config": lambda_config,
                 "deltaA_source": delta_source,
@@ -268,9 +416,20 @@ def main():
                 "K_pred": K_pred,
                 "TP_change": tp0 * p_active,
                 "FP_change": fp0 * p_active,
-                "retained_ratio": p_active,
-                "true_retained_ratio": (p_active if tp0 > 0 else np.nan),
-                "fp_removed_ratio": 1.0 - p_active,
+                "retained_ratio": retained_ratio,
+                "true_retained_ratio": true_retained_ratio,
+                "fp_removed_ratio": fp_removed_ratio,
+                "retained_den_zero": retained_den_zero,
+                "true_retained_den_zero": true_den_zero,
+                "fp_removed_den_zero": fp_den_zero,
+                "n_true_edges_subset": K_true,
+                "n_true_retained": n_true_retained,
+                "n_fp_edges_subset": fp0,
+                "n_fp_removed": n_fp_removed,
+                "n_pred_edges": K_pred,
+                "n_true_edges": K_true,
+                "n_active_edges_high": n_active_high,
+                "n_active_edges_low": n_active_low,
             })
 
     # fill SHD_gain vs ungated and F1_delta vs ungated
@@ -339,12 +498,17 @@ def main():
     summary_cols = [
         "lambda_config", "deltaA_source", "gate_type", "tau", "subset", "subset_q",
         "K_true_change", "TP", "FP", "FN", "Prec", "Rec", "F1", "SHD",
-        "SHD_gain_vs_ungated", "F1_delta_vs_ungated"
+        "SHD_gain_vs_ungated", "F1_delta_vs_ungated",
+        "mean_lambda_subset", "mean_gate_weight_subset",
+        "real_TP", "real_FP", "real_FN", "real_Prec", "real_Rec", "real_F1", "real_SHD"
     ]
     retention_cols = [
         "lambda_config", "deltaA_source", "gate_type", "tau", "subset",
         "K_pred", "TP_change", "FP_change", "retained_ratio",
-        "true_retained_ratio", "fp_removed_ratio"
+        "true_retained_ratio", "fp_removed_ratio",
+        "retained_den_zero", "true_retained_den_zero", "fp_removed_den_zero",
+        "n_true_edges_subset", "n_true_retained", "n_fp_edges_subset", "n_fp_removed",
+        "n_pred_edges", "n_true_edges", "n_active_edges_high", "n_active_edges_low"
     ]
 
     # write CSV/MD
@@ -366,6 +530,7 @@ def main():
 
     config_used = {
         "data_dir": data_dir,
+        "config_path": cfg_path,
         "lambda_source": lambda_source,
         "lambda_config": lambda_config,
         "t_switch": t_switch,
@@ -387,6 +552,54 @@ def main():
         json.dump(config_used, f, indent=2)
 
     write_logs(logs, os.path.join(out_dir, "logs.txt"))
+
+    if args.sanity:
+        print("=== SANITY MODE ===")
+        delta_path = os.path.join(data_dir, "DeltaA.npy")
+        if os.path.isfile(delta_path):
+            DeltaA = np.load(delta_path)
+            print(f"DeltaA shape={DeltaA.shape}")
+            true_edges = edges_from_adj(adj_true, diag_excluded=True)
+            print(f"K_true_from_DeltaA={len(true_edges)}")
+            if adj_base is not None:
+                violations = [(s, t) for (s, t) in true_edges if adj_base[t, s] == 0]
+                print(f"violations={len(violations)}")
+        print(f"K_true={K_true}, len(true_edges)={len(true_edges)}")
+        true_list = list(true_edges)[:20]
+        print(f"true_edges (first 20): {true_list}")
+        print(f"K_pred={K_pred}, len(pred_edges)={len(pred_edges)}")
+        pred_list = list(pred_edges)[:20]
+        print(f"pred_edges (first 20): {pred_list}")
+
+        # orientation check
+        rng = np.random.RandomState(0)
+        edges_list = list(pred_edges)
+        if edges_list:
+            sample = rng.choice(len(edges_list), size=min(5, len(edges_list)), replace=False)
+            for idx in sample:
+                src, tgt = edges_list[idx]
+                ok = int(pred_adj[tgt, src]) == 1
+                print(f"orientation check: {src}->{tgt} adj[tgt,src]={pred_adj[tgt, src]} ok={ok}")
+
+        # subset stats
+        def subset_stats(name, mask):
+            count = int(mask.sum())
+            mean_lambda = mean_over_mask(lambda_t, mask)
+            print(f"{name}: count={count} mean_lambda={mean_lambda:.6f} high_thr={high_thr:.6f} low_thr={low_thr:.6f}")
+
+        subset_stats("high", high_mask)
+        subset_stats("low", low_mask)
+        subset_stats("all", all_mask)
+
+        print("ratio sanity per setting:")
+        for r in retention_rows:
+            print(
+                f"[{r['gate_type']}] tau={r['tau']} subset={r['subset']} "
+                f"n_true_edges_subset={r['n_true_edges_subset']} n_true_retained={r['n_true_retained']} "
+                f"true_retained_ratio={r['true_retained_ratio']:.6f} den_zero={r['true_retained_den_zero']} | "
+                f"n_fp_edges_subset={r['n_fp_edges_subset']} n_fp_removed={r['n_fp_removed']} "
+                f"fp_removed_ratio={r['fp_removed_ratio']:.6f} den_zero={r['fp_removed_den_zero']}"
+            )
 
     print("=== Step5 proxy gating effect ===")
     print(f"[OK] Summary: {summary_csv}")

@@ -1,1 +1,5 @@
-
+[21:26:47] WARN: using config from CWD: step5_config.json
+[21:26:47] DeltaA shape=(2, 10, 10)
+[21:26:47] K_true_from_DeltaA=6
+[21:26:47] violations=0
+[21:26:47] K_pred_from_valdiff_on_base=6

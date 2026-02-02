@@ -44,7 +44,9 @@ def main():
     summary_header = [
         "lambda_config", "deltaA_source", "gate_type", "tau", "subset", "subset_q",
         "K_true_change", "TP", "FP", "FN", "Prec", "Rec", "F1", "SHD",
-        "SHD_gain_vs_ungated", "F1_delta_vs_ungated"
+        "SHD_gain_vs_ungated", "F1_delta_vs_ungated",
+        "mean_lambda_subset", "mean_gate_weight_subset",
+        "real_TP", "real_FP", "real_FN", "real_Prec", "real_Rec", "real_F1", "real_SHD"
     ]
     tau_header = [
         "lambda_config", "deltaA_source", "gate_type", "tau",
@@ -54,7 +56,10 @@ def main():
     retention_header = [
         "lambda_config", "deltaA_source", "gate_type", "tau", "subset",
         "K_pred", "TP_change", "FP_change", "retained_ratio",
-        "true_retained_ratio", "fp_removed_ratio"
+        "true_retained_ratio", "fp_removed_ratio",
+        "retained_den_zero", "true_retained_den_zero", "fp_removed_den_zero",
+        "n_true_edges_subset", "n_true_retained", "n_fp_edges_subset", "n_fp_removed",
+        "n_pred_edges", "n_true_edges", "n_active_edges_high", "n_active_edges_low"
     ]
 
     write_md(summary_rows, os.path.join(out_dir, "step5_proxy_summary.md"),

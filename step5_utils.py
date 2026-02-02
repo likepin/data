@@ -44,6 +44,22 @@ def search_files(data_dir, predicate):
     return hits
 
 
+def load_n_from_source(data_dir, n_source):
+    if n_source == "X.npy":
+        x_path = os.path.join(data_dir, "X.npy")
+        if not os.path.isfile(x_path):
+            raise FileNotFoundError(f"N_source X.npy not found: {x_path}")
+        x = np.load(x_path)
+        return int(x.shape[1])
+    if n_source == "adj_base.npy":
+        adj_path = os.path.join(data_dir, "adj_base.npy")
+        if not os.path.isfile(adj_path):
+            raise FileNotFoundError(f"N_source adj_base.npy not found: {adj_path}")
+        adj = np.load(adj_path)
+        return int(adj.shape[0])
+    raise ValueError(f"Unsupported N_source: {n_source}")
+
+
 def load_lambda_and_mask(data_dir, logs):
     best = os.path.join(data_dir, "exports_step4", "best_lambda_t.npy")
     lam = os.path.join(data_dir, "exports_step4", "lambda_t.npy")
@@ -103,6 +119,9 @@ def detect_lambda_config(data_dir, fallback="(unknown)"):
 
 
 def find_true_change_adj(data_dir, logs):
+    delta_path = os.path.join(data_dir, "DeltaA.npy")
+    if os.path.isfile(delta_path):
+        return find_true_change_from_deltaA(data_dir, logs)
     candidates = [
         os.path.join(data_dir, "adj_change_true.npy"),
         os.path.join(data_dir, "adj_change.npy"),
@@ -110,11 +129,35 @@ def find_true_change_adj(data_dir, logs):
     for p in candidates:
         if os.path.isfile(p):
             return np.load(p), p
-    # fallback: any file with change_true in name
     hits = search_files(data_dir, lambda n: ("change_true" in n.lower() and n.lower().endswith(".npy")))
     if hits:
         return np.load(hits[0]), hits[0]
-    raise FileNotFoundError("true change adj not found (adj_change_true.npy or adj_change.npy).")
+    raise FileNotFoundError("true change adj not found (DeltaA.npy/adj_change_true.npy/adj_change.npy).")
+
+
+def find_true_change_from_deltaA(data_dir, logs, deltaA_name="DeltaA.npy",
+                                 cache_name="adj_change_true_from_deltaA.npy"):
+    delta_path = os.path.join(data_dir, deltaA_name)
+    if not os.path.isfile(delta_path):
+        raise FileNotFoundError(f"{deltaA_name} not found: {delta_path}")
+    DeltaA = np.load(delta_path)
+    log_append(logs, f"DeltaA shape={DeltaA.shape}")
+    if DeltaA.ndim != 3:
+        raise ValueError(f"DeltaA must be 3D (L,N,N), got {DeltaA.shape}")
+    mask = (np.abs(DeltaA) > 0).any(axis=0).astype(np.int32)
+    cache_path = os.path.join(data_dir, cache_name)
+    try:
+        np.save(cache_path, mask.astype(np.int32))
+    except Exception:
+        pass
+    true_edges = edges_from_adj(mask, diag_excluded=True)
+    log_append(logs, f"K_true_from_DeltaA={len(true_edges)}")
+    base_path = os.path.join(data_dir, "adj_base.npy")
+    if os.path.isfile(base_path):
+        adj_base = np.load(base_path)
+        violations = [(s, t) for (s, t) in true_edges if adj_base[t, s] == 0]
+        log_append(logs, f"violations={len(violations)}")
+    return mask, delta_path
 
 
 def find_base_adj(data_dir, logs):
@@ -157,49 +200,76 @@ def shd_from_edges(pred_edges, true_edges):
     return fp + fn
 
 
-def find_pred_change_adj(data_dir, logs):
-    # 1) direct pred change files
-    candidates = search_files(
-        data_dir,
-        lambda n: (n.lower().endswith(".npy") and ("chg_pred" in n.lower() or "valdiff" in n.lower()))
-    )
-    for c in candidates:
-        if "chg_pred_by_valdiff" in os.path.basename(c).lower():
-            return np.load(c), f"valdiff:{os.path.basename(c)}", None, None
-    for c in candidates:
-        if "chg_pred_by_signflip" in os.path.basename(c).lower():
-            return np.load(c), f"signflip:{os.path.basename(c)}", None, None
+def find_pred_change_adj(data_dir, cfg, logs):
+    from graph_io import load_adj, binarize_adj, assert_orientation
 
-    # 2) adj_hat XOR
-    reg0 = search_files(data_dir, lambda n: n.lower().endswith("_regime0_adj_hat.npy"))
-    reg1 = search_files(data_dir, lambda n: n.lower().endswith("_regime1_adj_hat.npy"))
-    reg0_map = {os.path.basename(p).replace("_regime0_adj_hat.npy", ""): p for p in reg0}
-    reg1_map = {os.path.basename(p).replace("_regime1_adj_hat.npy", ""): p for p in reg1}
-    prefixes = sorted(set(reg0_map.keys()) & set(reg1_map.keys()))
-    if prefixes:
-        prefix = None
-        for p in prefixes:
-            if "parcorr" in p.lower():
-                prefix = p
-                break
-        if prefix is None:
-            prefix = prefixes[0]
-        adj0 = np.load(reg0_map[prefix])
-        adj1 = np.load(reg1_map[prefix])
-        pred = (adj0 != adj1).astype(np.int32)
-        return pred, f"adjhat_xor:{prefix}", prefix, None
+    pred_source = cfg.get("pred_change_source")
+    pred_prefix = cfg.get("pred_prefix")
+    bin_cfg = cfg.get("binarize", {"mode": "binary"})
 
-    # 3) change_topk_plusplus CSV fallback
+    if pred_source not in ("valdiff", "signflip", "adjhat_xor", "topk_csv", "valdiff_on_base"):
+        raise ValueError(f"pred_change_source must be one of valdiff/signflip/adjhat_xor/topk_csv, got {pred_source}")
+
+    if pred_source in ("valdiff", "signflip"):
+        keyword = "valdiff" if pred_source == "valdiff" else "signflip"
+        candidates = search_files(
+            data_dir,
+            lambda n: (n.lower().endswith(".npy") and keyword in n.lower())
+        )
+        if pred_prefix:
+            candidates = [c for c in candidates if pred_prefix.lower() in os.path.basename(c).lower()]
+        if len(candidates) != 1:
+            raise FileNotFoundError(
+                f"{pred_source} npy not found or ambiguous. candidates={candidates}"
+            )
+        adj = load_adj(candidates[0])
+        assert_orientation(adj, convention="tgt_src")
+        pred = binarize_adj(adj, **bin_cfg)
+        return pred, f"{pred_source}:{os.path.basename(candidates[0])}", pred_prefix, None
+
+    if pred_source == "adjhat_xor":
+        if not pred_prefix:
+            raise ValueError("pred_prefix is required for adjhat_xor.")
+        reg0 = os.path.join(data_dir, f"{pred_prefix}_regime0_adj_hat.npy")
+        reg1 = os.path.join(data_dir, f"{pred_prefix}_regime1_adj_hat.npy")
+        if not (os.path.isfile(reg0) and os.path.isfile(reg1)):
+            candidates0 = search_files(data_dir, lambda n: n.lower().endswith("_regime0_adj_hat.npy"))
+            candidates1 = search_files(data_dir, lambda n: n.lower().endswith("_regime1_adj_hat.npy"))
+            raise FileNotFoundError(
+                f"adjhat_xor files not found for prefix={pred_prefix}. "
+                f"candidates0={candidates0}, candidates1={candidates1}"
+            )
+        adj0 = load_adj(reg0)
+        adj1 = load_adj(reg1)
+        assert_orientation(adj0, convention="tgt_src")
+        assert_orientation(adj1, convention="tgt_src")
+        adj0_bin = binarize_adj(adj0, **bin_cfg)
+        adj1_bin = binarize_adj(adj1, **bin_cfg)
+        pred = (adj0_bin != adj1_bin).astype(np.int32)
+        return pred, f"adjhat_xor:{pred_prefix}", pred_prefix, None
+
+    if pred_source == "valdiff_on_base":
+        adj_base, _ = find_base_adj(data_dir, logs)
+        if adj_base is None:
+            raise FileNotFoundError("adj_base not found for valdiff_on_base.")
+        top_k = int(cfg.get("top_k", len(edges_from_adj(adj_base, diag_excluded=True))))
+        prefix = cfg.get("pred_prefix", "cmiknn")
+        pred, scores = predict_change_valdiff_on_base(data_dir, prefix, adj_base, top_k, logs)
+        return pred, f"valdiff_on_base:{prefix}", prefix, scores
+
+    # topk_csv
+    n_source = cfg.get("N_source", "X.npy")
+    N = load_n_from_source(data_dir, n_source)
     csvs = search_files(data_dir, lambda n: n.lower().startswith("change_topk_plusplus") and n.lower().endswith(".csv"))
-    if csvs:
-        csv_path = sorted(csvs, key=os.path.getmtime)[-1]
-        pred, scores = load_edges_from_topk_csv(csv_path)
-        return pred, f"topk_csv:{os.path.basename(csv_path)}", None, scores
+    if pred_prefix:
+        csvs = [c for c in csvs if pred_prefix.lower() in os.path.basename(c).lower()]
+    if len(csvs) != 1:
+        raise FileNotFoundError(f"topk_csv not found or ambiguous. candidates={csvs}")
+    pred, scores = load_edges_from_topk_csv(csvs[0], N)
+    return pred, f"topk_csv:{os.path.basename(csvs[0])}", pred_prefix, scores
 
-    raise FileNotFoundError("pred change adj not found (chg_pred_by_* or adj_hat XOR).")
 
-
-def load_edges_from_topk_csv(csv_path):
+def load_edges_from_topk_csv(csv_path, N):
     rows = []
     with open(csv_path, "r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
@@ -213,23 +283,19 @@ def load_edges_from_topk_csv(csv_path):
             if rank <= 0:
                 continue
             rows.append(r)
-    # prefer PRED-mask + magdiff
-    def match_row(r):
-        m = str(r.get("mask", "")).lower()
-        s = str(r.get("score_type", "")).lower()
-        return ("pred" in m) and ("mag" in s)
-    picked = [r for r in rows if match_row(r)]
-    if not picked:
-        picked = rows
     edges = set()
     scores = {}
-    for r in picked:
+    for r in rows:
         try:
             src = int(float(r.get("src")))
             tgt = int(float(r.get("tgt")))
             sc = float(r.get("score", 1.0))
         except Exception:
             continue
+        if src == tgt:
+            continue
+        if src < 0 or tgt < 0 or src >= N or tgt >= N:
+            raise ValueError(f"Edge out of range in {csv_path}: src={src}, tgt={tgt}, N={N}")
         edges.add((src, tgt))
         scores[(src, tgt)] = sc
     # build adj
@@ -240,6 +306,58 @@ def load_edges_from_topk_csv(csv_path):
     for (src, tgt) in edges:
         adj[tgt, src] = 1
     return adj, scores
+
+
+def predict_change_valdiff_on_base(data_dir, prefix, adj_base, top_k, logs, score_name="valdiff"):
+    v0_path = os.path.join(data_dir, f"{prefix}_regime0_val_matrix.npy")
+    v1_path = os.path.join(data_dir, f"{prefix}_regime1_val_matrix.npy")
+    if not (os.path.isfile(v0_path) and os.path.isfile(v1_path)):
+        raise FileNotFoundError(f"val_matrix not found for prefix {prefix}")
+    val0 = np.load(v0_path)
+    val1 = np.load(v1_path)
+    score = np.abs(val1 - val0)
+    if score.ndim != 3:
+        raise ValueError(f"val_matrix must be 3D (src,tgt,lag), got {score.shape}")
+    score2d = score.max(axis=2)
+    base_mask_src_tgt = (adj_base.T != 0).astype(np.float32)
+    score2d = score2d * base_mask_src_tgt
+    np.fill_diagonal(score2d, 0.0)
+    flat = np.argsort(score2d.reshape(-1))[::-1]
+    N = score2d.shape[0]
+    edges = []
+    for idx in flat:
+        src = idx // N
+        tgt = idx % N
+        if score2d[src, tgt] <= 0:
+            continue
+        if adj_base[tgt, src] == 0:
+            continue
+        edges.append((src, tgt))
+        if len(edges) >= top_k:
+            break
+    pred = np.zeros((N, N), dtype=np.int32)
+    scores = {}
+    for (src, tgt) in edges:
+        pred[tgt, src] = 1
+        scores[(src, tgt)] = float(score2d[src, tgt])
+    log_append(logs, f"K_pred_from_valdiff_on_base={len(edges)}")
+    return pred, scores
+
+
+def gated_change_from_deltaA(adj_base, DeltaA, gate_weight):
+    base = np.array(adj_base)
+    delta = np.array(DeltaA)
+    if delta.ndim != 3:
+        raise ValueError("DeltaA must be (L,N,N)")
+    if base.ndim != 3:
+        raise ValueError("A_base must be (L,N,N)")
+    delta_sum = delta.sum(axis=0)
+    base_sum = base.sum(axis=0)
+    adj_reg1 = base_sum + gate_weight * delta_sum
+    base_bin = (np.abs(base_sum) > 1e-8).astype(np.int32)
+    reg1_bin = (np.abs(adj_reg1) > 1e-8).astype(np.int32)
+    change = (reg1_bin != base_bin).astype(np.int32)
+    return change
 
 
 def best_signed_val_over_lags(val_matrix):

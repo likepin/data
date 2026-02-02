@@ -1,0 +1,6 @@
+{
+  "N_source": "X.npy",
+  "pred_change_source": "valdiff_on_base",
+  "pred_prefix": "cmiknn",
+  "top_k": 6
+}
