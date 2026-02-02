@@ -1,0 +1,22 @@
+{
+  "data_dir": "synthetic_step3_v2",
+  "config_path": "synthetic_step3_v2\\step5pp_config.json",
+  "lambda_source": "synthetic_step3_v2\\exports_step4\\best_lambda_t.npy",
+  "base_path": "synthetic_step3_v2\\A_base.npy",
+  "delta_path": "synthetic_step3_v2\\DeltaA.npy",
+  "pred_prefix": "cmiknn",
+  "score_type": "valdiff",
+  "delta_mode": "A1_minus_A0",
+  "gate_mode": "soft",
+  "tau_hard": 0.8,
+  "w_soft": null,
+  "subset_high_q": 0.9,
+  "subset_low_q": 0.5,
+  "subset_strategy": "quantile",
+  "high_thr": 1.0,
+  "low_thr": 0.25780823826789856,
+  "edge_mask": "base_only",
+  "output_topk_edges": 20,
+  "K_true": 6,
+  "K_pred": 20
+}

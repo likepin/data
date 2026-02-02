@@ -1,0 +1,9 @@
+A_base shape=(2, 10, 10) (sum over lags)
+A0/A1 loaded from val_matrix
+A_base nnz=30
+A0 stats: min=0.0022 max=0.1316 mean=0.0151 nnz=100
+A1 stats: min=0.0014 max=0.0994 mean=0.0130 nnz=100
+lambda stats: min=0.0000 max=1.0000 mean=0.3421
+[15:18:53] DeltaA shape=(2, 10, 10)
+[15:18:53] K_true_from_DeltaA=6
+[15:18:53] violations=0

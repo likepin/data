@@ -1,0 +1,10 @@
+## Step5++ Summary
+
+| subset | count | mean_lambda | mean_gate_weight | p_active | mean_dist_base | mean_dist_reg0 | mean_dist_reg1 | mean_retained_ratio |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| high | 596 | 1.0 | 0.0 | 0.0 | 0.0 | 0.40522903203964233 | 0.4104630649089813 | 0.0 |
+| low | 2976 | 0.1057664230465889 | 0.8942336440086365 | 1.0 | 0.027458185330033302 | 0.4005485475063324 | 0.40578263998031616 | 0.8942335247993469 |
+| all | 5951 | 0.34208929538726807 | 0.6579107046127319 | 0.8998487649134599 | 0.02020169608294964 | 0.4017854928970337 | 0.4070194959640503 | 0.6579107046127319 |
+
+- high should have smallest dist_base
+- low should have larger dist_base and higher retained_ratio

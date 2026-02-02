@@ -1,0 +1,13 @@
+{
+  "pred_prefix": "cmiknn",
+  "score_type": "valdiff",
+  "delta_mode": "A1_minus_A0",
+  "gate_mode": "soft",
+  "tau_hard": 0.8,
+  "w_soft": null,
+  "subset_high_q": 0.90,
+  "subset_low_q": 0.50,
+  "edge_mask": "base_only",
+  "norm": "none",
+  "output_topk_edges": 20
+}
