@@ -8,17 +8,11 @@
   "subset_high_q": 0.90,
   "subset_low_q": 0.50,
   "edge_mask": "base_only",
-  "delta_mask": "union_base_predchange",
-  "dist_mask": "union_base_predchange",
-  "dist_mask_mode": "union_base_predchange",
-  "dist_topk": 6,
-  "dist_delta_thr": null,
-  "regime_support_mode": "union_base_predchange",
-  "eff_base_mode": "A_base",
+  "delta_mask": "base_only",
+  "dist_mask": "base_only",
   "norm": "none",
   "output_topk_edges": 20,
   "topk_mode": "match_true",
   "top_k": 20,
-  "output_high_sat": false,
-  "low_post_min": 10
+  "output_high_sat": false
 }

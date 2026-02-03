@@ -1,0 +1,7 @@
+{
+  "pred_prefix": "cmiknn",
+  "delta_mask": "union_base_predchange",
+  "dist_mask": "union_delta_topk",
+  "dist_topk": 6,
+  "gate_mode": "soft"
+}

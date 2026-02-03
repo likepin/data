@@ -1,10 +1,10 @@
 === Sanity Header ===
 data_dir=synthetic_step3_v2
-config_path=synthetic_step3_v2\exports_step5pp\cfg_union_delta_topk.json
+config_path=cfg_base_only.json
 gate_fn=soft: g=1-λ
 rel = dist_reg0 - dist_reg1; rel>0 => closer to reg1
 delta_mask_mode=union_base_predchange
-dist_mask_mode=union_delta_topk
+dist_mask_mode=union_base_predchange
 regime_support_mode=union_base_predchange
 eff_base_mode=A_base
 topk_mode=match_true
@@ -18,7 +18,7 @@ A0/A1 loaded from val_matrix
 A_base nnz=30
 A0 stats: min=0.0022 max=0.1316 mean=0.0151 nnz=100
 A1 stats: min=0.0014 max=0.0994 mean=0.0130 nnz=100
-[22:46:35] DeltaA shape=(2, 10, 10)
-[22:46:35] K_true_from_DeltaA=6
-[22:46:35] violations=0
+[22:46:42] DeltaA shape=(2, 10, 10)
+[22:46:42] K_true_from_DeltaA=6
+[22:46:42] violations=0
 lambda stats: min=0.0000 max=1.0000 mean=0.3421
