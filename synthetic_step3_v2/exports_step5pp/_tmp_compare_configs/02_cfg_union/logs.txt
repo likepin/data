@@ -1,10 +1,10 @@
 === Sanity Header ===
 data_dir=synthetic_step3_v2
-config_path=cfg_union_delta_topk.json
+config_path=synthetic_step3_v2\exports_step5pp\cfg_union.json
 gate_fn=soft: g=1-lambda
 rel = dist_reg0 - dist_reg1; rel>0 => closer to reg1
 delta_mask_mode=union_base_predchange
-dist_mask_mode=true_change_only
+dist_mask_mode=union_base_predchange
 regime_support_mode=union_base_predchange
 eff_anchor=A0
 regime_ref_source=estimated
@@ -25,8 +25,8 @@ A0 stats: min=0.0022 max=0.1316 mean=0.0151 nnz=100
 A1 stats: min=0.0014 max=0.0994 mean=0.0130 nnz=100
 regime_swapped=False
 swap_reason=auto_swap_regimes_disabled
-[17:17:24] DeltaA shape=(2, 10, 10)
-[17:17:24] K_true_from_DeltaA=6
-[17:17:24] violations=0
-delta_mask_nnz=20 dist_mask_nnz=6 tag=default
-delta_mask_nnz=20 dist_mask_nnz=6 tag=_diag
+[17:11:09] DeltaA shape=(2, 10, 10)
+[17:11:09] K_true_from_DeltaA=6
+[17:11:09] violations=0
+delta_mask_nnz=20 dist_mask_nnz=20 tag=default
+WARN: matplotlib not available; skipping plots.

@@ -1,0 +1,17 @@
+=== Sanity Header ===
+data_dir=synthetic_step3_v2
+config_path=synthetic_step3_v2\step5pp_config.json
+gate_fn=soft: g=1-lambda
+A_base shape=(2, 10, 10) (sum over lags)
+A0/A1 loaded from val_matrix
+A0/A1 auto-swapped. reason=pre_rel_mean: pre_rel_mean=0.000705, post_rel_mean=0.003066, pre_count=3551, post_count=2400
+A_base nnz=30
+A0 stats: min=0.0014 max=0.0994 mean=0.0130 nnz=100
+A1 stats: min=0.0022 max=0.1316 mean=0.0151 nnz=100
+regime_swapped=True
+swap_reason=pre_rel_mean: pre_rel_mean=0.000705, post_rel_mean=0.003066, pre_count=3551, post_count=2400
+[17:12:41] DeltaA shape=(2, 10, 10)
+[17:12:41] K_true_from_DeltaA=6
+[17:12:41] violations=0
+delta_mask_nnz=20 dist_mask_nnz=6 tag=_50_3
+WARN: matplotlib not available; skipping plots.

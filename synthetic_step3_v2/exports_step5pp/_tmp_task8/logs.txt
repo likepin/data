@@ -1,15 +1,15 @@
 === Sanity Header ===
 data_dir=synthetic_step3_v2
-config_path=cfg_union_delta_topk.json
+config_path=synthetic_step3_v2\step5pp_config.json
 gate_fn=soft: g=1-lambda
 rel = dist_reg0 - dist_reg1; rel>0 => closer to reg1
 delta_mask_mode=union_base_predchange
 dist_mask_mode=true_change_only
 regime_support_mode=union_base_predchange
-eff_anchor=A0
+eff_anchor=A_base
 regime_ref_source=estimated
-regime_swapped=False
-swap_reason=auto_swap_regimes_disabled
+regime_swapped=True
+swap_reason=pre_rel_mean: pre_rel_mean=0.002651, post_rel_mean=0.002336, pre_count=3551, post_count=2400
 topk_mode=match_true
 k_source=K_true_from_DeltaA
 lambda_stats_pre={'mean': 0.33413487672805786, 'min': 0.0, 'max': 1.0}
@@ -20,13 +20,15 @@ check_overall_pass=False
 A_base shape=(2, 10, 10) (sum over lags)
 A0/A1 loaded from val_matrix
 lambda stats: min=0.0000 max=1.0000 mean=0.3421
+A0/A1 auto-swapped. reason=pre_rel_mean: pre_rel_mean=0.002651, post_rel_mean=0.002336, pre_count=3551, post_count=2400
 A_base nnz=30
-A0 stats: min=0.0022 max=0.1316 mean=0.0151 nnz=100
-A1 stats: min=0.0014 max=0.0994 mean=0.0130 nnz=100
-regime_swapped=False
-swap_reason=auto_swap_regimes_disabled
-[17:17:24] DeltaA shape=(2, 10, 10)
-[17:17:24] K_true_from_DeltaA=6
-[17:17:24] violations=0
+A0 stats: min=0.0014 max=0.0994 mean=0.0130 nnz=100
+A1 stats: min=0.0022 max=0.1316 mean=0.0151 nnz=100
+regime_swapped=True
+swap_reason=pre_rel_mean: pre_rel_mean=0.002651, post_rel_mean=0.002336, pre_count=3551, post_count=2400
+[17:10:48] DeltaA shape=(2, 10, 10)
+[17:10:48] K_true_from_DeltaA=6
+[17:10:48] violations=0
 delta_mask_nnz=20 dist_mask_nnz=6 tag=default
+WARN: matplotlib not available; skipping plots.
 delta_mask_nnz=20 dist_mask_nnz=6 tag=_diag

@@ -1,0 +1,4 @@
+| case | gate_mode | param_name | param_value | overall_align | align_all_pre | align_all_post | mean_margin_pre | mean_margin_post | delta_mask_nnz | dist_mask_nnz | check_overall_pass | regime_swapped | swap_reason |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 01_hard_tau_0.800 | hard | tau_hard | 0.8 | 1.0 | 1.0 | 1.0 | 0.015387773513793945 | 0.015387773513793945 | 20 | 6 | False | True | pre_rel_mean: pre_rel_mean=0.005053, post_rel_mean=0.007293, pre_count=3551, post_count=2400 |
+| 02_soft_w_0.500 | soft | w_soft | 0.5 | 1.0 | 1.0 | 1.0 | 0.015387773513793945 | 0.015387773513793945 | 20 | 6 | False | True | pre_rel_mean: pre_rel_mean=0.002651, post_rel_mean=0.002336, pre_count=3551, post_count=2400 |
