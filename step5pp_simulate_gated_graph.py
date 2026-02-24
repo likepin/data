@@ -63,23 +63,46 @@ def load_config(cfg_path, data_dir):
 
     cfg = defaults.copy()
     cfg.update(raw_cfg)
+    compat_warnings = []
 
     # Backward compatibility for legacy mask fields.
     if "delta_mask_mode" not in raw_cfg:
         if "delta_mask" in raw_cfg:
             cfg["delta_mask_mode"] = raw_cfg["delta_mask"]
+            compat_warnings.append("legacy field `delta_mask` mapped to `delta_mask_mode`")
         elif "edge_mask" in raw_cfg:
             cfg["delta_mask_mode"] = raw_cfg["edge_mask"]
+            compat_warnings.append("legacy field `edge_mask` mapped to `delta_mask_mode`")
     if "dist_mask_mode" not in raw_cfg:
         if "dist_mask" in raw_cfg:
             cfg["dist_mask_mode"] = raw_cfg["dist_mask"]
+            compat_warnings.append("legacy field `dist_mask` mapped to `dist_mask_mode`")
         elif "edge_mask" in raw_cfg:
             cfg["dist_mask_mode"] = raw_cfg["edge_mask"]
+            compat_warnings.append("legacy field `edge_mask` mapped to `dist_mask_mode`")
 
     # Keep compatibility with old short alias.
     if cfg.get("regime_ref_source") == "gt":
         cfg["regime_ref_source"] = "ground_truth"
+    cfg["_compat_warnings"] = compat_warnings
     return cfg
+
+
+def validate_cfg(cfg):
+    valid_delta_modes = {"base_only", "union_base_predchange"}
+    valid_dist_modes = {"base_only", "union_base_predchange", "true_change_only", "union_delta_topk"}
+    valid_gate_modes = {"soft", "hard"}
+
+    delta_mask_mode = cfg.get("delta_mask_mode")
+    dist_mask_mode = cfg.get("dist_mask_mode")
+    gate_mode = cfg.get("gate_mode")
+
+    if delta_mask_mode not in valid_delta_modes:
+        raise ValueError(f"Invalid delta_mask_mode={delta_mask_mode}, expected one of {sorted(valid_delta_modes)}")
+    if dist_mask_mode not in valid_dist_modes:
+        raise ValueError(f"Invalid dist_mask_mode={dist_mask_mode}, expected one of {sorted(valid_dist_modes)}")
+    if gate_mode not in valid_gate_modes:
+        raise ValueError(f"Invalid gate_mode={gate_mode}, expected one of {sorted(valid_gate_modes)}")
 
 
 def load_A_base(data_dir, logs):
@@ -239,32 +262,31 @@ def _delta_topk_mask(delta_ref, union_mask, topk=6, thr=None):
 
 
 def build_delta_mask(mode, base_mask, pred_mask, true_mask, delta_ref, cfg):
-    if mode == "true_change_only":
-        mask = (true_mask != 0).astype(np.float32)
-    elif mode == "union_delta_topk":
-        union_mask = build_mask("union_base_predchange", base_mask, pred_mask)
-        topk = int(cfg.get("delta_topk", cfg.get("dist_topk", 6)))
-        thr = cfg.get("delta_delta_thr", cfg.get("dist_delta_thr", None))
-        mask = _delta_topk_mask(delta_ref, union_mask, topk=topk, thr=thr)
-    else:
+    # Fixed definitions:
+    # - base_only: A_base != 0
+    # - union_base_predchange: (A_base != 0) | (pred_adj != 0)
+    if mode in ("base_only", "union_base_predchange"):
         mask = build_mask(mode, base_mask, pred_mask)
+    else:
+        raise ValueError(f"Unsupported delta_mask_mode={mode}")
     np.fill_diagonal(mask, 0.0)
     return mask.astype(np.float32)
 
 
 def build_dist_mask(mode, base_mask, pred_mask, true_mask, delta_ref, cfg, pred_edges):
-    if mode == "change_edges_focus":
-        focus = pred_mask if pred_edges else true_mask
-        mask = (focus != 0).astype(np.float32)
+    # Fixed definitions:
+    # - base_only: A_base != 0
+    # - union_base_predchange: (A_base != 0) | (pred_adj != 0)
+    # - true_change_only: adj_true != 0
+    # - union_delta_topk: pred_adj != 0
+    if mode in ("base_only", "union_base_predchange"):
+        mask = build_mask(mode, base_mask, pred_mask)
     elif mode == "true_change_only":
         mask = (true_mask != 0).astype(np.float32)
     elif mode == "union_delta_topk":
-        union_mask = build_mask("union_base_predchange", base_mask, pred_mask)
-        topk = int(cfg.get("dist_topk", 6))
-        thr = cfg.get("dist_delta_thr", None)
-        mask = _delta_topk_mask(delta_ref, union_mask, topk=topk, thr=thr)
+        mask = (pred_mask != 0).astype(np.float32)
     else:
-        mask = build_mask(mode, base_mask, pred_mask)
+        raise ValueError(f"Unsupported dist_mask_mode={mode}")
     np.fill_diagonal(mask, 0.0)
     return mask.astype(np.float32)
 
@@ -280,11 +302,13 @@ def _mean_offdiag_abs(x):
     return float(vals.mean())
 
 
-def maybe_auto_swap_regimes(A0, A1, lambda_t, valid_mask, t_switch, cfg, gate_mode, tau_hard, logs):
+def maybe_swap_regimes(A0, A1, t_switch, lambda_t, valid_mask, cfg, gate_mode, tau_hard, logs, diagnostic_mask):
     auto_swap = bool(cfg.get("auto_swap_regimes", False))
     decision_by = cfg.get("swap_decision_by", "pre_rel_mean")
+    if not auto_swap and t_switch is None:
+        return A0, A1, False, "auto_swap_regimes_disabled+t_switch_missing"
     if not auto_swap:
-        return A0, A1, False, "auto_swap_regimes_disabled"
+        logs.append("WARN: auto_swap_regimes=False, will only diagnose without swapping.")
     if t_switch is None:
         return A0, A1, False, "t_switch_missing"
     if lambda_t is None or valid_mask is None:
@@ -308,8 +332,8 @@ def maybe_auto_swap_regimes(A0, A1, lambda_t, valid_mask, t_switch, cfg, gate_mo
             continue
         g = gate_weight[t]
         A_eff = A0 + g * (A1 - A0)
-        d0 = _mean_offdiag_abs(A_eff - A0)
-        d1 = _mean_offdiag_abs(A_eff - A1)
+        d0 = dist_l1(A_eff, A0, diagnostic_mask)
+        d1 = dist_l1(A_eff, A1, diagnostic_mask)
         rel[t] = d0 - d1
 
     pre_rel_mean = float(rel[pre_mask].mean()) if pre_mask.sum() > 0 else np.nan
@@ -328,18 +352,29 @@ def maybe_auto_swap_regimes(A0, A1, lambda_t, valid_mask, t_switch, cfg, gate_mo
         f"post_rel_mean={post_rel_mean:.6f}, pre_count={int(pre_mask.sum())}, "
         f"post_count={int(post_mask.sum())}"
     )
-    if should_swap:
+    if should_swap and auto_swap:
         logs.append(f"A0/A1 auto-swapped. reason={reason}")
         return A1, A0, True, reason
+    if should_swap and not auto_swap:
+        logs.append(f"WARN: A0/A1 looks swapped but auto_swap_regimes=False. reason={reason}")
+        return A0, A1, False, reason
     logs.append(f"A0/A1 kept. reason={reason}")
     return A0, A1, False, reason
 
 
 def evaluate_gate_direction_checks(rel, pre_mask, post_mask, low_mask, high_non_sat, gate_weight, dist_reg0, dist_reg1):
     margin = rel
-    align_all_pre = float((rel[pre_mask] > 0).mean()) if pre_mask.sum() > 0 else np.nan
-    align_all_post = float((rel[post_mask] > 0).mean()) if post_mask.sum() > 0 else np.nan
-    overall_align = float((rel[pre_mask | post_mask] > 0).mean()) if (pre_mask | post_mask).sum() > 0 else np.nan
+    # rel = dist_reg0 - dist_reg1; rel>0 means closer to A1, rel<0 means closer to A0.
+    # Expected sign: pre closer to A0 -> rel<0; post closer to A1 -> rel>0.
+    align_pre = float((rel[pre_mask] < 0).mean()) if pre_mask.sum() > 0 else np.nan
+    align_post = float((rel[post_mask] > 0).mean()) if post_mask.sum() > 0 else np.nan
+    n_all = int(pre_mask.sum() + post_mask.sum())
+    if n_all > 0:
+        align_overall = float(
+            ((rel[pre_mask] < 0).sum() + (rel[post_mask] > 0).sum()) / max(n_all, 1)
+        )
+    else:
+        align_overall = np.nan
     mean_margin_pre = float(margin[pre_mask].mean()) if pre_mask.sum() > 0 else np.nan
     mean_margin_post = float(margin[post_mask].mean()) if post_mask.sum() > 0 else np.nan
     rel_pre_mean = float(rel[pre_mask].mean()) if pre_mask.sum() > 0 else np.nan
@@ -347,10 +382,10 @@ def evaluate_gate_direction_checks(rel, pre_mask, post_mask, low_mask, high_non_
     rel_pre_std = float(rel[pre_mask].std()) if pre_mask.sum() > 0 else np.nan
     rel_post_std = float(rel[post_mask].std()) if post_mask.sum() > 0 else np.nan
 
-    align_low_pre = float((rel[pre_mask & low_mask] > 0).mean()) if (pre_mask & low_mask).sum() > 0 else np.nan
+    align_low_pre = float((rel[pre_mask & low_mask] < 0).mean()) if (pre_mask & low_mask).sum() > 0 else np.nan
     align_low_post = float((rel[post_mask & low_mask] > 0).mean()) if (post_mask & low_mask).sum() > 0 else np.nan
     if high_non_sat is not None:
-        align_high_pre = float((rel[pre_mask & high_non_sat] > 0).mean()) if (pre_mask & high_non_sat).sum() > 0 else np.nan
+        align_high_pre = float((rel[pre_mask & high_non_sat] < 0).mean()) if (pre_mask & high_non_sat).sum() > 0 else np.nan
         align_high_post = float((rel[post_mask & high_non_sat] > 0).mean()) if (post_mask & high_non_sat).sum() > 0 else np.nan
     else:
         align_high_pre = np.nan
@@ -368,29 +403,23 @@ def evaluate_gate_direction_checks(rel, pre_mask, post_mask, low_mask, high_non_
         if (np.isfinite(mean_gate_high) and np.isfinite(mean_gate_low))
         else None
     )
-    check_high_closer_a0 = (
-        bool(float(dist_reg0[high_non_sat].mean()) < float(dist_reg1[high_non_sat].mean()))
-        if (high_non_sat is not None and high_non_sat.sum() > 0)
-        else None
-    )
-    check_low_closer_a1 = (
-        bool(float(dist_reg1[low_mask].mean()) < float(dist_reg0[low_mask].mean()))
-        if low_mask.sum() > 0
-        else None
-    )
-    check_pre_post_direction = (
-        bool(mean_dist_reg0_pre < mean_dist_reg1_pre and mean_dist_reg1_post < mean_dist_reg0_post)
-        if (pre_mask.sum() > 0 and post_mask.sum() > 0)
-        else None
-    )
+    high_rel_mean = float(rel[high_non_sat].mean()) if (high_non_sat is not None and high_non_sat.sum() > 0) else np.nan
+    low_rel_mean = float(rel[low_mask].mean()) if low_mask.sum() > 0 else np.nan
+    check_high_closer_a0 = bool(high_rel_mean < 0) if np.isfinite(high_rel_mean) else None
+    check_low_closer_a1 = bool(low_rel_mean > 0) if np.isfinite(low_rel_mean) else None
+    pre_rel_sign_ok = bool(rel_pre_mean < 0) if np.isfinite(rel_pre_mean) else None
+    post_rel_sign_ok = bool(rel_post_mean > 0) if np.isfinite(rel_post_mean) else None
 
-    checks = [v for v in [check_gate_direction, check_high_closer_a0, check_low_closer_a1, check_pre_post_direction] if v is not None]
+    checks = [v for v in [pre_rel_sign_ok, post_rel_sign_ok] if v is not None]
     check_overall_pass = bool(all(checks)) if checks else False
 
     return {
-        "align_all_pre": align_all_pre,
-        "align_all_post": align_all_post,
-        "overall_align": overall_align,
+        "align_pre": align_pre,
+        "align_post": align_post,
+        "align_overall": align_overall,
+        "align_all_pre": align_pre,
+        "align_all_post": align_post,
+        "overall_align": align_overall,
         "mean_margin_pre": mean_margin_pre,
         "mean_margin_post": mean_margin_post,
         "rel_pre_mean": rel_pre_mean,
@@ -410,7 +439,8 @@ def evaluate_gate_direction_checks(rel, pre_mask, post_mask, low_mask, high_non_
         "check_gate_direction": check_gate_direction,
         "check_high_closer_a0": check_high_closer_a0,
         "check_low_closer_a1": check_low_closer_a1,
-        "check_pre_post_direction": check_pre_post_direction,
+        "pre_rel_sign_ok": pre_rel_sign_ok,
+        "post_rel_sign_ok": post_rel_sign_ok,
         "check_overall_pass": check_overall_pass,
     }
 
@@ -438,6 +468,17 @@ def write_diagnostics_files(out_dir, tag, diagnostics):
             f.write(f"| {k} | {diagnostics[k]} |\n")
 
 
+def run_step5pp_once(run_once_callable, lambda_t, valid_mask, tag="", write_plots=False, sanity_block=None):
+    # Thin wrapper so main/other callers use one entry point and get structured metrics.
+    return run_once_callable(
+        lambda_t=lambda_t,
+        valid_mask=valid_mask,
+        tag=tag,
+        write_plots=write_plots,
+        sanity_block=sanity_block,
+    )
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", type=str, default="synthetic_step3_v2")
@@ -458,6 +499,17 @@ def main():
 
     cfg_path = args.config or os.path.join(data_dir, "step5pp_config.json")
     cfg = load_config(cfg_path, data_dir)
+    validate_cfg(cfg)
+    for w in cfg.get("_compat_warnings", []):
+        logs.append(f"WARN: {w}")
+        print(f"WARN: {w}")
+    cfg_summary = (
+        f"config: delta_mask_mode={cfg.get('delta_mask_mode')}, "
+        f"dist_mask_mode={cfg.get('dist_mask_mode')}, "
+        f"auto_swap_regimes={bool(cfg.get('auto_swap_regimes', False))}"
+    )
+    logs.append(cfg_summary)
+    print(cfg_summary)
     meta_path = os.path.join(data_dir, "meta.json")
     t_switch = None
     if os.path.isfile(meta_path):
@@ -506,16 +558,23 @@ def main():
             if v.size > 0:
                 logs.append(f"lambda stats: min={v.min():.4f} max={v.max():.4f} mean={v.mean():.4f}")
 
-    A0, A1, regime_swapped, swap_reason = maybe_auto_swap_regimes(
+    # true edges from DeltaA
+    adj_true, delta_path = find_true_change_from_deltaA(data_dir, logs)
+    true_edges = edges_from_adj(adj_true, diag_excluded=True)
+    K_true = len(true_edges)
+    swap_diag_mask = (adj_true != 0).astype(np.float32)
+
+    A0, A1, regime_swapped, swap_reason = maybe_swap_regimes(
         A0=A0,
         A1=A1,
+        t_switch=t_switch,
         lambda_t=lambda_for_swap,
         valid_mask=valid_for_swap,
-        t_switch=t_switch,
         cfg=cfg,
         gate_mode=gate_mode,
         tau_hard=tau_hard,
         logs=logs,
+        diagnostic_mask=swap_diag_mask,
     )
 
     logs.append(f"A_base nnz={(np.abs(A_base) > 0).sum()}")
@@ -523,11 +582,6 @@ def main():
     logs.append(f"A1 stats: min={A1.min():.4f} max={A1.max():.4f} mean={A1.mean():.4f} nnz={(np.abs(A1) > 0).sum()}")
     logs.append(f"regime_swapped={regime_swapped}")
     logs.append(f"swap_reason={swap_reason}")
-
-    # true edges from DeltaA
-    adj_true, delta_path = find_true_change_from_deltaA(data_dir, logs)
-    true_edges = edges_from_adj(adj_true, diag_excluded=True)
-    K_true = len(true_edges)
 
     # delta proxy
     delta_mode = cfg.get("delta_mode", "A1_minus_A0")
@@ -557,7 +611,7 @@ def main():
         for i, (src, tgt) in enumerate(edges_list, start=1):
             f.write(f"{i},{src},{tgt},{abs(delta_proxy[tgt, src]):.6f},{delta_proxy[tgt, src]:.6f}\n")
 
-    def run_once(lambda_t, valid_mask, tag, write_plots):
+    def run_once(lambda_t, valid_mask, tag, write_plots, sanity_block=None):
         if gate_mode == "soft":
             gate_weight = np.clip(1.0 - lambda_t, 0.0, 1.0)
         else:
@@ -616,12 +670,16 @@ def main():
 
         nnz_dist = int((dist_mask != 0).sum())
         nnz_delta = int((delta_mask != 0).sum())
+        nnz_a0 = int((A0_eff != 0).sum())
+        nnz_a1 = int((A1_eff != 0).sum())
         logs.append(f"delta_mask_nnz={nnz_delta} dist_mask_nnz={nnz_dist} tag={tag or 'default'}")
+        logs.append(f"A0_eff_nnz={nnz_a0} A1_eff_nnz={nnz_a1} tag={tag or 'default'}")
 
         # sanity: mask stats
         if args.sanity:
-            nnz_a0 = int((A0_eff != 0).sum())
-            nnz_a1 = int((A1_eff != 0).sum())
+            if sanity_block:
+                print(f"=== Sanity Block {sanity_block} ===")
+                print(f"config: delta_mask_mode={delta_mask_mode}, dist_mask_mode={dist_mask_mode}")
             diff = (A1_eff - A0_eff) * dist_mask
             diff_abs = np.abs(diff)
             mean_diff = float(diff_abs[dist_mask != 0].mean()) if nnz_dist > 0 else 0.0
@@ -630,7 +688,7 @@ def main():
             print(f"|A1_eff-A0_eff| on mask: mean={mean_diff:.6f} max={max_diff:.6f}")
             if nnz_dist > 0:
                 assert not np.allclose(A0_eff[dist_mask != 0], A1_eff[dist_mask != 0])
-            if dist_mask_mode in ("change_edges_focus", "true_change_only"):
+            if dist_mask_mode == "true_change_only":
                 assert nnz_dist <= max(20, int(0.1 * dist_mask.size))
 
         # distance curves
@@ -771,10 +829,8 @@ def main():
             checks = [
                 v
                 for v in [
-                    check_metrics.get("check_gate_direction"),
-                    check_metrics.get("check_high_closer_a0"),
-                    check_metrics.get("check_low_closer_a1"),
-                    check_metrics.get("check_pre_post_direction"),
+                    check_metrics.get("pre_rel_sign_ok"),
+                    check_metrics.get("post_rel_sign_ok"),
                 ]
                 if v is not None
             ]
@@ -942,18 +998,13 @@ def main():
             print(f"mask nnz: delta_mask_nnz={nnz_delta} dist_mask_nnz={nnz_dist}")
             print(f"mean(dist_reg0_pre)={mean_dist_reg0_pre:.6f} mean(dist_reg1_pre)={mean_dist_reg1_pre:.6f}")
             print(f"mean(dist_reg0_post)={mean_dist_reg0_post:.6f} mean(dist_reg1_post)={mean_dist_reg1_post:.6f}")
-            if mean_dist_reg0_pre >= mean_dist_reg1_pre or mean_dist_reg1_post >= mean_dist_reg0_post:
-                print("WARN: A0/A1 may be swapped wrt t_switch.")
-            if not np.isnan(align_all_pre) and pre_mask.sum() > 0:
-                frac = float((rel[pre_mask] > 0).mean())
-                if abs(align_all_pre - frac) > 1e-6:
-                    print("WARN: align_pre != fraction(rel_pre>0)")
             print(
                 "checks: "
                 f"gate_direction={check_metrics['check_gate_direction']} "
                 f"high_closer_A0={check_metrics['check_high_closer_a0']} "
                 f"low_closer_A1={check_metrics['check_low_closer_a1']} "
-                f"pre_post_direction={check_metrics['check_pre_post_direction']} "
+                f"pre_rel_sign_ok={check_metrics['pre_rel_sign_ok']} "
+                f"post_rel_sign_ok={check_metrics['post_rel_sign_ok']} "
                 f"overall={check_metrics['check_overall_pass']}"
             )
 
@@ -982,6 +1033,9 @@ def main():
             "dist_std_base": float(dist_base[valid_mask].std()) if valid_mask.sum() > 0 else 0.0,
             "dist_std_reg0": float(dist_reg0[valid_mask].std()) if valid_mask.sum() > 0 else 0.0,
             "dist_std_reg1": float(dist_reg1[valid_mask].std()) if valid_mask.sum() > 0 else 0.0,
+            "align_pre": align_all_pre,
+            "align_post": align_all_post,
+            "align_overall": overall_align,
             "align_all_pre": align_all_pre,
             "align_all_post": align_all_post,
             "align_low_pre": align_low_pre,
@@ -1009,7 +1063,8 @@ def main():
             "check_gate_direction": check_metrics["check_gate_direction"],
             "check_high_closer_a0": check_metrics["check_high_closer_a0"],
             "check_low_closer_a1": check_metrics["check_low_closer_a1"],
-            "check_pre_post_direction": check_metrics["check_pre_post_direction"],
+            "pre_rel_sign_ok": check_metrics["pre_rel_sign_ok"],
+            "post_rel_sign_ok": check_metrics["post_rel_sign_ok"],
             "check_overall_pass": check_metrics["check_overall_pass"],
         }
         write_diagnostics_files(out_dir, tag, diagnostics)
@@ -1026,6 +1081,9 @@ def main():
             "dist_std_base": float(dist_base[valid_mask].std()) if valid_mask.sum() > 0 else 0.0,
             "dist_std_reg0": float(dist_reg0[valid_mask].std()) if valid_mask.sum() > 0 else 0.0,
             "dist_std_reg1": float(dist_reg1[valid_mask].std()) if valid_mask.sum() > 0 else 0.0,
+            "align_pre": align_all_pre,
+            "align_post": align_all_post,
+            "align_overall": overall_align,
             "align_all_pre": align_all_pre,
             "align_all_post": align_all_post,
             "align_low_pre": align_low_pre,
@@ -1050,7 +1108,8 @@ def main():
             "check_gate_direction": check_metrics["check_gate_direction"],
             "check_high_closer_a0": check_metrics["check_high_closer_a0"],
             "check_low_closer_a1": check_metrics["check_low_closer_a1"],
-            "check_pre_post_direction": check_metrics["check_pre_post_direction"],
+            "pre_rel_sign_ok": check_metrics["pre_rel_sign_ok"],
+            "post_rel_sign_ok": check_metrics["post_rel_sign_ok"],
             "check_overall_pass": check_metrics["check_overall_pass"],
             "diagnostics": diagnostics,
             "n_pre": n_pre,
@@ -1071,7 +1130,9 @@ def main():
         for i, c in enumerate(configs, start=1):
             lambda_t, valid_mask = compute_lambda_kmeans(X, c["window"], c["k"])
             tag = f"_{c['window']}_{c['k']}"
-            summary_rows, metrics = run_once(lambda_t, valid_mask, tag, write_plots=(i == 1))
+            summary_rows, metrics = run_step5pp_once(
+                run_once, lambda_t, valid_mask, tag=tag, write_plots=(i == 1)
+            )
             compare_rows.append({
                 "config_id": tag,
                 "window": c["window"],
@@ -1096,7 +1157,6 @@ def main():
             "delta_path": delta_path,
             "topk_mode": topk_mode,
             "top_k_source": k_source,
-            "edge_mask": cfg.get("edge_mask", cfg.get("delta_mask_mode")),
             "delta_mask_mode": metrics.get("delta_mask_mode", cfg.get("delta_mask_mode")),
             "dist_mask_mode": metrics.get("dist_mask_mode", cfg.get("dist_mask_mode")),
             "regime_support_mode": cfg.get("regime_support_mode", "union_base_predchange"),
@@ -1115,14 +1175,19 @@ def main():
     else:
         lambda_t = lambda_t_single
         valid_mask = valid_mask_single
-        summary_rows, metrics = run_once(lambda_t, valid_mask, tag="", write_plots=True)
+        summary_rows, metrics = run_step5pp_once(
+            run_once, lambda_t, valid_mask, tag="", write_plots=True, sanity_block="A: config dist mask"
+        )
         if args.sanity:
             # diagnostic run: focus on true change edges with A0 base
             saved_dist_mask = cfg.get("dist_mask_mode", "true_change_only")
             saved_eff_anchor = cfg.get("eff_anchor", cfg.get("eff_base_mode", "A0"))
             cfg["dist_mask_mode"] = "true_change_only"
             cfg["eff_anchor"] = "A0"
-            _, diag = run_once(lambda_t, valid_mask, tag="_diag", write_plots=False)
+            _, diag = run_step5pp_once(
+                run_once, lambda_t, valid_mask, tag="_diag", write_plots=False,
+                sanity_block="B: diagnostic true_change_only"
+            )
             print(f"diagnostic rel: pre_mean={diag.get('rel_pre_mean')} post_mean={diag.get('rel_post_mean')}")
             cfg["dist_mask_mode"] = saved_dist_mask
             cfg["eff_anchor"] = saved_eff_anchor
@@ -1141,7 +1206,6 @@ def main():
             "w_soft": w_soft,
             "subset_high_q": cfg.get("subset_high_q", 0.90),
             "subset_low_q": cfg.get("subset_low_q", 0.50),
-            "edge_mask": cfg.get("edge_mask", cfg.get("delta_mask_mode")),
             "delta_mask_mode": metrics.get("delta_mask_mode"),
             "dist_mask_mode": metrics.get("dist_mask_mode"),
             "regime_support_mode": cfg.get("regime_support_mode", "union_base_predchange"),
@@ -1169,7 +1233,8 @@ def main():
             "check_gate_direction": metrics.get("check_gate_direction"),
             "check_high_closer_a0": metrics.get("check_high_closer_a0"),
             "check_low_closer_a1": metrics.get("check_low_closer_a1"),
-            "check_pre_post_direction": metrics.get("check_pre_post_direction"),
+            "pre_rel_sign_ok": metrics.get("pre_rel_sign_ok"),
+            "post_rel_sign_ok": metrics.get("post_rel_sign_ok"),
             "check_overall_pass": metrics.get("check_overall_pass"),
             "low_post_min": int(cfg.get("low_post_min", 10)),
             "n_pre": metrics.get("n_pre"),
@@ -1192,7 +1257,7 @@ def main():
     ]
     if not args.score_type:
         header.extend([
-            "rel = dist_reg0 - dist_reg1; rel>0 => closer to reg1",
+            "rel = dist_reg0 - dist_reg1; rel>0 => closer to A1",
             f"delta_mask_mode={config_used.get('delta_mask_mode')}",
             f"dist_mask_mode={config_used.get('dist_mask_mode')}",
             f"regime_support_mode={config_used.get('regime_support_mode')}",

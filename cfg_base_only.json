@@ -1,0 +1,9 @@
+{
+  "pred_prefix": "cmiknn",
+  "gate_mode": "soft",
+  "delta_mask_mode": "base_only",
+  "dist_mask_mode": "base_only",
+  "auto_swap_regimes": true,
+  "subset_high_q": 0.9,
+  "subset_low_q": 0.5
+}

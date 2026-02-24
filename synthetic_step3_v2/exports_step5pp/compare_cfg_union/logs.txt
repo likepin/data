@@ -1,10 +1,10 @@
 === Sanity Header ===
 data_dir=synthetic_step3_v2
-config_path=cfg_union_delta_topk.json
+config_path=cfg_union.json
 gate_fn=soft: g=1-lambda
 rel = dist_reg0 - dist_reg1; rel>0 => closer to A1
 delta_mask_mode=union_base_predchange
-dist_mask_mode=union_delta_topk
+dist_mask_mode=union_base_predchange
 regime_support_mode=union_base_predchange
 eff_anchor=A0
 regime_ref_source=estimated
@@ -17,20 +17,20 @@ lambda_stats_post={'mean': 0.35385844111442566, 'min': 0.0, 'max': 1.0}
 gate_stats_pre={'mean': 0.6658651232719421, 'min': 0.0, 'max': 1.0}
 gate_stats_post={'mean': 0.6461415886878967, 'min': 0.0, 'max': 1.0}
 check_overall_pass=False
-config: delta_mask_mode=union_base_predchange, dist_mask_mode=union_delta_topk, auto_swap_regimes=True
+config: delta_mask_mode=union_base_predchange, dist_mask_mode=union_base_predchange, auto_swap_regimes=True
 A_base shape=(2, 10, 10) (sum over lags)
 A0/A1 loaded from val_matrix
 lambda stats: min=0.0000 max=1.0000 mean=0.3421
-[17:40:47] DeltaA shape=(2, 10, 10)
-[17:40:47] K_true_from_DeltaA=6
-[17:40:47] violations=0
+[17:41:03] DeltaA shape=(2, 10, 10)
+[17:41:03] K_true_from_DeltaA=6
+[17:41:03] violations=0
 A0/A1 auto-swapped. reason=pre_rel_mean: pre_rel_mean=0.015325, post_rel_mean=0.013502, pre_count=3551, post_count=2400
 A_base nnz=30
 A0 stats: min=0.0014 max=0.0994 mean=0.0130 nnz=100
 A1 stats: min=0.0022 max=0.1316 mean=0.0151 nnz=100
 regime_swapped=True
 swap_reason=pre_rel_mean: pre_rel_mean=0.015325, post_rel_mean=0.013502, pre_count=3551, post_count=2400
-delta_mask_nnz=20 dist_mask_nnz=6 tag=default
+delta_mask_nnz=20 dist_mask_nnz=20 tag=default
 A0_eff_nnz=30 A1_eff_nnz=30 tag=default
 WARN: matplotlib not available; skipping plots.
 delta_mask_nnz=20 dist_mask_nnz=6 tag=_diag
