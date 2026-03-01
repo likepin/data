@@ -1,0 +1,7 @@
+lambda_strategy,lambda_file_npy,lambda_file_npz,source_type,source_score_key,window,k,score,seed
+score_equal,synthetic_step3_v2\exports_step5pp\configs\lambda_equal.npy,synthetic_step3_v2\exports_step5pp\configs\lambda_equal.npz,step4_rescored,score_equal,80,3,4.739463600758125,2026
+score_gating,synthetic_step3_v2\exports_step5pp\configs\lambda_gating.npy,synthetic_step3_v2\exports_step5pp\configs\lambda_gating.npz,step4_rescored,score_gating,50,3,0.8997886166957111,2026
+score_regime,synthetic_step3_v2\exports_step5pp\configs\lambda_regime.npy,synthetic_step3_v2\exports_step5pp\configs\lambda_regime.npz,step4_rescored,score_regime,50,3,0.8997886166957111,2026
+lambda_shuffle,synthetic_step3_v2\exports_step5pp\configs\lambda_shuffle.npy,synthetic_step3_v2\exports_step5pp\configs\lambda_shuffle.npz,shuffle_from_gating,,,,,2026
+lambda_const_05,synthetic_step3_v2\exports_step5pp\configs\lambda_const_05.npy,synthetic_step3_v2\exports_step5pp\configs\lambda_const_05.npz,constant,,,,,2026
+lambda_const_10,synthetic_step3_v2\exports_step5pp\configs\lambda_const_10.npy,synthetic_step3_v2\exports_step5pp\configs\lambda_const_10.npz,constant,,,,,2026

@@ -1,0 +1,9 @@
+{
+  "gate_direction": true,
+  "high_closer_A0": true,
+  "low_closer_A1": true,
+  "pre_post_direction": false,
+  "overall_check": false,
+  "regime_swapped": false,
+  "swap_reason": "pre_rel_mean: pre_rel_mean=0.015196, post_rel_mean=0.015670, pre_count=3521, post_count=2400"
+}

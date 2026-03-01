@@ -1,0 +1,11 @@
+metric,value
+dist_std_base,2.9802322387695312e-08
+dist_std_reg0,0.0
+dist_std_reg1,0.0
+rel_pre_mean,-0.04619572311639786
+rel_pre_std,3.725290298461914e-09
+rel_post_mean,-0.04619571939110756
+rel_post_std,7.450580596923828e-09
+retained_high_mean,0.0
+retained_low_mean,0.0
+retained_gap,0.0

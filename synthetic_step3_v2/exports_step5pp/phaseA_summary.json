@@ -1,0 +1,6 @@
+{
+  "best_strategy_by_align": "score_equal",
+  "best_strategy_by_retained_gap": "score_equal",
+  "main_runs_pass_rate": 1.0,
+  "negative_control_drop": -0.07446336906689976
+}

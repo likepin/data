@@ -1,0 +1,8 @@
+{
+  "lambda_strategy": "score_equal",
+  "lambda_tag": "score_equal",
+  "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_equal.npz",
+  "run_type": "main",
+  "seed": 2026,
+  "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_equal.json"
+}

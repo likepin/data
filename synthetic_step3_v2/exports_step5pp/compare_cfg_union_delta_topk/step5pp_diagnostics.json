@@ -1,7 +1,7 @@
 {
   "subset_high_q": 0.9,
   "subset_low_q": 0.5,
-  "high_thr": 0.5950860381126404,
+  "high_thr": 0.5950860261917116,
   "low_thr": 0.25780823826789856,
   "subset_strategy": "non_sat_quantile",
   "count_high": 536,

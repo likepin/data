@@ -1,0 +1,8 @@
+{
+  "lambda_strategy": "lambda_constant_10",
+  "lambda_tag": "lambda_constant_10",
+  "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_const_10.npz",
+  "run_type": "negative_control",
+  "seed": 2026,
+  "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_const10.json"
+}

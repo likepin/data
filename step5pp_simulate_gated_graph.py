@@ -468,6 +468,174 @@ def write_diagnostics_files(out_dir, tag, diagnostics):
             f.write(f"| {k} | {diagnostics[k]} |\n")
 
 
+def write_subset_summary_standard(summary_rows, out_dir, tag=""):
+    suffix = tag if tag else ""
+    keys = [
+        "subset",
+        "count",
+        "mean_lambda",
+        "mean_gate_weight",
+        "p_active",
+        "mean_dist_base",
+        "mean_dist_reg0",
+        "mean_dist_reg1",
+        "mean_retained_ratio",
+    ]
+    rows = []
+    for r in summary_rows:
+        rows.append({k: r.get(k) for k in keys})
+    csv_path = os.path.join(out_dir, f"subset_summary{suffix}.csv")
+    md_path = os.path.join(out_dir, f"subset_summary{suffix}.md")
+    with open(csv_path, "w", encoding="utf-8") as f:
+        f.write(",".join(keys) + "\n")
+        for r in rows:
+            f.write(",".join([str(r.get(k, "")) for k in keys]) + "\n")
+    with open(md_path, "w", encoding="utf-8") as f:
+        f.write("| " + " | ".join(keys) + " |\n")
+        f.write("| " + " | ".join(["---"] * len(keys)) + " |\n")
+        for r in rows:
+            f.write("| " + " | ".join([str(r.get(k, "")) for k in keys]) + " |\n")
+
+
+def write_curve_stats_csv(out_dir, metrics, tag=""):
+    suffix = tag if tag else ""
+    retained_high = metrics.get("mean_retained_ratio_high")
+    retained_low = metrics.get("mean_retained_ratio_low")
+    retained_gap = None
+    try:
+        retained_gap = float(retained_low) - float(retained_high)
+    except Exception:
+        retained_gap = np.nan
+    rows = [
+        ("dist_std_base", metrics.get("dist_std_base")),
+        ("dist_std_reg0", metrics.get("dist_std_reg0")),
+        ("dist_std_reg1", metrics.get("dist_std_reg1")),
+        ("rel_pre_mean", metrics.get("rel_pre_mean")),
+        ("rel_pre_std", metrics.get("rel_pre_std")),
+        ("rel_post_mean", metrics.get("rel_post_mean")),
+        ("rel_post_std", metrics.get("rel_post_std")),
+        ("retained_high_mean", retained_high),
+        ("retained_low_mean", retained_low),
+        ("retained_gap", retained_gap),
+    ]
+    path = os.path.join(out_dir, f"curve_stats{suffix}.csv")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("metric,value\n")
+        for k, v in rows:
+            f.write(f"{k},{v}\n")
+
+
+def write_checks_json(out_dir, metrics, config_used=None, tag=""):
+    suffix = tag if tag else ""
+    data = {
+        "gate_direction": metrics.get("check_gate_direction"),
+        "high_closer_A0": metrics.get("check_high_closer_a0"),
+        "low_closer_A1": metrics.get("check_low_closer_a1"),
+        "pre_post_direction": (
+            bool(metrics.get("pre_rel_sign_ok")) and bool(metrics.get("post_rel_sign_ok"))
+            if (metrics.get("pre_rel_sign_ok") is not None and metrics.get("post_rel_sign_ok") is not None)
+            else None
+        ),
+        "overall_check": metrics.get("check_overall_pass"),
+        "regime_swapped": (config_used or {}).get("regime_swapped"),
+        "swap_reason": (config_used or {}).get("swap_reason"),
+    }
+    with open(os.path.join(out_dir, f"checks{suffix}.json"), "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+    return data
+
+
+def write_sanity_metrics_json(out_dir, metrics, summary_rows, config_used=None, tag=""):
+    suffix = tag if tag else ""
+    subset_map = {r.get("subset"): r for r in summary_rows}
+    high_row = subset_map.get("high_non_sat", subset_map.get("high_sat", {}))
+    low_row = subset_map.get("low", {})
+    all_row = subset_map.get("all", {})
+
+    data = {
+        "config_name": (config_used or {}).get("config_name"),
+        "delta_mask_mode": metrics.get("delta_mask_mode"),
+        "dist_mask_mode": metrics.get("dist_mask_mode"),
+        "delta_mask_nnz": metrics.get("delta_mask_nnz"),
+        "dist_mask_nnz": metrics.get("dist_mask_nnz"),
+        "A0_eff_nnz": metrics.get("A0_eff_nnz"),
+        "A1_eff_nnz": metrics.get("A1_eff_nnz"),
+        "subset_strategy": metrics.get("subset_strategy"),
+        "high_thr": metrics.get("high_thr"),
+        "low_thr": metrics.get("low_thr"),
+        "high_non_sat_count": high_row.get("count"),
+        "high_non_sat_mean_lambda": high_row.get("mean_lambda"),
+        "high_non_sat_mean_gate_weight": high_row.get("mean_gate_weight"),
+        "low_count": low_row.get("count"),
+        "low_mean_lambda": low_row.get("mean_lambda"),
+        "low_mean_gate_weight": low_row.get("mean_gate_weight"),
+        "all_count": all_row.get("count"),
+        "all_mean_lambda": all_row.get("mean_lambda"),
+        "all_mean_gate_weight": all_row.get("mean_gate_weight"),
+        "dist_std_base": metrics.get("dist_std_base"),
+        "dist_std_reg0": metrics.get("dist_std_reg0"),
+        "dist_std_reg1": metrics.get("dist_std_reg1"),
+        "align_pre": metrics.get("align_pre"),
+        "align_post": metrics.get("align_post"),
+        "align_overall": metrics.get("align_overall"),
+        "margin_pre": metrics.get("mean_margin_pre"),
+        "margin_post": metrics.get("mean_margin_post"),
+        "rel_pre_mean": metrics.get("rel_pre_mean"),
+        "rel_pre_std": metrics.get("rel_pre_std"),
+        "rel_post_mean": metrics.get("rel_post_mean"),
+        "rel_post_std": metrics.get("rel_post_std"),
+        "mean_dist_reg0_pre": metrics.get("mean_dist_reg0_pre"),
+        "mean_dist_reg1_pre": metrics.get("mean_dist_reg1_pre"),
+        "mean_dist_reg0_post": metrics.get("mean_dist_reg0_post"),
+        "mean_dist_reg1_post": metrics.get("mean_dist_reg1_post"),
+        "gate_direction": metrics.get("check_gate_direction"),
+        "high_closer_A0": metrics.get("check_high_closer_a0"),
+        "low_closer_A1": metrics.get("check_low_closer_a1"),
+        "pre_post_direction": (
+            bool(metrics.get("pre_rel_sign_ok")) and bool(metrics.get("post_rel_sign_ok"))
+            if (metrics.get("pre_rel_sign_ok") is not None and metrics.get("post_rel_sign_ok") is not None)
+            else None
+        ),
+        "overall_check": metrics.get("check_overall_pass"),
+        "regime_swapped": (config_used or {}).get("regime_swapped"),
+        "swap_reason": (config_used or {}).get("swap_reason"),
+    }
+    with open(os.path.join(out_dir, f"sanity_metrics{suffix}.json"), "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+    return data
+
+
+def load_lambda_override(lambda_file, data_dir, logs):
+    path = lambda_file
+    if not os.path.isabs(path) and not os.path.isfile(path):
+        path = os.path.join(data_dir, path)
+    if not os.path.isfile(path):
+        raise FileNotFoundError(f"lambda_file not found: {path}")
+    if path.lower().endswith(".npz"):
+        npz = np.load(path)
+        if "lambda_t" in npz:
+            lambda_t = np.array(npz["lambda_t"]).reshape(-1)
+        else:
+            keys = list(npz.keys())
+            if not keys:
+                raise ValueError(f"lambda npz is empty: {path}")
+            lambda_t = np.array(npz[keys[0]]).reshape(-1)
+        if "valid_mask" in npz:
+            valid_mask = np.array(npz["valid_mask"]).astype(bool).reshape(-1)
+        else:
+            valid_mask = np.isfinite(lambda_t)
+    else:
+        lambda_t = np.load(path).reshape(-1)
+        valid_mask = np.isfinite(lambda_t)
+    lambda_t = np.asarray(lambda_t, dtype=np.float64)
+    valid_mask = np.asarray(valid_mask, dtype=bool)
+    if valid_mask.shape[0] != lambda_t.shape[0]:
+        raise ValueError(f"lambda_file valid_mask length mismatch: {path}")
+    lambda_t = np.where(np.isfinite(lambda_t), lambda_t, 0.0)
+    logs.append(f"lambda loaded from --lambda_file: {path}")
+    return lambda_t, valid_mask, path
+
+
 def run_step5pp_once(run_once_callable, lambda_t, valid_mask, tag="", write_plots=False, sanity_block=None):
     # Thin wrapper so main/other callers use one entry point and get structured metrics.
     return run_once_callable(
@@ -489,6 +657,10 @@ def main():
     parser.add_argument("--score_type", type=str, default=None,
                         choices=["score_gating", "score_regime", "score_equal"])
     parser.add_argument("--top_m", type=int, default=5)
+    parser.add_argument("--lambda_file", type=str, default=None,
+                        help="Path to external lambda sequence (.npy or .npz with lambda_t).")
+    parser.add_argument("--lambda_tag", type=str, default=None,
+                        help="Tag for external lambda source; only used for record.")
     parser.add_argument("--sanity", action="store_true")
     args = parser.parse_args()
 
@@ -499,6 +671,8 @@ def main():
 
     cfg_path = args.config or os.path.join(data_dir, "step5pp_config.json")
     cfg = load_config(cfg_path, data_dir)
+    lambda_file_arg = args.lambda_file or cfg.get("lambda_file")
+    lambda_tag = args.lambda_tag or cfg.get("lambda_tag")
     validate_cfg(cfg)
     for w in cfg.get("_compat_warnings", []):
         logs.append(f"WARN: {w}")
@@ -547,7 +721,11 @@ def main():
         if configs:
             lambda_for_swap, valid_for_swap = compute_lambda_kmeans(X, configs[0]["window"], configs[0]["k"])
     else:
-        lambda_t_single, valid_mask_single, lambda_source, t_switch_loaded = load_lambda_and_mask(data_dir, logs)
+        if lambda_file_arg:
+            lambda_t_single, valid_mask_single, lambda_source = load_lambda_override(lambda_file_arg, data_dir, logs)
+            t_switch_loaded = None
+        else:
+            lambda_t_single, valid_mask_single, lambda_source, t_switch_loaded = load_lambda_and_mask(data_dir, logs)
         if t_switch_loaded is not None:
             t_switch = int(t_switch_loaded)
         lambda_for_swap = lambda_t_single
@@ -1053,6 +1231,8 @@ def main():
             "dist_mask_mode": dist_mask_mode,
             "delta_mask_nnz": nnz_delta,
             "dist_mask_nnz": nnz_dist,
+            "A0_eff_nnz": nnz_a0,
+            "A1_eff_nnz": nnz_a1,
             "n_pre": n_pre,
             "n_post": n_post,
             "n_low": n_low,
@@ -1060,11 +1240,20 @@ def main():
             "n_low_post": n_low_post,
             "n_high_ns_pre": n_high_ns_pre,
             "n_high_ns_post": n_high_ns_post,
+            "mean_dist_reg0_pre": mean_dist_reg0_pre,
+            "mean_dist_reg1_pre": mean_dist_reg1_pre,
+            "mean_dist_reg0_post": mean_dist_reg0_post,
+            "mean_dist_reg1_post": mean_dist_reg1_post,
             "check_gate_direction": check_metrics["check_gate_direction"],
             "check_high_closer_a0": check_metrics["check_high_closer_a0"],
             "check_low_closer_a1": check_metrics["check_low_closer_a1"],
             "pre_rel_sign_ok": check_metrics["pre_rel_sign_ok"],
             "post_rel_sign_ok": check_metrics["post_rel_sign_ok"],
+            "pre_post_direction": (
+                bool(check_metrics["pre_rel_sign_ok"]) and bool(check_metrics["post_rel_sign_ok"])
+                if (check_metrics["pre_rel_sign_ok"] is not None and check_metrics["post_rel_sign_ok"] is not None)
+                else None
+            ),
             "check_overall_pass": check_metrics["check_overall_pass"],
         }
         write_diagnostics_files(out_dir, tag, diagnostics)
@@ -1093,7 +1282,9 @@ def main():
             "mean_margin_pre": mean_margin_pre,
             "mean_margin_post": mean_margin_post,
             "rel_pre_mean": rel_pre_mean,
+            "rel_pre_std": rel_pre_std,
             "rel_post_mean": rel_post_mean,
+            "rel_post_std": rel_post_std,
             "corr_lambda_dist_base": corrcoef_safe(lambda_t, dist_base),
             "corr_gate_dist_base": corrcoef_safe(gate_weight, dist_base),
             "corr_lambda_retained": corrcoef_safe(lambda_t, retained_ratio),
@@ -1105,11 +1296,22 @@ def main():
             "dist_mask_mode": dist_mask_mode,
             "delta_mask_nnz": nnz_delta,
             "dist_mask_nnz": nnz_dist,
+            "A0_eff_nnz": nnz_a0,
+            "A1_eff_nnz": nnz_a1,
+            "mean_dist_reg0_pre": mean_dist_reg0_pre,
+            "mean_dist_reg1_pre": mean_dist_reg1_pre,
+            "mean_dist_reg0_post": mean_dist_reg0_post,
+            "mean_dist_reg1_post": mean_dist_reg1_post,
             "check_gate_direction": check_metrics["check_gate_direction"],
             "check_high_closer_a0": check_metrics["check_high_closer_a0"],
             "check_low_closer_a1": check_metrics["check_low_closer_a1"],
             "pre_rel_sign_ok": check_metrics["pre_rel_sign_ok"],
             "post_rel_sign_ok": check_metrics["post_rel_sign_ok"],
+            "pre_post_direction": (
+                bool(check_metrics["pre_rel_sign_ok"]) and bool(check_metrics["post_rel_sign_ok"])
+                if (check_metrics["pre_rel_sign_ok"] is not None and check_metrics["post_rel_sign_ok"] is not None)
+                else None
+            ),
             "check_overall_pass": check_metrics["check_overall_pass"],
             "diagnostics": diagnostics,
             "n_pre": n_pre,
@@ -1149,10 +1351,14 @@ def main():
         config_used = {
             "data_dir": data_dir,
             "config_path": cfg_path,
+            "config_name": lambda_tag or os.path.splitext(os.path.basename(cfg_path))[0],
             "pred_prefix": cfg.get("pred_prefix", ""),
             "score_type": args.score_type,
             "top_m": args.top_m,
+            "run_type": cfg.get("run_type"),
             "lambda_source": lambda_source,
+            "lambda_tag": lambda_tag,
+            "lambda_file": lambda_file_arg,
             "base_path": base_path,
             "delta_path": delta_path,
             "topk_mode": topk_mode,
@@ -1194,11 +1400,15 @@ def main():
         config_used = {
             "data_dir": data_dir,
             "config_path": cfg_path,
+            "config_name": lambda_tag or os.path.splitext(os.path.basename(cfg_path))[0],
             "lambda_source": lambda_source,
+            "lambda_tag": lambda_tag,
+            "lambda_file": lambda_file_arg,
             "base_path": base_path,
             "delta_path": delta_path,
             "pred_prefix": cfg.get("pred_prefix", ""),
             "score_type": cfg.get("score_type", ""),
+            "run_type": cfg.get("run_type"),
             "delta_mode": delta_mode,
             "gate_mode": gate_mode,
             "gate_fn": "soft: g=1-lambda" if gate_mode == "soft" else "hard: g=1(lambda<thr)",
@@ -1235,6 +1445,11 @@ def main():
             "check_low_closer_a1": metrics.get("check_low_closer_a1"),
             "pre_rel_sign_ok": metrics.get("pre_rel_sign_ok"),
             "post_rel_sign_ok": metrics.get("post_rel_sign_ok"),
+            "pre_post_direction": (
+                bool(metrics.get("pre_rel_sign_ok")) and bool(metrics.get("post_rel_sign_ok"))
+                if (metrics.get("pre_rel_sign_ok") is not None and metrics.get("post_rel_sign_ok") is not None)
+                else None
+            ),
             "check_overall_pass": metrics.get("check_overall_pass"),
             "low_post_min": int(cfg.get("low_post_min", 10)),
             "n_pre": metrics.get("n_pre"),
@@ -1247,6 +1462,10 @@ def main():
         }
         with open(os.path.join(out_dir, "config_used.json"), "w", encoding="utf-8") as f:
             json.dump(config_used, f, indent=2)
+        write_subset_summary_standard(summary_rows, out_dir, tag="")
+        write_curve_stats_csv(out_dir, metrics, tag="")
+        write_checks_json(out_dir, metrics, config_used=config_used, tag="")
+        write_sanity_metrics_json(out_dir, metrics, summary_rows, config_used=config_used, tag="")
 
     # Sanity header in logs
     header = [

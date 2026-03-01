@@ -21,9 +21,9 @@ config: delta_mask_mode=base_only, dist_mask_mode=base_only, auto_swap_regimes=T
 A_base shape=(2, 10, 10) (sum over lags)
 A0/A1 loaded from val_matrix
 lambda stats: min=0.0000 max=1.0000 mean=0.3421
-[17:41:03] DeltaA shape=(2, 10, 10)
-[17:41:03] K_true_from_DeltaA=6
-[17:41:03] violations=0
+[23:45:19] DeltaA shape=(2, 10, 10)
+[23:45:19] K_true_from_DeltaA=6
+[23:45:19] violations=0
 A0/A1 auto-swapped. reason=pre_rel_mean: pre_rel_mean=0.015325, post_rel_mean=0.013502, pre_count=3551, post_count=2400
 A_base nnz=30
 A0 stats: min=0.0014 max=0.0994 mean=0.0130 nnz=100
@@ -32,6 +32,5 @@ regime_swapped=True
 swap_reason=pre_rel_mean: pre_rel_mean=0.015325, post_rel_mean=0.013502, pre_count=3551, post_count=2400
 delta_mask_nnz=20 dist_mask_nnz=20 tag=default
 A0_eff_nnz=20 A1_eff_nnz=20 tag=default
-WARN: matplotlib not available; skipping plots.
 delta_mask_nnz=20 dist_mask_nnz=6 tag=_diag
 A0_eff_nnz=20 A1_eff_nnz=20 tag=_diag

@@ -1,0 +1,68 @@
+[
+  {
+    "lambda_strategy": "score_equal",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_equal.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_equal.npz",
+    "source_type": "step4_rescored",
+    "source_score_key": "score_equal",
+    "window": 80,
+    "k": 3,
+    "score": 4.739463600758125,
+    "seed": 2026
+  },
+  {
+    "lambda_strategy": "score_gating",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_gating.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_gating.npz",
+    "source_type": "step4_rescored",
+    "source_score_key": "score_gating",
+    "window": 50,
+    "k": 3,
+    "score": 0.8997886166957111,
+    "seed": 2026
+  },
+  {
+    "lambda_strategy": "score_regime",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_regime.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_regime.npz",
+    "source_type": "step4_rescored",
+    "source_score_key": "score_regime",
+    "window": 50,
+    "k": 3,
+    "score": 0.8997886166957111,
+    "seed": 2026
+  },
+  {
+    "lambda_strategy": "lambda_shuffle",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shuffle.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shuffle.npz",
+    "source_type": "shuffle_from_gating",
+    "source_score_key": "",
+    "window": "",
+    "k": "",
+    "score": "",
+    "seed": 2026
+  },
+  {
+    "lambda_strategy": "lambda_const_05",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_const_05.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_const_05.npz",
+    "source_type": "constant",
+    "source_score_key": "",
+    "window": "",
+    "k": "",
+    "score": "",
+    "seed": 2026
+  },
+  {
+    "lambda_strategy": "lambda_const_10",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_const_10.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_const_10.npz",
+    "source_type": "constant",
+    "source_score_key": "",
+    "window": "",
+    "k": "",
+    "score": "",
+    "seed": 2026
+  }
+]

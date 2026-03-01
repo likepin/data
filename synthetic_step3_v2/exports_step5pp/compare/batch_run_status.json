@@ -1,0 +1,44 @@
+[
+  {
+    "run_name": "score_equal",
+    "run_type": "main",
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2\\exports_step5pp\\runs\\score_equal",
+    "error": ""
+  },
+  {
+    "run_name": "score_gating",
+    "run_type": "main",
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2\\exports_step5pp\\runs\\score_gating",
+    "error": ""
+  },
+  {
+    "run_name": "score_regime",
+    "run_type": "main",
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2\\exports_step5pp\\runs\\score_regime",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shuffle",
+    "run_type": "negative_control",
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2\\exports_step5pp\\runs\\lambda_shuffle",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_constant_05",
+    "run_type": "negative_control",
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2\\exports_step5pp\\runs\\lambda_constant_05",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_constant_10",
+    "run_type": "negative_control",
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2\\exports_step5pp\\runs\\lambda_constant_10",
+    "error": ""
+  }
+]
