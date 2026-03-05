@@ -1,0 +1,4 @@
+config_name,lambda_strategy,run_type,control_family,directional_align_overall,switch_band_correct_rate,peak_delay_main,blockshuffle_align_mean,blockshuffle_switch_mean,blockshuffle_peak_delay_mean,delta_align_vs_blockshuffle,delta_switch_vs_blockshuffle,delta_peakdelay_vs_blockshuffle,pass_core_checks_v2,pass_core_checks_v3
+score_equal,score_equal,main,main,0.5218713055227158,0.47,48.0,0.45932692748353987,0.5020454545454546,151.63636363636363,0.0625443780391759,-0.0320454545454546,103.63636363636363,False,False
+score_gating,score_gating,main,main,0.5946899680725929,0.695,48.0,0.45932692748353987,0.5020454545454546,151.63636363636363,0.13536304058905302,0.19295454545454538,103.63636363636363,False,False
+score_regime,score_regime,main,main,0.5946899680725929,0.695,48.0,0.45932692748353987,0.5020454545454546,151.63636363636363,0.13536304058905302,0.19295454545454538,103.63636363636363,False,False

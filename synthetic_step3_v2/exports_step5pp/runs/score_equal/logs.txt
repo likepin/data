@@ -1,6 +1,6 @@
 === Sanity Header ===
 data_dir=synthetic_step3_v2
-config_path=synthetic_step3_v2\exports_step5pp\configs\cfg_lambda_equal.json
+config_path=synthetic_step3_v2/exports_step5pp\configs\cfg_lambda_equal.json
 gate_fn=soft: g=1-lambda
 rel = dist_reg0 - dist_reg1; rel>0 => closer to A1
 delta_mask_mode=union_base_predchange
@@ -9,30 +9,34 @@ regime_support_mode=union_base_predchange
 eff_anchor=A0
 regime_ref_source=estimated
 regime_swapped=False
-swap_reason=pre_rel_mean: pre_rel_mean=0.015196, post_rel_mean=0.015670, pre_count=3521, post_count=2400
+swap_reason=pre_rel_mean: pre_rel_mean=0.013647, post_rel_mean=0.015714, pre_count=3521, post_count=2400
 topk_mode=match_true
 k_source=K_true_from_DeltaA
-lambda_stats_pre={'mean': 0.33552131077699093, 'min': 0.0, 'max': 1.0}
-lambda_stats_post={'mean': 0.3303915839252649, 'min': 0.0, 'max': 1.0}
-gate_stats_pre={'mean': 0.6644786892230092, 'min': 0.0, 'max': 1.0}
-gate_stats_post={'mean': 0.6696084160747351, 'min': 0.0, 'max': 1.0}
+lambda_stats_pre={'mean': 0.3522951715775681, 'min': 0.0, 'max': 1.0}
+lambda_stats_post={'mean': 0.3299156926719107, 'min': 0.0, 'max': 1.0}
+gate_stats_pre={'mean': 0.6477048284224318, 'min': 0.0, 'max': 1.0}
+gate_stats_post={'mean': 0.6700843073280893, 'min': 0.0, 'max': 1.0}
 check_overall_pass=False
+pass_core_checks_v2=False
+pass_core_checks_v3=False
+switch_window=200
 config: delta_mask_mode=union_base_predchange, dist_mask_mode=true_change_only, auto_swap_regimes=False
 A_base shape=(2, 10, 10) (sum over lags)
 A0/A1 loaded from val_matrix
-lambda loaded from --lambda_file: synthetic_step3_v2\exports_step5pp\configs\lambda_equal.npz
-lambda stats: min=0.0000 max=1.0000 mean=0.3334
-[23:11:33] DeltaA shape=(2, 10, 10)
-[23:11:33] K_true_from_DeltaA=6
-[23:11:33] violations=0
+lambda loaded from --lambda_file: synthetic_step3_v2/exports_step5pp\configs\lambda_equal.npz
+lambda stats: min=0.0000 max=1.0000 mean=0.3432
+[13:18:33] DeltaA shape=(2, 10, 10)
+[13:18:33] K_true_from_DeltaA=6
+[13:18:33] violations=0
 WARN: auto_swap_regimes=False, will only diagnose without swapping.
-WARN: A0/A1 looks swapped but auto_swap_regimes=False. reason=pre_rel_mean: pre_rel_mean=0.015196, post_rel_mean=0.015670, pre_count=3521, post_count=2400
+WARN: A0/A1 looks swapped but auto_swap_regimes=False. reason=pre_rel_mean: pre_rel_mean=0.013647, post_rel_mean=0.015714, pre_count=3521, post_count=2400
 A_base nnz=30
 A0 stats: min=0.0022 max=0.1316 mean=0.0151 nnz=100
 A1 stats: min=0.0014 max=0.0994 mean=0.0130 nnz=100
 regime_swapped=False
-swap_reason=pre_rel_mean: pre_rel_mean=0.015196, post_rel_mean=0.015670, pre_count=3521, post_count=2400
+swap_reason=pre_rel_mean: pre_rel_mean=0.013647, post_rel_mean=0.015714, pre_count=3521, post_count=2400
 delta_mask_nnz=20 dist_mask_nnz=6 tag=default
 A0_eff_nnz=30 A1_eff_nnz=30 tag=default
+WARN: matplotlib not available; skipping plots.
 delta_mask_nnz=20 dist_mask_nnz=6 tag=_diag
 A0_eff_nnz=30 A1_eff_nnz=30 tag=_diag

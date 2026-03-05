@@ -1,6 +1,15 @@
 {
-  "best_strategy_by_align": "score_equal",
+  "best_strategy_by_align": "score_gating",
   "best_strategy_by_retained_gap": "score_equal",
   "main_runs_pass_rate": 1.0,
-  "negative_control_drop": -0.07446336906689976
+  "negative_control_drop": 0.11109015307242731,
+  "best_strategy_by_directional_align": "score_gating",
+  "best_strategy_by_switch_auc": "score_gating",
+  "best_strategy_by_retained_gap_switch": "score_equal",
+  "main_runs_pass_rate_v1": 1.0,
+  "main_runs_pass_rate_v2": 0.0,
+  "main_runs_pass_rate_v3": 0.0,
+  "negative_control_drop_v2": 0.11109015307242731,
+  "main_directional_align_mean": 0.5704170805559672,
+  "neg_directional_align_mean": 0.45932692748353987
 }

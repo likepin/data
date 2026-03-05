@@ -1,6 +1,6 @@
 === Sanity Header ===
 data_dir=synthetic_step3_v2
-config_path=synthetic_step3_v2\exports_step5pp\configs\cfg_lambda_const10.json
+config_path=synthetic_step3_v2/exports_step5pp\configs\cfg_lambda_constant_10.json
 gate_fn=soft: g=1-lambda
 rel = dist_reg0 - dist_reg1; rel>0 => closer to A1
 delta_mask_mode=union_base_predchange
@@ -17,14 +17,17 @@ lambda_stats_post={'mean': 1.0, 'min': 1.0, 'max': 1.0}
 gate_stats_pre={'mean': 0.0, 'min': 0.0, 'max': 0.0}
 gate_stats_post={'mean': 0.0, 'min': 0.0, 'max': 0.0}
 check_overall_pass=False
+pass_core_checks_v2=False
+pass_core_checks_v3=False
+switch_window=200
 config: delta_mask_mode=union_base_predchange, dist_mask_mode=true_change_only, auto_swap_regimes=False
 A_base shape=(2, 10, 10) (sum over lags)
 A0/A1 loaded from val_matrix
-lambda loaded from --lambda_file: synthetic_step3_v2\exports_step5pp\configs\lambda_const_10.npz
+lambda loaded from --lambda_file: synthetic_step3_v2/exports_step5pp\configs\lambda_constant_10.npz
 lambda stats: min=1.0000 max=1.0000 mean=1.0000
-[23:11:40] DeltaA shape=(2, 10, 10)
-[23:11:40] K_true_from_DeltaA=6
-[23:11:40] violations=0
+[13:18:39] DeltaA shape=(2, 10, 10)
+[13:18:39] K_true_from_DeltaA=6
+[13:18:39] violations=0
 WARN: auto_swap_regimes=False, will only diagnose without swapping.
 A0/A1 kept. reason=pre_rel_mean: pre_rel_mean=-0.046196, post_rel_mean=-0.046196, pre_count=3551, post_count=2400
 A_base nnz=30
@@ -35,6 +38,7 @@ swap_reason=pre_rel_mean: pre_rel_mean=-0.046196, post_rel_mean=-0.046196, pre_c
 WARN: non-saturated set empty; fallback to high on full valid.
 delta_mask_nnz=20 dist_mask_nnz=6 tag=default
 A0_eff_nnz=30 A1_eff_nnz=30 tag=default
+WARN: matplotlib not available; skipping plots.
 WARN: non-saturated set empty; fallback to high on full valid.
 delta_mask_nnz=20 dist_mask_nnz=6 tag=_diag
 A0_eff_nnz=30 A1_eff_nnz=30 tag=_diag

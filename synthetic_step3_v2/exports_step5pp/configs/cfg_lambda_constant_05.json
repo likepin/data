@@ -1,0 +1,15 @@
+{
+  "pred_prefix": "cmiknn",
+  "gate_mode": "soft",
+  "delta_mask_mode": "union_base_predchange",
+  "dist_mask_mode": "true_change_only",
+  "auto_swap_regimes": false,
+  "subset_high_q": 0.9,
+  "subset_low_q": 0.5,
+  "switch_window": 200,
+  "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_05.npz",
+  "lambda_tag": "lambda_constant_05",
+  "config_name": "lambda_constant_05",
+  "run_type": "negative_control",
+  "control_family": "constant"
+}

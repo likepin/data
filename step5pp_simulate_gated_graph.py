@@ -59,6 +59,20 @@ def load_config(cfg_path, data_dir):
         "top_k": 20,
         "output_high_sat": False,
         "low_post_min": 10,
+        "switch_band_pre": 300,
+        "switch_band_post": 300,
+        "switch_window": 200,
+        "switch_window_sweep": [],
+        "directional_align_overall_min": 0.55,
+        "switch_band_correct_rate_min": 0.55,
+        "switch_pre_correct_rate_min": 0.50,
+        "switch_post_correct_rate_min": 0.50,
+        "auc_switch_rel_min": 0.55,
+        "directional_align_overall_min_v3": 0.60,
+        "switch_band_correct_rate_min_v3": 0.60,
+        "switch_margin_min_v3": 0.0,
+        "peak_delay_max_frac_v3": 0.5,
+        "retained_gap_switch_min_v3": 0.10,
     }
 
     cfg = defaults.copy()
@@ -230,6 +244,81 @@ def corrcoef_safe(x, y):
     if x.std() < 1e-12 or y.std() < 1e-12:
         return 0.0
     return float(np.corrcoef(x, y)[0, 1])
+
+
+def auc_binary_safe(y_true, scores):
+    y_true = np.asarray(y_true, dtype=float).reshape(-1)
+    scores = np.asarray(scores, dtype=float).reshape(-1)
+    mask = np.isfinite(y_true) & np.isfinite(scores)
+    y_true = y_true[mask]
+    scores = scores[mask]
+    if y_true.size == 0:
+        return np.nan
+    y = (y_true > 0.5).astype(int)
+    n_pos = int((y == 1).sum())
+    n_neg = int((y == 0).sum())
+    if n_pos == 0 or n_neg == 0:
+        return np.nan
+
+    order = np.argsort(scores)
+    sorted_scores = scores[order]
+    ranks = np.empty(scores.size, dtype=np.float64)
+    i = 0
+    while i < scores.size:
+        j = i + 1
+        while j < scores.size and sorted_scores[j] == sorted_scores[i]:
+            j += 1
+        avg_rank = 0.5 * (i + j - 1) + 1.0
+        ranks[order[i:j]] = avg_rank
+        i = j
+    rank_sum_pos = ranks[y == 1].sum()
+    auc = (rank_sum_pos - n_pos * (n_pos + 1) / 2.0) / (n_pos * n_neg)
+    return float(auc)
+
+
+def peak_delay_switch(signal, valid_mask, t_switch, switch_window):
+    signal = np.asarray(signal, dtype=float).reshape(-1)
+    valid_mask = np.asarray(valid_mask, dtype=bool).reshape(-1)
+    if signal.size < 3:
+        return np.nan
+    t_switch = int(t_switch)
+    w = max(1, int(switch_window))
+    lo = max(1, t_switch - w)
+    hi = min(signal.size - 1, t_switch + w)
+    if hi <= lo:
+        return np.nan
+    idx = np.arange(lo, hi, dtype=int)
+    step = np.abs(signal[idx] - signal[idx - 1])
+    step_valid = valid_mask[idx] & valid_mask[idx - 1] & np.isfinite(step)
+    if int(step_valid.sum()) == 0:
+        return np.nan
+    score = np.where(step_valid, step, -np.inf)
+    peak_t = int(idx[int(np.argmax(score))])
+    return float(abs(peak_t - t_switch))
+
+
+def corr_time_in_mask(values, mask):
+    values = np.asarray(values, dtype=float).reshape(-1)
+    mask = np.asarray(mask, dtype=bool).reshape(-1)
+    if int(mask.sum()) < 2:
+        return np.nan
+    t = np.arange(values.shape[0], dtype=float)[mask]
+    v = values[mask]
+    if int(np.isfinite(v).sum()) < 2:
+        return np.nan
+    return corrcoef_safe(t, v)
+
+
+def csv_safe(v):
+    if v is None:
+        return "NaN"
+    if isinstance(v, (bool, np.bool_)):
+        return "True" if bool(v) else "False"
+    if isinstance(v, (float, np.floating)):
+        if not np.isfinite(v):
+            return "NaN"
+        return str(float(v))
+    return str(v)
 
 
 def build_mask(mode, base_mask, pred_mask):
@@ -445,6 +534,204 @@ def evaluate_gate_direction_checks(rel, pre_mask, post_mask, low_mask, high_non_
     }
 
 
+def evaluate_switch_aware_metrics(rel, lambda_t, gate_weight, retained_ratio, valid_mask, t_switch, cfg):
+    out = {
+        "pre_correct_rate": np.nan,
+        "post_correct_rate": np.nan,
+        "directional_align_pre": np.nan,
+        "directional_align_post": np.nan,
+        "directional_align_overall": np.nan,
+        "switch_window": int(cfg.get("switch_window", 200)),
+        "switch_pre_correct_rate": np.nan,
+        "switch_post_correct_rate": np.nan,
+        "switch_band_correct_rate": np.nan,
+        "switch_margin_pre": np.nan,
+        "switch_margin_post": np.nan,
+        "corr_lambda_regime": np.nan,
+        "corr_gate_regime": np.nan,
+        "corr_retained_regime": np.nan,
+        "auc_switch_lambda": np.nan,
+        "auc_switch_gate": np.nan,
+        "auc_switch_rel": np.nan,
+        "retained_gap_switch": np.nan,
+        "peak_delay_lambda": np.nan,
+        "peak_delay_gate": np.nan,
+        "peak_delay_rel": np.nan,
+        "corr_time_lambda_switch": np.nan,
+        "corr_time_gate_switch": np.nan,
+        "corr_time_retained_switch": np.nan,
+        "switch_band_pass": False,          # v3
+        "directional_align_pass": False,    # v3
+        "switch_margin_pass": False,        # v3
+        "peak_delay_pass": False,           # v3
+        "retained_gap_switch_pass": False,  # v3
+        "directional_align_pass_v2": False,
+        "switch_band_pass_v2": False,
+        "switch_pre_pass_v2": False,
+        "switch_post_pass_v2": False,
+        "switch_auc_pass": False,
+        "switch_nan_reasons": [],
+    }
+    reasons = []
+    if t_switch is None:
+        reasons.append("t_switch_missing")
+        out["switch_nan_reasons"] = reasons
+        return out
+
+    t_idx = np.arange(len(lambda_t))
+    pre_mask = valid_mask & (t_idx < int(t_switch))
+    post_mask = valid_mask & (t_idx >= int(t_switch))
+    n_pre = int(pre_mask.sum())
+    n_post = int(post_mask.sum())
+    if n_pre == 0 or n_post == 0:
+        reasons.append("pre_or_post_empty")
+        out["switch_nan_reasons"] = reasons
+        return out
+
+    correct = np.where(pre_mask, rel < 0, np.where(post_mask, rel > 0, False))
+    pre_correct_rate = float((rel[pre_mask] < 0).mean()) if n_pre > 0 else np.nan
+    post_correct_rate = float((rel[post_mask] > 0).mean()) if n_post > 0 else np.nan
+    directional_align_overall = float(correct[pre_mask | post_mask].mean()) if (n_pre + n_post) > 0 else np.nan
+
+    if cfg.get("switch_window") is not None:
+        switch_window = max(1, int(cfg.get("switch_window", 200)))
+    else:
+        band_pre_compat = max(0, int(cfg.get("switch_band_pre", 300)))
+        band_post_compat = max(0, int(cfg.get("switch_band_post", 300)))
+        switch_window = max(1, band_pre_compat, band_post_compat)
+    band_pre = switch_window
+    band_post = switch_window
+    lo = max(0, int(t_switch) - max(band_pre, 0))
+    hi = min(len(lambda_t), int(t_switch) + max(band_post, 0))
+    switch_pre_mask = valid_mask & (t_idx >= lo) & (t_idx < int(t_switch))
+    switch_post_mask = valid_mask & (t_idx >= int(t_switch)) & (t_idx < hi)
+    switch_band_mask = switch_pre_mask | switch_post_mask
+    if int(switch_pre_mask.sum()) == 0:
+        reasons.append("switch_pre_empty")
+    if int(switch_post_mask.sum()) == 0:
+        reasons.append("switch_post_empty")
+    if int(switch_band_mask.sum()) == 0:
+        reasons.append("switch_band_empty")
+
+    switch_pre_correct_rate = float((rel[switch_pre_mask] < 0).mean()) if switch_pre_mask.sum() > 0 else np.nan
+    switch_post_correct_rate = float((rel[switch_post_mask] > 0).mean()) if switch_post_mask.sum() > 0 else np.nan
+    switch_band_correct_rate = float(correct[switch_band_mask].mean()) if switch_band_mask.sum() > 0 else np.nan
+    # Margin is defined as "correct direction margin" (positive is better for both sides).
+    switch_margin_pre = float((-rel[switch_pre_mask]).mean()) if switch_pre_mask.sum() > 0 else np.nan
+    switch_margin_post = float(rel[switch_post_mask].mean()) if switch_post_mask.sum() > 0 else np.nan
+
+    regime = np.full(len(lambda_t), np.nan, dtype=np.float64)
+    regime[pre_mask] = 0.0
+    regime[post_mask] = 1.0
+    corr_lambda_regime = corrcoef_safe(lambda_t[valid_mask], regime[valid_mask])
+    corr_gate_regime = corrcoef_safe(gate_weight[valid_mask], regime[valid_mask])
+    corr_retained_regime = corrcoef_safe(retained_ratio[valid_mask], regime[valid_mask])
+
+    # Positive orientation: post=1 should score higher.
+    auc_switch_lambda = auc_binary_safe(regime[valid_mask], -lambda_t[valid_mask])
+    auc_switch_gate = auc_binary_safe(regime[valid_mask], gate_weight[valid_mask])
+    auc_switch_rel = auc_binary_safe(regime[valid_mask], rel[valid_mask])
+
+    retained_pre = float(retained_ratio[switch_pre_mask].mean()) if switch_pre_mask.sum() > 0 else np.nan
+    retained_post = float(retained_ratio[switch_post_mask].mean()) if switch_post_mask.sum() > 0 else np.nan
+    retained_gap_switch = retained_pre - retained_post if (np.isfinite(retained_pre) and np.isfinite(retained_post)) else np.nan
+
+    peak_delay_lambda = peak_delay_switch(lambda_t, valid_mask, int(t_switch), switch_window)
+    peak_delay_gate = peak_delay_switch(gate_weight, valid_mask, int(t_switch), switch_window)
+    peak_delay_rel = peak_delay_switch(rel, valid_mask, int(t_switch), switch_window)
+    corr_time_lambda_switch = corr_time_in_mask(lambda_t, switch_band_mask)
+    corr_time_gate_switch = corr_time_in_mask(gate_weight, switch_band_mask)
+    corr_time_retained_switch = corr_time_in_mask(retained_ratio, switch_band_mask)
+    if not np.isfinite(peak_delay_lambda):
+        reasons.append("peak_delay_lambda_nan")
+    if not np.isfinite(peak_delay_gate):
+        reasons.append("peak_delay_gate_nan")
+    if not np.isfinite(peak_delay_rel):
+        reasons.append("peak_delay_rel_nan")
+
+    directional_align_min = float(cfg.get("directional_align_overall_min", 0.55))
+    switch_band_min = float(cfg.get("switch_band_correct_rate_min", 0.55))
+    switch_pre_min = float(cfg.get("switch_pre_correct_rate_min", 0.50))
+    switch_post_min = float(cfg.get("switch_post_correct_rate_min", 0.50))
+    auc_rel_min = float(cfg.get("auc_switch_rel_min", 0.55))
+    directional_align_min_v3 = float(cfg.get("directional_align_overall_min_v3", 0.60))
+    switch_band_min_v3 = float(cfg.get("switch_band_correct_rate_min_v3", 0.60))
+    switch_margin_min_v3 = float(cfg.get("switch_margin_min_v3", 0.0))
+    peak_delay_max = float(cfg.get("peak_delay_max_v3", np.nan))
+    if not np.isfinite(peak_delay_max):
+        peak_delay_max = float(cfg.get("peak_delay_max_frac_v3", 0.5)) * float(switch_window)
+    retained_gap_min_v3 = float(cfg.get("retained_gap_switch_min_v3", 0.10))
+
+    directional_align_pass_v2 = bool(np.isfinite(directional_align_overall) and directional_align_overall >= directional_align_min)
+    switch_pre_pass_v2 = bool(np.isfinite(switch_pre_correct_rate) and switch_pre_correct_rate >= switch_pre_min)
+    switch_post_pass_v2 = bool(np.isfinite(switch_post_correct_rate) and switch_post_correct_rate >= switch_post_min)
+    switch_band_pass_v2 = bool(
+        np.isfinite(switch_band_correct_rate)
+        and switch_band_correct_rate >= switch_band_min
+        and switch_pre_pass_v2
+        and switch_post_pass_v2
+    )
+    switch_auc_pass = bool(np.isfinite(auc_switch_rel) and auc_switch_rel >= auc_rel_min)
+    directional_align_pass = bool(
+        np.isfinite(directional_align_overall) and directional_align_overall >= directional_align_min_v3
+    )
+    switch_band_pass = bool(np.isfinite(switch_band_correct_rate) and switch_band_correct_rate >= switch_band_min_v3)
+    switch_margin_pass = bool(
+        np.isfinite(switch_margin_pre)
+        and np.isfinite(switch_margin_post)
+        and switch_margin_pre > switch_margin_min_v3
+        and switch_margin_post > switch_margin_min_v3
+    )
+    peak_delay_pass = bool(
+        (np.isfinite(peak_delay_lambda) and peak_delay_lambda <= peak_delay_max)
+        or (np.isfinite(peak_delay_gate) and peak_delay_gate <= peak_delay_max)
+    )
+    retained_gap_switch_pass = bool(
+        np.isfinite(retained_gap_switch) and retained_gap_switch > retained_gap_min_v3
+    )
+
+    out.update(
+        {
+            "pre_correct_rate": pre_correct_rate,
+            "post_correct_rate": post_correct_rate,
+            "directional_align_pre": pre_correct_rate,
+            "directional_align_post": post_correct_rate,
+            "directional_align_overall": directional_align_overall,
+            "switch_window": int(switch_window),
+            "switch_pre_correct_rate": switch_pre_correct_rate,
+            "switch_post_correct_rate": switch_post_correct_rate,
+            "switch_band_correct_rate": switch_band_correct_rate,
+            "switch_margin_pre": switch_margin_pre,
+            "switch_margin_post": switch_margin_post,
+            "corr_lambda_regime": corr_lambda_regime,
+            "corr_gate_regime": corr_gate_regime,
+            "corr_retained_regime": corr_retained_regime,
+            "auc_switch_lambda": auc_switch_lambda,
+            "auc_switch_gate": auc_switch_gate,
+            "auc_switch_rel": auc_switch_rel,
+            "retained_gap_switch": retained_gap_switch,
+            "peak_delay_lambda": peak_delay_lambda,
+            "peak_delay_gate": peak_delay_gate,
+            "peak_delay_rel": peak_delay_rel,
+            "corr_time_lambda_switch": corr_time_lambda_switch,
+            "corr_time_gate_switch": corr_time_gate_switch,
+            "corr_time_retained_switch": corr_time_retained_switch,
+            "switch_band_pass": switch_band_pass,
+            "directional_align_pass": directional_align_pass,
+            "switch_margin_pass": switch_margin_pass,
+            "peak_delay_pass": peak_delay_pass,
+            "retained_gap_switch_pass": retained_gap_switch_pass,
+            "directional_align_pass_v2": directional_align_pass_v2,
+            "switch_pre_pass_v2": switch_pre_pass_v2,
+            "switch_post_pass_v2": switch_post_pass_v2,
+            "switch_band_pass_v2": switch_band_pass_v2,
+            "switch_auc_pass": switch_auc_pass,
+            "switch_nan_reasons": reasons,
+        }
+    )
+    return out
+
+
 def write_diagnostics_files(out_dir, tag, diagnostics):
     suffix = tag if tag else ""
     base = os.path.join(out_dir, f"step5pp_diagnostics{suffix}")
@@ -458,7 +745,7 @@ def write_diagnostics_files(out_dir, tag, diagnostics):
     keys = list(diagnostics.keys())
     with open(csv_path, "w", encoding="utf-8") as f:
         f.write(",".join(keys) + "\n")
-        f.write(",".join([str(diagnostics[k]) for k in keys]) + "\n")
+        f.write(",".join([csv_safe(diagnostics.get(k)) for k in keys]) + "\n")
 
     with open(md_path, "w", encoding="utf-8") as f:
         f.write("## Step5++ Diagnostics\n\n")
@@ -517,26 +804,91 @@ def write_curve_stats_csv(out_dir, metrics, tag=""):
         ("retained_high_mean", retained_high),
         ("retained_low_mean", retained_low),
         ("retained_gap", retained_gap),
+        ("pre_correct_rate", metrics.get("pre_correct_rate")),
+        ("post_correct_rate", metrics.get("post_correct_rate")),
+        ("directional_align_overall", metrics.get("directional_align_overall")),
+        ("switch_window", metrics.get("switch_window")),
+        ("switch_pre_correct_rate", metrics.get("switch_pre_correct_rate")),
+        ("switch_post_correct_rate", metrics.get("switch_post_correct_rate")),
+        ("switch_band_correct_rate", metrics.get("switch_band_correct_rate")),
+        ("switch_margin_pre", metrics.get("switch_margin_pre")),
+        ("switch_margin_post", metrics.get("switch_margin_post")),
+        ("corr_lambda_regime", metrics.get("corr_lambda_regime")),
+        ("corr_gate_regime", metrics.get("corr_gate_regime")),
+        ("corr_retained_regime", metrics.get("corr_retained_regime")),
+        ("auc_switch_lambda", metrics.get("auc_switch_lambda")),
+        ("auc_switch_gate", metrics.get("auc_switch_gate")),
+        ("auc_switch_rel", metrics.get("auc_switch_rel")),
+        ("retained_gap_switch", metrics.get("retained_gap_switch")),
+        ("peak_delay_lambda", metrics.get("peak_delay_lambda")),
+        ("peak_delay_gate", metrics.get("peak_delay_gate")),
+        ("peak_delay_rel", metrics.get("peak_delay_rel")),
+        ("corr_time_lambda_switch", metrics.get("corr_time_lambda_switch")),
+        ("corr_time_gate_switch", metrics.get("corr_time_gate_switch")),
+        ("corr_time_retained_switch", metrics.get("corr_time_retained_switch")),
+        ("switch_margin_pass", metrics.get("switch_margin_pass")),
+        ("peak_delay_pass", metrics.get("peak_delay_pass")),
+        ("retained_gap_switch_pass", metrics.get("retained_gap_switch_pass")),
+        ("switch_band_pass", metrics.get("switch_band_pass")),
+        ("directional_align_pass", metrics.get("directional_align_pass")),
+        ("pass_core_checks_v2", metrics.get("pass_core_checks_v2")),
+        ("pass_core_checks_v3", metrics.get("pass_core_checks_v3")),
     ]
     path = os.path.join(out_dir, f"curve_stats{suffix}.csv")
     with open(path, "w", encoding="utf-8") as f:
         f.write("metric,value\n")
         for k, v in rows:
-            f.write(f"{k},{v}\n")
+            f.write(f"{k},{csv_safe(v)}\n")
 
 
 def write_checks_json(out_dir, metrics, config_used=None, tag=""):
     suffix = tag if tag else ""
+    def b(v):
+        return bool(v) if v is not None else False
+
     data = {
-        "gate_direction": metrics.get("check_gate_direction"),
-        "high_closer_A0": metrics.get("check_high_closer_a0"),
-        "low_closer_A1": metrics.get("check_low_closer_a1"),
+        "gate_direction": b(metrics.get("check_gate_direction")),
+        "high_closer_A0": b(metrics.get("check_high_closer_a0")),
+        "low_closer_A1": b(metrics.get("check_low_closer_a1")),
         "pre_post_direction": (
             bool(metrics.get("pre_rel_sign_ok")) and bool(metrics.get("post_rel_sign_ok"))
             if (metrics.get("pre_rel_sign_ok") is not None and metrics.get("post_rel_sign_ok") is not None)
             else None
         ),
-        "overall_check": metrics.get("check_overall_pass"),
+        "overall_check": b(metrics.get("check_overall_pass")),
+        "pre_correct_rate": metrics.get("pre_correct_rate"),
+        "post_correct_rate": metrics.get("post_correct_rate"),
+        "directional_align_pre": metrics.get("directional_align_pre"),
+        "directional_align_post": metrics.get("directional_align_post"),
+        "directional_align_overall": metrics.get("directional_align_overall"),
+        "switch_window": metrics.get("switch_window"),
+        "switch_pre_correct_rate": metrics.get("switch_pre_correct_rate"),
+        "switch_post_correct_rate": metrics.get("switch_post_correct_rate"),
+        "switch_band_correct_rate": metrics.get("switch_band_correct_rate"),
+        "switch_margin_pre": metrics.get("switch_margin_pre"),
+        "switch_margin_post": metrics.get("switch_margin_post"),
+        "corr_lambda_regime": metrics.get("corr_lambda_regime"),
+        "corr_gate_regime": metrics.get("corr_gate_regime"),
+        "corr_retained_regime": metrics.get("corr_retained_regime"),
+        "auc_switch_lambda": metrics.get("auc_switch_lambda"),
+        "auc_switch_gate": metrics.get("auc_switch_gate"),
+        "auc_switch_rel": metrics.get("auc_switch_rel"),
+        "peak_delay_lambda": metrics.get("peak_delay_lambda"),
+        "peak_delay_gate": metrics.get("peak_delay_gate"),
+        "peak_delay_rel": metrics.get("peak_delay_rel"),
+        "corr_time_lambda_switch": metrics.get("corr_time_lambda_switch"),
+        "corr_time_gate_switch": metrics.get("corr_time_gate_switch"),
+        "corr_time_retained_switch": metrics.get("corr_time_retained_switch"),
+        "retained_gap": metrics.get("retained_gap"),
+        "retained_gap_switch": metrics.get("retained_gap_switch"),
+        "switch_band_pass": b(metrics.get("switch_band_pass")),
+        "directional_align_pass": b(metrics.get("directional_align_pass")),
+        "switch_margin_pass": b(metrics.get("switch_margin_pass")),
+        "peak_delay_pass": b(metrics.get("peak_delay_pass")),
+        "retained_gap_switch_pass": b(metrics.get("retained_gap_switch_pass")),
+        "pass_core_checks_v2": b(metrics.get("pass_core_checks_v2")),
+        "pass_core_checks_v3": b(metrics.get("pass_core_checks_v3")),
+        "switch_nan_reasons": metrics.get("switch_nan_reasons", []),
         "regime_swapped": (config_used or {}).get("regime_swapped"),
         "swap_reason": (config_used or {}).get("swap_reason"),
     }
@@ -547,6 +899,9 @@ def write_checks_json(out_dir, metrics, config_used=None, tag=""):
 
 def write_sanity_metrics_json(out_dir, metrics, summary_rows, config_used=None, tag=""):
     suffix = tag if tag else ""
+    def b(v):
+        return bool(v) if v is not None else False
+
     subset_map = {r.get("subset"): r for r in summary_rows}
     high_row = subset_map.get("high_non_sat", subset_map.get("high_sat", {}))
     low_row = subset_map.get("low", {})
@@ -588,9 +943,42 @@ def write_sanity_metrics_json(out_dir, metrics, summary_rows, config_used=None, 
         "mean_dist_reg1_pre": metrics.get("mean_dist_reg1_pre"),
         "mean_dist_reg0_post": metrics.get("mean_dist_reg0_post"),
         "mean_dist_reg1_post": metrics.get("mean_dist_reg1_post"),
-        "gate_direction": metrics.get("check_gate_direction"),
-        "high_closer_A0": metrics.get("check_high_closer_a0"),
-        "low_closer_A1": metrics.get("check_low_closer_a1"),
+        "gate_direction": b(metrics.get("check_gate_direction")),
+        "high_closer_A0": b(metrics.get("check_high_closer_a0")),
+        "low_closer_A1": b(metrics.get("check_low_closer_a1")),
+        "pre_correct_rate": metrics.get("pre_correct_rate"),
+        "post_correct_rate": metrics.get("post_correct_rate"),
+        "directional_align_pre": metrics.get("directional_align_pre"),
+        "directional_align_post": metrics.get("directional_align_post"),
+        "directional_align_overall": metrics.get("directional_align_overall"),
+        "switch_window": metrics.get("switch_window"),
+        "switch_pre_correct_rate": metrics.get("switch_pre_correct_rate"),
+        "switch_post_correct_rate": metrics.get("switch_post_correct_rate"),
+        "switch_band_correct_rate": metrics.get("switch_band_correct_rate"),
+        "switch_margin_pre": metrics.get("switch_margin_pre"),
+        "switch_margin_post": metrics.get("switch_margin_post"),
+        "corr_lambda_regime": metrics.get("corr_lambda_regime"),
+        "corr_gate_regime": metrics.get("corr_gate_regime"),
+        "corr_retained_regime": metrics.get("corr_retained_regime"),
+        "auc_switch_lambda": metrics.get("auc_switch_lambda"),
+        "auc_switch_gate": metrics.get("auc_switch_gate"),
+        "auc_switch_rel": metrics.get("auc_switch_rel"),
+        "peak_delay_lambda": metrics.get("peak_delay_lambda"),
+        "peak_delay_gate": metrics.get("peak_delay_gate"),
+        "peak_delay_rel": metrics.get("peak_delay_rel"),
+        "corr_time_lambda_switch": metrics.get("corr_time_lambda_switch"),
+        "corr_time_gate_switch": metrics.get("corr_time_gate_switch"),
+        "corr_time_retained_switch": metrics.get("corr_time_retained_switch"),
+        "retained_gap": metrics.get("retained_gap"),
+        "retained_gap_switch": metrics.get("retained_gap_switch"),
+        "switch_band_pass": b(metrics.get("switch_band_pass")),
+        "directional_align_pass": b(metrics.get("directional_align_pass")),
+        "switch_margin_pass": b(metrics.get("switch_margin_pass")),
+        "peak_delay_pass": b(metrics.get("peak_delay_pass")),
+        "retained_gap_switch_pass": b(metrics.get("retained_gap_switch_pass")),
+        "pass_core_checks_v2": b(metrics.get("pass_core_checks_v2")),
+        "pass_core_checks_v3": b(metrics.get("pass_core_checks_v3")),
+        "switch_nan_reasons": metrics.get("switch_nan_reasons", []),
         "pre_post_direction": (
             bool(metrics.get("pre_rel_sign_ok")) and bool(metrics.get("post_rel_sign_ok"))
             if (metrics.get("pre_rel_sign_ok") is not None and metrics.get("post_rel_sign_ok") is not None)
@@ -996,6 +1384,20 @@ def main():
         n_low_post = int((post_mask & low_mask).sum())
         n_high_ns_pre = int((pre_mask & high_non_sat).sum()) if high_non_sat is not None else 0
         n_high_ns_post = int((post_mask & high_non_sat).sum()) if high_non_sat is not None else 0
+        switch_metrics = evaluate_switch_aware_metrics(
+            rel=rel,
+            lambda_t=lambda_t,
+            gate_weight=gate_weight,
+            retained_ratio=retained_ratio,
+            valid_mask=valid_mask,
+            t_switch=t_switch,
+            cfg=cfg,
+        )
+        if switch_metrics.get("switch_nan_reasons"):
+            logs.append(
+                f"switch-aware nan reasons(tag={tag or 'default'}): "
+                + ";".join([str(x) for x in switch_metrics.get("switch_nan_reasons", [])])
+            )
         low_post_min = int(cfg.get("low_post_min", 10))
         if n_low_post < low_post_min:
             logs.append("WARN: low_post too small")
@@ -1013,6 +1415,25 @@ def main():
                 if v is not None
             ]
             check_metrics["check_overall_pass"] = bool(all(checks)) if checks else False
+
+        gate_direction = bool(check_metrics.get("check_gate_direction"))
+        high_closer_a0 = bool(check_metrics.get("check_high_closer_a0"))
+        low_closer_a1 = bool(check_metrics.get("check_low_closer_a1"))
+        base_core_checks = bool(gate_direction and high_closer_a0 and low_closer_a1)
+        pass_core_checks_v2 = bool(
+            base_core_checks
+            and bool(switch_metrics.get("directional_align_pass_v2"))
+            and bool(switch_metrics.get("switch_band_pass_v2"))
+            and bool(switch_metrics.get("switch_auc_pass"))
+        )
+        pass_core_checks_v3 = bool(
+            base_core_checks
+            and bool(switch_metrics.get("directional_align_pass"))
+            and bool(switch_metrics.get("switch_band_pass"))
+            and bool(switch_metrics.get("switch_margin_pass"))
+            and bool(switch_metrics.get("peak_delay_pass"))
+            and bool(switch_metrics.get("retained_gap_switch_pass"))
+        )
 
         if pred_edges:
             mean_abs_g_delta_t = np.zeros(len(lambda_t), dtype=np.float32)
@@ -1152,6 +1573,11 @@ def main():
         else:
             mean_retained_high = 0.0
         mean_retained_low = mean_over_mask(retained_ratio, low_mask)
+        retained_gap = (
+            float(mean_retained_low) - float(mean_retained_high)
+            if (np.isfinite(mean_retained_low) and np.isfinite(mean_retained_high))
+            else np.nan
+        )
         # sanity prints
         if args.sanity:
             def subset_print(name, mask):
@@ -1172,6 +1598,13 @@ def main():
             print(f"align: pre={align_all_pre:.6f} post={align_all_post:.6f} overall={overall_align:.6f}")
             print(f"margin: pre={mean_margin_pre:.6f} post={mean_margin_post:.6f}")
             print(f"rel: pre_mean={rel_pre_mean:.6f} pre_std={rel_pre_std:.6f} post_mean={rel_post_mean:.6f} post_std={rel_post_std:.6f}")
+            print(
+                "switch-aware: "
+                f"pre_correct={switch_metrics.get('pre_correct_rate')} "
+                f"post_correct={switch_metrics.get('post_correct_rate')} "
+                f"switch_band_correct={switch_metrics.get('switch_band_correct_rate')} "
+                f"auc_rel={switch_metrics.get('auc_switch_rel')}"
+            )
             print(f"mask: delta_mask_mode={delta_mask_mode} dist_mask_mode={dist_mask_mode}")
             print(f"mask nnz: delta_mask_nnz={nnz_delta} dist_mask_nnz={nnz_dist}")
             print(f"mean(dist_reg0_pre)={mean_dist_reg0_pre:.6f} mean(dist_reg1_pre)={mean_dist_reg1_pre:.6f}")
@@ -1183,7 +1616,9 @@ def main():
                 f"low_closer_A1={check_metrics['check_low_closer_a1']} "
                 f"pre_rel_sign_ok={check_metrics['pre_rel_sign_ok']} "
                 f"post_rel_sign_ok={check_metrics['post_rel_sign_ok']} "
-                f"overall={check_metrics['check_overall_pass']}"
+                f"overall={check_metrics['check_overall_pass']} "
+                f"pass_core_checks_v2={pass_core_checks_v2} "
+                f"pass_core_checks_v3={pass_core_checks_v3}"
             )
 
         if write_plots and not HAS_MPL:
@@ -1255,6 +1690,42 @@ def main():
                 else None
             ),
             "check_overall_pass": check_metrics["check_overall_pass"],
+            "pre_correct_rate": switch_metrics.get("pre_correct_rate"),
+            "post_correct_rate": switch_metrics.get("post_correct_rate"),
+            "directional_align_pre": switch_metrics.get("directional_align_pre"),
+            "directional_align_post": switch_metrics.get("directional_align_post"),
+            "directional_align_overall": switch_metrics.get("directional_align_overall"),
+            "switch_window": switch_metrics.get("switch_window"),
+            "switch_pre_correct_rate": switch_metrics.get("switch_pre_correct_rate"),
+            "switch_post_correct_rate": switch_metrics.get("switch_post_correct_rate"),
+            "switch_band_correct_rate": switch_metrics.get("switch_band_correct_rate"),
+            "switch_margin_pre": switch_metrics.get("switch_margin_pre"),
+            "switch_margin_post": switch_metrics.get("switch_margin_post"),
+            "corr_lambda_regime": switch_metrics.get("corr_lambda_regime"),
+            "corr_gate_regime": switch_metrics.get("corr_gate_regime"),
+            "corr_retained_regime": switch_metrics.get("corr_retained_regime"),
+            "auc_switch_lambda": switch_metrics.get("auc_switch_lambda"),
+            "auc_switch_gate": switch_metrics.get("auc_switch_gate"),
+            "auc_switch_rel": switch_metrics.get("auc_switch_rel"),
+            "peak_delay_lambda": switch_metrics.get("peak_delay_lambda"),
+            "peak_delay_gate": switch_metrics.get("peak_delay_gate"),
+            "peak_delay_rel": switch_metrics.get("peak_delay_rel"),
+            "corr_time_lambda_switch": switch_metrics.get("corr_time_lambda_switch"),
+            "corr_time_gate_switch": switch_metrics.get("corr_time_gate_switch"),
+            "corr_time_retained_switch": switch_metrics.get("corr_time_retained_switch"),
+            "retained_gap": retained_gap,
+            "retained_gap_switch": switch_metrics.get("retained_gap_switch"),
+            "switch_band_pass": switch_metrics.get("switch_band_pass"),
+            "directional_align_pass": switch_metrics.get("directional_align_pass"),
+            "switch_margin_pass": switch_metrics.get("switch_margin_pass"),
+            "peak_delay_pass": switch_metrics.get("peak_delay_pass"),
+            "retained_gap_switch_pass": switch_metrics.get("retained_gap_switch_pass"),
+            "gate_direction": gate_direction,
+            "high_closer_A0": high_closer_a0,
+            "low_closer_A1": low_closer_a1,
+            "pass_core_checks_v2": pass_core_checks_v2,
+            "pass_core_checks_v3": pass_core_checks_v3,
+            "switch_nan_reasons": switch_metrics.get("switch_nan_reasons", []),
         }
         write_diagnostics_files(out_dir, tag, diagnostics)
 
@@ -1288,6 +1759,42 @@ def main():
             "corr_lambda_dist_base": corrcoef_safe(lambda_t, dist_base),
             "corr_gate_dist_base": corrcoef_safe(gate_weight, dist_base),
             "corr_lambda_retained": corrcoef_safe(lambda_t, retained_ratio),
+            "pre_correct_rate": switch_metrics.get("pre_correct_rate"),
+            "post_correct_rate": switch_metrics.get("post_correct_rate"),
+            "directional_align_pre": switch_metrics.get("directional_align_pre"),
+            "directional_align_post": switch_metrics.get("directional_align_post"),
+            "directional_align_overall": switch_metrics.get("directional_align_overall"),
+            "switch_window": switch_metrics.get("switch_window"),
+            "switch_pre_correct_rate": switch_metrics.get("switch_pre_correct_rate"),
+            "switch_post_correct_rate": switch_metrics.get("switch_post_correct_rate"),
+            "switch_band_correct_rate": switch_metrics.get("switch_band_correct_rate"),
+            "switch_margin_pre": switch_metrics.get("switch_margin_pre"),
+            "switch_margin_post": switch_metrics.get("switch_margin_post"),
+            "corr_lambda_regime": switch_metrics.get("corr_lambda_regime"),
+            "corr_gate_regime": switch_metrics.get("corr_gate_regime"),
+            "corr_retained_regime": switch_metrics.get("corr_retained_regime"),
+            "auc_switch_lambda": switch_metrics.get("auc_switch_lambda"),
+            "auc_switch_gate": switch_metrics.get("auc_switch_gate"),
+            "auc_switch_rel": switch_metrics.get("auc_switch_rel"),
+            "peak_delay_lambda": switch_metrics.get("peak_delay_lambda"),
+            "peak_delay_gate": switch_metrics.get("peak_delay_gate"),
+            "peak_delay_rel": switch_metrics.get("peak_delay_rel"),
+            "corr_time_lambda_switch": switch_metrics.get("corr_time_lambda_switch"),
+            "corr_time_gate_switch": switch_metrics.get("corr_time_gate_switch"),
+            "corr_time_retained_switch": switch_metrics.get("corr_time_retained_switch"),
+            "retained_gap": retained_gap,
+            "retained_gap_switch": switch_metrics.get("retained_gap_switch"),
+            "switch_band_pass": switch_metrics.get("switch_band_pass"),
+            "directional_align_pass": switch_metrics.get("directional_align_pass"),
+            "switch_margin_pass": switch_metrics.get("switch_margin_pass"),
+            "peak_delay_pass": switch_metrics.get("peak_delay_pass"),
+            "retained_gap_switch_pass": switch_metrics.get("retained_gap_switch_pass"),
+            "gate_direction": gate_direction,
+            "high_closer_A0": high_closer_a0,
+            "low_closer_A1": low_closer_a1,
+            "pass_core_checks_v2": pass_core_checks_v2,
+            "pass_core_checks_v3": pass_core_checks_v3,
+            "switch_nan_reasons": switch_metrics.get("switch_nan_reasons", []),
             "lambda_stats_pre": lambda_stats_pre,
             "lambda_stats_post": lambda_stats_post,
             "gate_stats_pre": gate_stats_pre,
@@ -1356,6 +1863,7 @@ def main():
             "score_type": args.score_type,
             "top_m": args.top_m,
             "run_type": cfg.get("run_type"),
+            "control_family": cfg.get("control_family"),
             "lambda_source": lambda_source,
             "lambda_tag": lambda_tag,
             "lambda_file": lambda_file_arg,
@@ -1375,6 +1883,9 @@ def main():
             "swap_reason": swap_reason,
             "low_post_min": int(cfg.get("low_post_min", 10)),
             "check_overall_pass": metrics.get("check_overall_pass"),
+            "pass_core_checks_v2": metrics.get("pass_core_checks_v2"),
+            "pass_core_checks_v3": metrics.get("pass_core_checks_v3"),
+            "switch_window": metrics.get("switch_window", cfg.get("switch_window")),
         }
         with open(os.path.join(out_dir, "config_used.json"), "w", encoding="utf-8") as f:
             json.dump(config_used, f, indent=2)
@@ -1409,6 +1920,7 @@ def main():
             "pred_prefix": cfg.get("pred_prefix", ""),
             "score_type": cfg.get("score_type", ""),
             "run_type": cfg.get("run_type"),
+            "control_family": cfg.get("control_family"),
             "delta_mode": delta_mode,
             "gate_mode": gate_mode,
             "gate_fn": "soft: g=1-lambda" if gate_mode == "soft" else "hard: g=1(lambda<thr)",
@@ -1451,6 +1963,17 @@ def main():
                 else None
             ),
             "check_overall_pass": metrics.get("check_overall_pass"),
+            "pass_core_checks_v2": metrics.get("pass_core_checks_v2"),
+            "pass_core_checks_v3": metrics.get("pass_core_checks_v3"),
+            "pre_correct_rate": metrics.get("pre_correct_rate"),
+            "post_correct_rate": metrics.get("post_correct_rate"),
+            "directional_align_overall": metrics.get("directional_align_overall"),
+            "switch_band_correct_rate": metrics.get("switch_band_correct_rate"),
+            "auc_switch_rel": metrics.get("auc_switch_rel"),
+            "switch_window": metrics.get("switch_window"),
+            "peak_delay_lambda": metrics.get("peak_delay_lambda"),
+            "peak_delay_gate": metrics.get("peak_delay_gate"),
+            "peak_delay_rel": metrics.get("peak_delay_rel"),
             "low_post_min": int(cfg.get("low_post_min", 10)),
             "n_pre": metrics.get("n_pre"),
             "n_post": metrics.get("n_post"),
@@ -1466,6 +1989,34 @@ def main():
         write_curve_stats_csv(out_dir, metrics, tag="")
         write_checks_json(out_dir, metrics, config_used=config_used, tag="")
         write_sanity_metrics_json(out_dir, metrics, summary_rows, config_used=config_used, tag="")
+        sweep_raw = cfg.get("switch_window_sweep", [])
+        sweep_vals = []
+        if isinstance(sweep_raw, (list, tuple)):
+            for x in sweep_raw:
+                try:
+                    sweep_vals.append(max(1, int(x)))
+                except Exception:
+                    logs.append(f"WARN: invalid switch_window_sweep value ignored: {x}")
+        sweep_vals = sorted(set(sweep_vals))
+        if sweep_vals:
+            orig_switch_window = int(cfg.get("switch_window", 200))
+            for sw in sweep_vals:
+                if sw == orig_switch_window:
+                    continue
+                cfg["switch_window"] = int(sw)
+                tag = f"_sw{int(sw)}"
+                summary_rows_sw, metrics_sw = run_step5pp_once(
+                    run_once, lambda_t, valid_mask, tag=tag, write_plots=False
+                )
+                config_used_sw = dict(config_used)
+                config_used_sw["switch_window"] = int(sw)
+                config_used_sw["pass_core_checks_v2"] = metrics_sw.get("pass_core_checks_v2")
+                config_used_sw["pass_core_checks_v3"] = metrics_sw.get("pass_core_checks_v3")
+                write_subset_summary_standard(summary_rows_sw, out_dir, tag=tag)
+                write_curve_stats_csv(out_dir, metrics_sw, tag=tag)
+                write_checks_json(out_dir, metrics_sw, config_used=config_used_sw, tag=tag)
+                write_sanity_metrics_json(out_dir, metrics_sw, summary_rows_sw, config_used=config_used_sw, tag=tag)
+            cfg["switch_window"] = orig_switch_window
 
     # Sanity header in logs
     header = [
@@ -1491,6 +2042,9 @@ def main():
             f"gate_stats_pre={config_used.get('gate_stats_pre')}",
             f"gate_stats_post={config_used.get('gate_stats_post')}",
             f"check_overall_pass={config_used.get('check_overall_pass')}",
+            f"pass_core_checks_v2={config_used.get('pass_core_checks_v2')}",
+            f"pass_core_checks_v3={config_used.get('pass_core_checks_v3')}",
+            f"switch_window={config_used.get('switch_window')}",
         ])
     logs = header + logs
     write_logs(logs, os.path.join(out_dir, "logs.txt"))

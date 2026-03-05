@@ -49,6 +49,13 @@ def save_figure(fig, out_path, paper_style=False):
     plt.close(fig)
 
 
+def bar_group(ax, x, ys, labels, width=0.25):
+    n = len(ys)
+    shifts = np.linspace(-(n - 1) / 2.0, (n - 1) / 2.0, n) * width
+    for i, y in enumerate(ys):
+        ax.bar(x + shifts[i], y, width=width, label=labels[i])
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", type=str, default="synthetic_step3_v2")
@@ -77,9 +84,10 @@ def main():
         plt.rcParams.update({"font.size": 12})
 
     names = [r.get("lambda_strategy", r.get("config_name", f"run{i}")) for i, r in enumerate(cfg_rows)]
-    x = np.arange(len(names))
+    x = np.arange(len(names), dtype=float)
+    check_map = {r.get("lambda_strategy"): r for r in check_rows}
 
-    # fig 1: align overall
+    # Legacy figures kept for compatibility.
     y_align = np.array([to_float(r.get("align_overall")) for r in cfg_rows], dtype=float)
     fig = plt.figure(figsize=(10, 4))
     ax = fig.add_subplot(1, 1, 1)
@@ -91,27 +99,21 @@ def main():
     ax.set_ylabel("align_overall")
     save_figure(fig, os.path.join(figs_dir, "fig_strategy_bar_align.png"), paper_style=args.paper_style)
 
-    # fig 2: margin pre/post
     y_pre = np.array([to_float(r.get("margin_pre")) for r in cfg_rows], dtype=float)
     y_post = np.array([to_float(r.get("margin_post")) for r in cfg_rows], dtype=float)
     fig = plt.figure(figsize=(10, 4))
     ax = fig.add_subplot(1, 1, 1)
-    w = 0.35
-    ax.bar(x - w / 2, y_pre, width=w, label="margin_pre")
-    ax.bar(x + w / 2, y_post, width=w, label="margin_post")
+    bar_group(ax, x, [y_pre, y_post], ["margin_pre", "margin_post"], width=0.35)
     ax.set_xticks(x)
     ax.set_xticklabels(names, rotation=20)
     ax.set_title("Margin Pre/Post by Strategy")
     ax.legend(loc="best")
     save_figure(fig, os.path.join(figs_dir, "fig_strategy_bar_margin.png"), paper_style=args.paper_style)
 
-    # fig 3: retained gap
-    if check_rows:
-        gap_map = {r.get("lambda_strategy"): to_float(r.get("retained_gap")) for r in check_rows}
-        y_gap = np.array([gap_map.get(n, np.nan) for n in names], dtype=float)
-    else:
-        warn("compare_phaseA_checks.csv missing, retained gap plot uses NaN.")
-        y_gap = np.full_like(y_align, np.nan, dtype=float)
+    y_gap = np.array(
+        [to_float(check_map.get(n, {}).get("retained_gap")) for n in names],
+        dtype=float,
+    )
     fig = plt.figure(figsize=(10, 4))
     ax = fig.add_subplot(1, 1, 1)
     ax.bar(x, y_gap, color="tab:green")
@@ -121,25 +123,19 @@ def main():
     ax.set_ylabel("retained_low - retained_high")
     save_figure(fig, os.path.join(figs_dir, "fig_strategy_bar_retained_gap.png"), paper_style=args.paper_style)
 
-    # fig 4: dist std triple bar
     y_base = np.array([to_float(r.get("dist_std_base")) for r in cfg_rows], dtype=float)
     y_reg0 = np.array([to_float(r.get("dist_std_reg0")) for r in cfg_rows], dtype=float)
     y_reg1 = np.array([to_float(r.get("dist_std_reg1")) for r in cfg_rows], dtype=float)
     fig = plt.figure(figsize=(10, 4))
     ax = fig.add_subplot(1, 1, 1)
-    w = 0.25
-    ax.bar(x - w, y_base, width=w, label="dist_std_base")
-    ax.bar(x, y_reg0, width=w, label="dist_std_reg0")
-    ax.bar(x + w, y_reg1, width=w, label="dist_std_reg1")
+    bar_group(ax, x, [y_base, y_reg0, y_reg1], ["dist_std_base", "dist_std_reg0", "dist_std_reg1"], width=0.24)
     ax.set_xticks(x)
     ax.set_xticklabels(names, rotation=20)
     ax.set_title("Dist Std by Strategy")
     ax.legend(loc="best")
     save_figure(fig, os.path.join(figs_dir, "fig_strategy_bar_diststd.png"), paper_style=args.paper_style)
 
-    # fig 5: checks heatmap (0/1)
     if check_rows:
-        check_map = {r.get("lambda_strategy"): r for r in check_rows}
         keys = ["gate_direction", "high_closer_A0", "low_closer_A1"]
         mat = np.zeros((len(names), len(keys)), dtype=float)
         for i, n in enumerate(names):
@@ -156,8 +152,70 @@ def main():
         ax.set_title("Core Checks Heatmap")
         fig.colorbar(im, ax=ax, fraction=0.03, pad=0.02)
         save_figure(fig, os.path.join(figs_dir, "fig_strategy_checks_heatmap.png"), paper_style=args.paper_style)
-    else:
-        warn("compare_phaseA_checks.csv missing; skip checks heatmap.")
+
+    # New switch-aware figures.
+    directional_pre = np.array([to_float(r.get("pre_correct_rate")) for r in cfg_rows], dtype=float)
+    directional_post = np.array([to_float(r.get("post_correct_rate")) for r in cfg_rows], dtype=float)
+    directional_overall = np.array([to_float(r.get("directional_align_overall")) for r in cfg_rows], dtype=float)
+    fig = plt.figure(figsize=(11, 4))
+    ax = fig.add_subplot(1, 1, 1)
+    bar_group(
+        ax,
+        x,
+        [directional_pre, directional_post, directional_overall],
+        ["pre_correct_rate", "post_correct_rate", "directional_align_overall"],
+        width=0.24,
+    )
+    ax.set_ylim(0, 1.0)
+    ax.set_xticks(x)
+    ax.set_xticklabels(names, rotation=20)
+    ax.set_title("Directional Align by Strategy")
+    ax.legend(loc="best")
+    save_figure(fig, os.path.join(figs_dir, "fig_directional_align_by_strategy.png"), paper_style=args.paper_style)
+
+    auc_lambda = np.array([to_float(r.get("auc_switch_lambda")) for r in cfg_rows], dtype=float)
+    auc_gate = np.array([to_float(r.get("auc_switch_gate")) for r in cfg_rows], dtype=float)
+    auc_rel = np.array([to_float(r.get("auc_switch_rel")) for r in cfg_rows], dtype=float)
+    fig = plt.figure(figsize=(11, 4))
+    ax = fig.add_subplot(1, 1, 1)
+    bar_group(ax, x, [auc_lambda, auc_gate, auc_rel], ["auc_switch_lambda", "auc_switch_gate", "auc_switch_rel"], width=0.24)
+    ax.set_ylim(0, 1.0)
+    ax.set_xticks(x)
+    ax.set_xticklabels(names, rotation=20)
+    ax.set_title("Switch AUC by Strategy")
+    ax.legend(loc="best")
+    save_figure(fig, os.path.join(figs_dir, "fig_switch_auc_by_strategy.png"), paper_style=args.paper_style)
+
+    switch_pre = np.array([to_float(r.get("switch_pre_correct_rate")) for r in cfg_rows], dtype=float)
+    switch_post = np.array([to_float(r.get("switch_post_correct_rate")) for r in cfg_rows], dtype=float)
+    switch_band = np.array([to_float(r.get("switch_band_correct_rate")) for r in cfg_rows], dtype=float)
+    fig = plt.figure(figsize=(11, 4))
+    ax = fig.add_subplot(1, 1, 1)
+    bar_group(
+        ax,
+        x,
+        [switch_pre, switch_post, switch_band],
+        ["switch_pre_correct_rate", "switch_post_correct_rate", "switch_band_correct_rate"],
+        width=0.24,
+    )
+    ax.set_ylim(0, 1.0)
+    ax.set_xticks(x)
+    ax.set_xticklabels(names, rotation=20)
+    ax.set_title("Switch Correct Rate by Strategy")
+    ax.legend(loc="best")
+    save_figure(fig, os.path.join(figs_dir, "fig_switch_correct_rate_by_strategy.png"), paper_style=args.paper_style)
+
+    switch_margin_pre = np.array([to_float(r.get("switch_margin_pre")) for r in cfg_rows], dtype=float)
+    switch_margin_post = np.array([to_float(r.get("switch_margin_post")) for r in cfg_rows], dtype=float)
+    fig = plt.figure(figsize=(11, 4))
+    ax = fig.add_subplot(1, 1, 1)
+    bar_group(ax, x, [switch_margin_pre, switch_margin_post], ["switch_margin_pre", "switch_margin_post"], width=0.30)
+    ax.axhline(0.0, color="black", linewidth=0.8, linestyle="--")
+    ax.set_xticks(x)
+    ax.set_xticklabels(names, rotation=20)
+    ax.set_title("Switch Local Zoom (Margins Near t_switch)")
+    ax.legend(loc="best")
+    save_figure(fig, os.path.join(figs_dir, "fig_switch_local_zoom.png"), paper_style=args.paper_style)
 
     print(f"[OK] {figs_dir}")
 

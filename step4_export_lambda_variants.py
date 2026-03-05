@@ -19,6 +19,17 @@ def save_lambda_variant(path_base, lambda_t, valid_mask):
     np.savez(path_base + ".npz", lambda_t=lambda_t.astype(np.float64), valid_mask=valid_mask.astype(bool))
 
 
+def block_shuffle(values, block_size, seed):
+    arr = np.array(values, dtype=np.float64).copy()
+    if arr.size == 0:
+        return arr
+    block_size = max(1, int(block_size))
+    blocks = [arr[i:i + block_size] for i in range(0, arr.size, block_size)]
+    rng = np.random.RandomState(seed)
+    rng.shuffle(blocks)
+    return np.concatenate(blocks, axis=0)
+
+
 def export_lambda_variants(data_dir, exports_dir, seed=2026):
     random.seed(seed)
     np.random.seed(seed)
@@ -52,6 +63,8 @@ def export_lambda_variants(data_dir, exports_dir, seed=2026):
                 "lambda_file_npy": base + ".npy",
                 "lambda_file_npz": base + ".npz",
                 "source_type": "step4_rescored",
+                "run_type": "main",
+                "control_family": "main",
                 "source_score_key": score_key,
                 "window": c["window"],
                 "k": c["k"],
@@ -66,20 +79,22 @@ def export_lambda_variants(data_dir, exports_dir, seed=2026):
     base_lambda = np.array(main_variants[base_key]["lambda_t"], dtype=np.float64)
     base_valid = np.array(main_variants[base_key]["valid_mask"], dtype=bool)
 
-    # shuffle: keep same valid positions and value distribution.
+    # shuffle(global): keep same valid positions and value distribution.
     shuffled = base_lambda.copy()
     valid_vals = shuffled[base_valid].copy()
     rng = np.random.RandomState(seed)
     rng.shuffle(valid_vals)
     shuffled[base_valid] = valid_vals
-    shuffle_base = os.path.join(configs_dir, "lambda_shuffle")
+    shuffle_base = os.path.join(configs_dir, "lambda_shuffle_global")
     save_lambda_variant(shuffle_base, shuffled, base_valid)
     rows.append(
         {
-            "lambda_strategy": "lambda_shuffle",
+            "lambda_strategy": "lambda_shuffle_global",
             "lambda_file_npy": shuffle_base + ".npy",
             "lambda_file_npz": shuffle_base + ".npz",
             "source_type": f"shuffle_from_{base_key}",
+            "run_type": "negative_control",
+            "control_family": "shuffle_global",
             "source_score_key": "",
             "window": "",
             "k": "",
@@ -87,9 +102,61 @@ def export_lambda_variants(data_dir, exports_dir, seed=2026):
             "seed": seed,
         }
     )
+    # Backward-compatible alias.
+    save_lambda_variant(os.path.join(configs_dir, "lambda_shuffle"), shuffled, base_valid)
+
+    # block shuffle family: preserve local continuity in blocks but break global alignment.
+    block_sizes = (50, 100, 200, 500)
+    for i, block_size in enumerate(block_sizes):
+        block_vals = block_shuffle(base_lambda[base_valid], block_size=block_size, seed=seed + 17 + i)
+        lambda_block = np.full_like(base_lambda, np.nan, dtype=np.float64)
+        lambda_block[base_valid] = block_vals
+        block_base = os.path.join(configs_dir, f"lambda_block_shuffle_{block_size}")
+        save_lambda_variant(block_base, lambda_block, base_valid)
+        rows.append(
+            {
+                "lambda_strategy": f"lambda_block_shuffle_{block_size}",
+                "lambda_file_npy": block_base + ".npy",
+                "lambda_file_npz": block_base + ".npz",
+                "source_type": f"block_shuffle_{block_size}_from_{base_key}",
+                "run_type": "negative_control",
+                "control_family": "block_shuffle",
+                "source_score_key": "",
+                "window": "",
+                "k": "",
+                "score": "",
+                "seed": seed,
+            }
+        )
+    # Backward-compatible alias.
+    save_lambda_variant(os.path.join(configs_dir, "lambda_block_shuffle"), lambda_block, base_valid)
+
+    # shifts: keep value distribution and local smoothness, but wrong temporal alignment.
+    for shift in (100, 300, 600, 1000):
+        vals = base_lambda[base_valid]
+        rolled = np.roll(vals, int(shift))
+        arr = np.full_like(base_lambda, np.nan, dtype=np.float64)
+        arr[base_valid] = rolled
+        out_base = os.path.join(configs_dir, f"lambda_shift_{shift}")
+        save_lambda_variant(out_base, arr, base_valid)
+        rows.append(
+            {
+                "lambda_strategy": f"lambda_shift_{shift}",
+                "lambda_file_npy": out_base + ".npy",
+                "lambda_file_npz": out_base + ".npz",
+                "source_type": f"shift_{shift}_from_{base_key}",
+                "run_type": "negative_control",
+                "control_family": "shift",
+                "source_score_key": "",
+                "window": "",
+                "k": "",
+                "score": "",
+                "seed": seed,
+            }
+        )
 
     # constants
-    for val, tag in [(0.5, "const_05"), (1.0, "const_10")]:
+    for val, tag in [(0.5, "constant_05"), (1.0, "constant_10")]:
         arr = np.full_like(base_lambda, np.nan, dtype=np.float64)
         arr[base_valid] = float(val)
         out_base = os.path.join(configs_dir, f"lambda_{tag}")
@@ -100,6 +167,8 @@ def export_lambda_variants(data_dir, exports_dir, seed=2026):
                 "lambda_file_npy": out_base + ".npy",
                 "lambda_file_npz": out_base + ".npz",
                 "source_type": "constant",
+                "run_type": "negative_control",
+                "control_family": "constant",
                 "source_score_key": "",
                 "window": "",
                 "k": "",
@@ -107,6 +176,8 @@ def export_lambda_variants(data_dir, exports_dir, seed=2026):
                 "seed": seed,
             }
         )
+    save_lambda_variant(os.path.join(configs_dir, "lambda_const_05"), np.where(base_valid, 0.5, np.nan), base_valid)
+    save_lambda_variant(os.path.join(configs_dir, "lambda_const_10"), np.where(base_valid, 1.0, np.nan), base_valid)
 
     meta_csv = os.path.join(configs_dir, "lambda_metadata.csv")
     headers = [
@@ -114,6 +185,8 @@ def export_lambda_variants(data_dir, exports_dir, seed=2026):
         "lambda_file_npy",
         "lambda_file_npz",
         "source_type",
+        "run_type",
+        "control_family",
         "source_score_key",
         "window",
         "k",

@@ -42,6 +42,7 @@ def write_phaseA_configs(configs_dir, lambda_files):
         "auto_swap_regimes": False,
         "subset_high_q": 0.9,
         "subset_low_q": 0.5,
+        "switch_window": 200,
     }
     truechange_cfg = dict(base_cfg)
     truechange_cfg["dist_mask_mode"] = "true_change_only"
@@ -54,27 +55,37 @@ def write_phaseA_configs(configs_dir, lambda_files):
     write_json(cfg_paths["cfg_phaseA_truechange_eval"], truechange_cfg)
 
     run_cfg_map = {
-        "score_equal": ("cfg_lambda_equal.json", lambda_files["score_equal"], "score_equal", "main"),
-        "score_gating": ("cfg_lambda_gating.json", lambda_files["score_gating"], "score_gating", "main"),
-        "score_regime": ("cfg_lambda_regime.json", lambda_files["score_regime"], "score_regime", "main"),
-        "lambda_shuffle": ("cfg_lambda_shuffle.json", lambda_files["lambda_shuffle"], "lambda_shuffle", "negative_control"),
-        "lambda_constant_05": ("cfg_lambda_const05.json", lambda_files["lambda_constant_05"], "lambda_constant_05", "negative_control"),
-        "lambda_constant_10": ("cfg_lambda_const10.json", lambda_files["lambda_constant_10"], "lambda_constant_10", "negative_control"),
+        "score_equal": ("cfg_lambda_equal.json", lambda_files["score_equal"], "score_equal", "main", "main"),
+        "score_gating": ("cfg_lambda_gating.json", lambda_files["score_gating"], "score_gating", "main", "main"),
+        "score_regime": ("cfg_lambda_regime.json", lambda_files["score_regime"], "score_regime", "main", "main"),
+        "lambda_shuffle_global": ("cfg_lambda_shuffle_global.json", lambda_files["lambda_shuffle_global"], "lambda_shuffle_global", "negative_control", "shuffle_global"),
+        "lambda_block_shuffle_50": ("cfg_lambda_block_shuffle_50.json", lambda_files["lambda_block_shuffle_50"], "lambda_block_shuffle_50", "negative_control", "block_shuffle"),
+        "lambda_block_shuffle_100": ("cfg_lambda_block_shuffle_100.json", lambda_files["lambda_block_shuffle_100"], "lambda_block_shuffle_100", "negative_control", "block_shuffle"),
+        "lambda_block_shuffle_200": ("cfg_lambda_block_shuffle_200.json", lambda_files["lambda_block_shuffle_200"], "lambda_block_shuffle_200", "negative_control", "block_shuffle"),
+        "lambda_block_shuffle_500": ("cfg_lambda_block_shuffle_500.json", lambda_files["lambda_block_shuffle_500"], "lambda_block_shuffle_500", "negative_control", "block_shuffle"),
+        "lambda_shift_100": ("cfg_lambda_shift_100.json", lambda_files["lambda_shift_100"], "lambda_shift_100", "negative_control", "shift"),
+        "lambda_shift_300": ("cfg_lambda_shift_300.json", lambda_files["lambda_shift_300"], "lambda_shift_300", "negative_control", "shift"),
+        "lambda_shift_600": ("cfg_lambda_shift_600.json", lambda_files["lambda_shift_600"], "lambda_shift_600", "negative_control", "shift"),
+        "lambda_shift_1000": ("cfg_lambda_shift_1000.json", lambda_files["lambda_shift_1000"], "lambda_shift_1000", "negative_control", "shift"),
+        "lambda_constant_05": ("cfg_lambda_constant_05.json", lambda_files["lambda_constant_05"], "lambda_constant_05", "negative_control", "constant"),
+        "lambda_constant_10": ("cfg_lambda_constant_10.json", lambda_files["lambda_constant_10"], "lambda_constant_10", "negative_control", "constant"),
     }
 
     run_defs = []
-    for run_name, (cfg_name, lambda_file, lambda_tag, run_type) in run_cfg_map.items():
+    for run_name, (cfg_name, lambda_file, lambda_tag, run_type, control_family) in run_cfg_map.items():
         cfg_path = os.path.join(configs_dir, cfg_name)
         cfg = dict(base_cfg)
         cfg["lambda_file"] = lambda_file
         cfg["lambda_tag"] = lambda_tag
         cfg["config_name"] = run_name
         cfg["run_type"] = run_type
+        cfg["control_family"] = control_family
         write_json(cfg_path, cfg)
         run_defs.append(
             {
                 "run_name": run_name,
                 "run_type": run_type,
+                "control_family": control_family,
                 "lambda_tag": lambda_tag,
                 "lambda_file": lambda_file,
                 "config_path": cfg_path,
@@ -125,9 +136,17 @@ def main():
         "score_equal": find_lambda_file(configs_dir, "lambda_equal"),
         "score_gating": find_lambda_file(configs_dir, "lambda_gating"),
         "score_regime": find_lambda_file(configs_dir, "lambda_regime"),
-        "lambda_shuffle": find_lambda_file(configs_dir, "lambda_shuffle"),
-        "lambda_constant_05": find_lambda_file(configs_dir, "lambda_const_05"),
-        "lambda_constant_10": find_lambda_file(configs_dir, "lambda_const_10"),
+        "lambda_shuffle_global": find_lambda_file(configs_dir, "lambda_shuffle_global"),
+        "lambda_block_shuffle_50": find_lambda_file(configs_dir, "lambda_block_shuffle_50"),
+        "lambda_block_shuffle_100": find_lambda_file(configs_dir, "lambda_block_shuffle_100"),
+        "lambda_block_shuffle_200": find_lambda_file(configs_dir, "lambda_block_shuffle_200"),
+        "lambda_block_shuffle_500": find_lambda_file(configs_dir, "lambda_block_shuffle_500"),
+        "lambda_shift_100": find_lambda_file(configs_dir, "lambda_shift_100"),
+        "lambda_shift_300": find_lambda_file(configs_dir, "lambda_shift_300"),
+        "lambda_shift_600": find_lambda_file(configs_dir, "lambda_shift_600"),
+        "lambda_shift_1000": find_lambda_file(configs_dir, "lambda_shift_1000"),
+        "lambda_constant_05": find_lambda_file(configs_dir, "lambda_constant_05"),
+        "lambda_constant_10": find_lambda_file(configs_dir, "lambda_constant_10"),
     }
 
     run_defs, cfg_paths = write_phaseA_configs(configs_dir, lambda_files)
@@ -145,6 +164,7 @@ def main():
             "lambda_tag": run_def["lambda_tag"],
             "lambda_file": run_def["lambda_file"],
             "run_type": run_def["run_type"],
+            "control_family": run_def["control_family"],
             "seed": int(args.seed),
             "config_path": run_def["config_path"],
         }
@@ -165,6 +185,7 @@ def main():
             {
                 "run_name": run_name,
                 "run_type": run_def["run_type"],
+                "control_family": run_def["control_family"],
                 "status": status,
                 "run_dir": run_dir,
                 "error": err_msg,

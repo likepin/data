@@ -1,8 +1,9 @@
 {
   "lambda_strategy": "score_regime",
   "lambda_tag": "score_regime",
-  "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_regime.npz",
+  "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_regime.npz",
   "run_type": "main",
+  "control_family": "main",
   "seed": 2026,
-  "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_regime.json"
+  "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_regime.json"
 }

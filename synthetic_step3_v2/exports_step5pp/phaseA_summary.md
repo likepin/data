@@ -1,14 +1,17 @@
-## Phase A Summary
+## Phase A Summary (Switch-aware)
 
-- 最佳门控策略（按 align_overall）: `score_equal`
-- 最佳门控策略（按 retained_gap）: `score_equal`
-- 主策略 core checks 通过率: `1.000`
-- 负对照 align_overall 平均下降: `-0.074463`
+- Best strategy by directional_align_overall: `score_gating`
+- Best strategy by auc_switch_rel: `score_gating`
+- Best strategy by retained_gap_switch: `score_equal`
+- Main runs pass rate (legacy core checks): `1.000`
+- Main runs pass rate (v2 core checks): `0.000`
+- Main runs pass rate (v3 core checks): `0.000`
+- Negative-control drop (directional_align_overall): `0.111090`
 
-### 核心检查
-- gate_direction: PASS
-- high_closer_A0: PASS
-- low_closer_A1: PASS
+### V2 Check Summary
+- directional_align_pass: FAIL
+- switch_band_pass: FAIL
+- pass_core_checks_v2: FAIL
 
-### 说明
-- 若主策略显著优于 shuffle/constant，说明 λ 携带结构相关时序信息。
+### Notes
+- v2 ranking uses switch-aware metrics to better separate true temporal alignment from shuffle/constant/shift controls.

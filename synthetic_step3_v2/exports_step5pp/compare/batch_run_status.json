@@ -2,43 +2,113 @@
   {
     "run_name": "score_equal",
     "run_type": "main",
+    "control_family": "main",
     "status": "ok",
-    "run_dir": "synthetic_step3_v2\\exports_step5pp\\runs\\score_equal",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\score_equal",
     "error": ""
   },
   {
     "run_name": "score_gating",
     "run_type": "main",
+    "control_family": "main",
     "status": "ok",
-    "run_dir": "synthetic_step3_v2\\exports_step5pp\\runs\\score_gating",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\score_gating",
     "error": ""
   },
   {
     "run_name": "score_regime",
     "run_type": "main",
+    "control_family": "main",
     "status": "ok",
-    "run_dir": "synthetic_step3_v2\\exports_step5pp\\runs\\score_regime",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\score_regime",
     "error": ""
   },
   {
-    "run_name": "lambda_shuffle",
+    "run_name": "lambda_shuffle_global",
     "run_type": "negative_control",
+    "control_family": "shuffle_global",
     "status": "ok",
-    "run_dir": "synthetic_step3_v2\\exports_step5pp\\runs\\lambda_shuffle",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shuffle_global",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_50",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_50",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_100",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_100",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_200",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_200",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_500",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_500",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_100",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_100",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_300",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_300",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_600",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_600",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_1000",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_1000",
     "error": ""
   },
   {
     "run_name": "lambda_constant_05",
     "run_type": "negative_control",
+    "control_family": "constant",
     "status": "ok",
-    "run_dir": "synthetic_step3_v2\\exports_step5pp\\runs\\lambda_constant_05",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_constant_05",
     "error": ""
   },
   {
     "run_name": "lambda_constant_10",
     "run_type": "negative_control",
+    "control_family": "constant",
     "status": "ok",
-    "run_dir": "synthetic_step3_v2\\exports_step5pp\\runs\\lambda_constant_10",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_constant_10",
     "error": ""
   }
 ]
