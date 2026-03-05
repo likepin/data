@@ -3,6 +3,7 @@
     "run_name": "score_equal",
     "run_type": "main",
     "control_family": "main",
+    "control_seed": 2026,
     "status": "ok",
     "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\score_equal",
     "error": ""
@@ -11,6 +12,7 @@
     "run_name": "score_gating",
     "run_type": "main",
     "control_family": "main",
+    "control_seed": 2026,
     "status": "ok",
     "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\score_gating",
     "error": ""
@@ -19,96 +21,504 @@
     "run_name": "score_regime",
     "run_type": "main",
     "control_family": "main",
+    "control_seed": 2026,
     "status": "ok",
     "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\score_regime",
     "error": ""
   },
   {
-    "run_name": "lambda_shuffle_global",
+    "run_name": "lambda_shuffle_global_s2026",
     "run_type": "negative_control",
     "control_family": "shuffle_global",
+    "control_seed": 2026,
     "status": "ok",
-    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shuffle_global",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shuffle_global_s2026",
     "error": ""
   },
   {
-    "run_name": "lambda_block_shuffle_50",
+    "run_name": "lambda_block_shuffle_50_s2026",
     "run_type": "negative_control",
     "control_family": "block_shuffle",
+    "control_seed": 2026,
     "status": "ok",
-    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_50",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_50_s2026",
     "error": ""
   },
   {
-    "run_name": "lambda_block_shuffle_100",
+    "run_name": "lambda_block_shuffle_100_s2026",
     "run_type": "negative_control",
     "control_family": "block_shuffle",
+    "control_seed": 2026,
     "status": "ok",
-    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_100",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_100_s2026",
     "error": ""
   },
   {
-    "run_name": "lambda_block_shuffle_200",
+    "run_name": "lambda_block_shuffle_200_s2026",
     "run_type": "negative_control",
     "control_family": "block_shuffle",
+    "control_seed": 2026,
     "status": "ok",
-    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_200",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_200_s2026",
     "error": ""
   },
   {
-    "run_name": "lambda_block_shuffle_500",
+    "run_name": "lambda_block_shuffle_500_s2026",
     "run_type": "negative_control",
     "control_family": "block_shuffle",
+    "control_seed": 2026,
     "status": "ok",
-    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_500",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_500_s2026",
     "error": ""
   },
   {
-    "run_name": "lambda_shift_100",
+    "run_name": "lambda_shift_100_s2026",
     "run_type": "negative_control",
     "control_family": "shift",
+    "control_seed": 2026,
     "status": "ok",
-    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_100",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_100_s2026",
     "error": ""
   },
   {
-    "run_name": "lambda_shift_300",
+    "run_name": "lambda_shift_300_s2026",
     "run_type": "negative_control",
     "control_family": "shift",
+    "control_seed": 2026,
     "status": "ok",
-    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_300",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_300_s2026",
     "error": ""
   },
   {
-    "run_name": "lambda_shift_600",
+    "run_name": "lambda_shift_600_s2026",
     "run_type": "negative_control",
     "control_family": "shift",
+    "control_seed": 2026,
     "status": "ok",
-    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_600",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_600_s2026",
     "error": ""
   },
   {
-    "run_name": "lambda_shift_1000",
+    "run_name": "lambda_shift_1000_s2026",
     "run_type": "negative_control",
     "control_family": "shift",
+    "control_seed": 2026,
     "status": "ok",
-    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_1000",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_1000_s2026",
     "error": ""
   },
   {
-    "run_name": "lambda_constant_05",
+    "run_name": "lambda_constant_05_s2026",
     "run_type": "negative_control",
     "control_family": "constant",
+    "control_seed": 2026,
     "status": "ok",
-    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_constant_05",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_constant_05_s2026",
     "error": ""
   },
   {
-    "run_name": "lambda_constant_10",
+    "run_name": "lambda_constant_10_s2026",
     "run_type": "negative_control",
     "control_family": "constant",
+    "control_seed": 2026,
     "status": "ok",
-    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_constant_10",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_constant_10_s2026",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shuffle_global_s2027",
+    "run_type": "negative_control",
+    "control_family": "shuffle_global",
+    "control_seed": 2027,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shuffle_global_s2027",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_50_s2027",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "control_seed": 2027,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_50_s2027",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_100_s2027",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "control_seed": 2027,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_100_s2027",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_200_s2027",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "control_seed": 2027,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_200_s2027",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_500_s2027",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "control_seed": 2027,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_500_s2027",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_100_s2027",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "control_seed": 2027,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_100_s2027",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_300_s2027",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "control_seed": 2027,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_300_s2027",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_600_s2027",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "control_seed": 2027,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_600_s2027",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_1000_s2027",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "control_seed": 2027,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_1000_s2027",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_constant_05_s2027",
+    "run_type": "negative_control",
+    "control_family": "constant",
+    "control_seed": 2027,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_constant_05_s2027",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_constant_10_s2027",
+    "run_type": "negative_control",
+    "control_family": "constant",
+    "control_seed": 2027,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_constant_10_s2027",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shuffle_global_s2028",
+    "run_type": "negative_control",
+    "control_family": "shuffle_global",
+    "control_seed": 2028,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shuffle_global_s2028",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_50_s2028",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "control_seed": 2028,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_50_s2028",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_100_s2028",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "control_seed": 2028,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_100_s2028",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_200_s2028",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "control_seed": 2028,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_200_s2028",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_500_s2028",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "control_seed": 2028,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_500_s2028",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_100_s2028",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "control_seed": 2028,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_100_s2028",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_300_s2028",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "control_seed": 2028,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_300_s2028",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_600_s2028",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "control_seed": 2028,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_600_s2028",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_1000_s2028",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "control_seed": 2028,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_1000_s2028",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_constant_05_s2028",
+    "run_type": "negative_control",
+    "control_family": "constant",
+    "control_seed": 2028,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_constant_05_s2028",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_constant_10_s2028",
+    "run_type": "negative_control",
+    "control_family": "constant",
+    "control_seed": 2028,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_constant_10_s2028",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shuffle_global_s2029",
+    "run_type": "negative_control",
+    "control_family": "shuffle_global",
+    "control_seed": 2029,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shuffle_global_s2029",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_50_s2029",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "control_seed": 2029,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_50_s2029",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_100_s2029",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "control_seed": 2029,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_100_s2029",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_200_s2029",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "control_seed": 2029,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_200_s2029",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_500_s2029",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "control_seed": 2029,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_500_s2029",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_100_s2029",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "control_seed": 2029,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_100_s2029",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_300_s2029",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "control_seed": 2029,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_300_s2029",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_600_s2029",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "control_seed": 2029,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_600_s2029",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_1000_s2029",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "control_seed": 2029,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_1000_s2029",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_constant_05_s2029",
+    "run_type": "negative_control",
+    "control_family": "constant",
+    "control_seed": 2029,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_constant_05_s2029",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_constant_10_s2029",
+    "run_type": "negative_control",
+    "control_family": "constant",
+    "control_seed": 2029,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_constant_10_s2029",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shuffle_global_s2030",
+    "run_type": "negative_control",
+    "control_family": "shuffle_global",
+    "control_seed": 2030,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shuffle_global_s2030",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_50_s2030",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "control_seed": 2030,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_50_s2030",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_100_s2030",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "control_seed": 2030,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_100_s2030",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_200_s2030",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "control_seed": 2030,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_200_s2030",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_block_shuffle_500_s2030",
+    "run_type": "negative_control",
+    "control_family": "block_shuffle",
+    "control_seed": 2030,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_block_shuffle_500_s2030",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_100_s2030",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "control_seed": 2030,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_100_s2030",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_300_s2030",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "control_seed": 2030,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_300_s2030",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_600_s2030",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "control_seed": 2030,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_600_s2030",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_shift_1000_s2030",
+    "run_type": "negative_control",
+    "control_family": "shift",
+    "control_seed": 2030,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_shift_1000_s2030",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_constant_05_s2030",
+    "run_type": "negative_control",
+    "control_family": "constant",
+    "control_seed": 2030,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_constant_05_s2030",
+    "error": ""
+  },
+  {
+    "run_name": "lambda_constant_10_s2030",
+    "run_type": "negative_control",
+    "control_family": "constant",
+    "control_seed": 2030,
+    "status": "ok",
+    "run_dir": "synthetic_step3_v2/exports_step5pp\\runs\\lambda_constant_10_s2030",
     "error": ""
   }
 ]

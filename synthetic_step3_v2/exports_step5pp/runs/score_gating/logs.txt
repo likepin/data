@@ -7,36 +7,41 @@ delta_mask_mode=union_base_predchange
 dist_mask_mode=true_change_only
 regime_support_mode=union_base_predchange
 eff_anchor=A0
-regime_ref_source=estimated
-regime_swapped=False
-swap_reason=pre_rel_mean: pre_rel_mean=0.004073, post_rel_mean=0.017721, pre_count=3551, post_count=2400
+regime_ref_source=ground_truth
+regime_swapped=True
+swap_reason=pre_rel_mean: pre_rel_mean=0.282294, post_rel_mean=0.299729, pre_count=3551, post_count=2400
 topk_mode=match_true
 k_source=K_true_from_DeltaA
-lambda_stats_pre={'mean': 0.45591652554299444, 'min': 0.0, 'max': 1.0}
-lambda_stats_post={'mean': 0.3081962099188479, 'min': 0.0, 'max': 1.0}
-gate_stats_pre={'mean': 0.5440834744570056, 'min': 0.0, 'max': 1.0}
-gate_stats_post={'mean': 0.6918037900811521, 'min': 0.0, 'max': 1.0}
+lambda_stats_pre={'mean': 0.35157062463163496, 'min': 0.0, 'max': 1.0}
+lambda_stats_post={'mean': 0.34240335382642323, 'min': 0.0, 'max': 1.0}
+gate_stats_pre={'mean': 0.648429375368365, 'min': 0.0, 'max': 1.0}
+gate_stats_post={'mean': 0.6575966461735767, 'min': 0.0, 'max': 1.0}
 check_overall_pass=False
 pass_core_checks_v2=False
+pass_core_checks_v3_abs=False
 pass_core_checks_v3=False
 switch_window=200
-config: delta_mask_mode=union_base_predchange, dist_mask_mode=true_change_only, auto_swap_regimes=False
+config: delta_mask_mode=union_base_predchange, dist_mask_mode=true_change_only, auto_swap_regimes=True
 A_base shape=(2, 10, 10) (sum over lags)
-A0/A1 loaded from val_matrix
+A_base shape=(2, 10, 10) (sum over lags)
+A0/A1 loaded from GT (A_base + DeltaA)
 lambda loaded from --lambda_file: synthetic_step3_v2/exports_step5pp\configs\lambda_gating.npz
-lambda stats: min=0.0000 max=1.0000 mean=0.3963
-[13:18:34] DeltaA shape=(2, 10, 10)
-[13:18:34] K_true_from_DeltaA=6
-[13:18:34] violations=0
-WARN: auto_swap_regimes=False, will only diagnose without swapping.
-WARN: A0/A1 looks swapped but auto_swap_regimes=False. reason=pre_rel_mean: pre_rel_mean=0.004073, post_rel_mean=0.017721, pre_count=3551, post_count=2400
+lambda stats: min=0.0000 max=1.0000 mean=0.3479
+[21:05:01] DeltaA shape=(2, 10, 10)
+[21:05:01] K_true_from_DeltaA=6
+[21:05:01] violations=0
+A0/A1 auto-swapped. reason=pre_rel_mean: pre_rel_mean=0.282294, post_rel_mean=0.299729, pre_count=3551, post_count=2400
 A_base nnz=30
-A0 stats: min=0.0022 max=0.1316 mean=0.0151 nnz=100
-A1 stats: min=0.0014 max=0.0994 mean=0.0130 nnz=100
-regime_swapped=False
-swap_reason=pre_rel_mean: pre_rel_mean=0.004073, post_rel_mean=0.017721, pre_count=3551, post_count=2400
+A0 stats: min=-1.4634 max=1.1778 mean=0.0229 nnz=30
+A1 stats: min=-0.5853 max=0.5445 mean=0.0572 nnz=30
+regime_swapped=True
+swap_reason=pre_rel_mean: pre_rel_mean=0.282294, post_rel_mean=0.299729, pre_count=3551, post_count=2400
 delta_mask_nnz=20 dist_mask_nnz=6 tag=default
 A0_eff_nnz=30 A1_eff_nnz=30 tag=default
 WARN: matplotlib not available; skipping plots.
 delta_mask_nnz=20 dist_mask_nnz=6 tag=_diag
 A0_eff_nnz=30 A1_eff_nnz=30 tag=_diag
+delta_mask_nnz=20 dist_mask_nnz=6 tag=_sw100
+A0_eff_nnz=30 A1_eff_nnz=30 tag=_sw100
+delta_mask_nnz=20 dist_mask_nnz=6 tag=_sw400
+A0_eff_nnz=30 A1_eff_nnz=30 tag=_sw400

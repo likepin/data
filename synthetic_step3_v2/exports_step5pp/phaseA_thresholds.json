@@ -1,0 +1,296 @@
+{
+  "control_pool": "metric_mapped_family",
+  "rel_rule_medium": {
+    "higher": "value >= max(mean + 0.5*std, q75)",
+    "lower": "value <= min(mean - 0.5*std, q25)"
+  },
+  "metrics": {
+    "directional_align_overall": {
+      "n": 20,
+      "mean": 0.40220131070408327,
+      "std": 0.019162892074519888,
+      "q25": 0.39354730297429,
+      "q75": 0.4178289363132247,
+      "p95": 0.41908922870105864,
+      "better": "higher",
+      "control_family": "block_shuffle",
+      "control_family_used": "block_shuffle",
+      "fallback_from_family": null,
+      "thr_medium": 0.4178289363132247
+    },
+    "switch_band_correct_rate": {
+      "n": 20,
+      "mean": 0.388125,
+      "std": 0.15444836313473834,
+      "q25": 0.294375,
+      "q75": 0.4,
+      "p95": 0.655,
+      "better": "higher",
+      "control_family": "block_shuffle",
+      "control_family_used": "block_shuffle",
+      "fallback_from_family": null,
+      "thr_medium": 0.46534918156736915
+    },
+    "switch_margin_gap_signed": {
+      "n": 20,
+      "mean": -0.3913216646760702,
+      "std": 0.21683097606493196,
+      "q25": -0.4882574528455734,
+      "q75": -0.27141145430505276,
+      "p95": -0.11256640404462814,
+      "better": "higher",
+      "control_family": "block_shuffle",
+      "control_family_used": "block_shuffle",
+      "fallback_from_family": null,
+      "thr_medium": -0.27141145430505276
+    },
+    "peak_delay_min": {
+      "n": 20,
+      "mean": 114.0,
+      "std": 60.67124524847005,
+      "q25": 88.5,
+      "q75": 148.5,
+      "p95": 189.0,
+      "better": "lower",
+      "control_family": "shift",
+      "control_family_used": "shift",
+      "fallback_from_family": null,
+      "thr_medium": 83.66437737576497
+    },
+    "retained_gap_switch_signed": {
+      "n": 20,
+      "mean": 0.18491972237825394,
+      "std": 0.30571568550060196,
+      "q25": 0.1427202746272087,
+      "q75": 0.3630334585905075,
+      "p95": 0.43586137890815735,
+      "better": "lower",
+      "control_family": "block_shuffle",
+      "control_family_used": "block_shuffle",
+      "fallback_from_family": null,
+      "thr_medium": 0.032061879627952955
+    }
+  },
+  "per_family": {
+    "block_shuffle": {
+      "n": 20,
+      "metrics": {
+        "directional_align_overall": {
+          "n": 20,
+          "mean": 0.40220131070408327,
+          "std": 0.019162892074519888,
+          "q25": 0.39354730297429,
+          "q75": 0.4178289363132247,
+          "p95": 0.41908922870105864,
+          "better": "higher",
+          "thr_medium": 0.4178289363132247
+        },
+        "switch_band_correct_rate": {
+          "n": 20,
+          "mean": 0.388125,
+          "std": 0.15444836313473834,
+          "q25": 0.294375,
+          "q75": 0.4,
+          "p95": 0.655,
+          "better": "higher",
+          "thr_medium": 0.46534918156736915
+        },
+        "switch_margin_gap_signed": {
+          "n": 20,
+          "mean": -0.3913216646760702,
+          "std": 0.21683097606493196,
+          "q25": -0.4882574528455734,
+          "q75": -0.27141145430505276,
+          "p95": -0.11256640404462814,
+          "better": "higher",
+          "thr_medium": -0.27141145430505276
+        },
+        "peak_delay_min": {
+          "n": 20,
+          "mean": 84.5,
+          "std": 54.39898896119302,
+          "q25": 64.5,
+          "q75": 113.5,
+          "p95": 151.0,
+          "better": "lower",
+          "thr_medium": 57.30050551940349
+        },
+        "retained_gap_switch_signed": {
+          "n": 20,
+          "mean": 0.18491972237825394,
+          "std": 0.30571568550060196,
+          "q25": 0.1427202746272087,
+          "q75": 0.3630334585905075,
+          "p95": 0.43586137890815735,
+          "better": "lower",
+          "thr_medium": 0.032061879627952955
+        }
+      }
+    },
+    "constant": {
+      "n": 10,
+      "metrics": {
+        "directional_align_overall": {
+          "n": 10,
+          "mean": 0.2983532179465636,
+          "std": 0.2983532179465636,
+          "q25": 0.0,
+          "q75": 0.5967064358931272,
+          "p95": 0.5967064358931272,
+          "better": "higher",
+          "thr_medium": 0.5967064358931272
+        },
+        "switch_band_correct_rate": {
+          "n": 10,
+          "mean": 0.25,
+          "std": 0.25,
+          "q25": 0.0,
+          "q75": 0.5,
+          "p95": 0.5,
+          "better": "higher",
+          "thr_medium": 0.5
+        },
+        "switch_margin_gap_signed": {
+          "n": 10,
+          "mean": -0.4754679799079895,
+          "std": 0.4754679799079895,
+          "q25": -0.950935959815979,
+          "q75": 0.0,
+          "p95": 0.0,
+          "better": "higher",
+          "thr_medium": 0.0
+        },
+        "peak_delay_min": {
+          "n": 10,
+          "mean": 200.0,
+          "std": 0.0,
+          "q25": 200.0,
+          "q75": 200.0,
+          "p95": 200.0,
+          "better": "lower",
+          "thr_medium": 200.0
+        },
+        "retained_gap_switch_signed": {
+          "n": 10,
+          "mean": 0.0,
+          "std": 0.0,
+          "q25": 0.0,
+          "q75": 0.0,
+          "p95": 0.0,
+          "better": "lower",
+          "thr_medium": 0.0
+        }
+      }
+    },
+    "shift": {
+      "n": 20,
+      "metrics": {
+        "directional_align_overall": {
+          "n": 20,
+          "mean": 0.4458074273231388,
+          "std": 0.02834085961248297,
+          "q25": 0.4366493026382121,
+          "q75": 0.4662241640060494,
+          "p95": 0.4705091581246849,
+          "better": "higher",
+          "thr_medium": 0.4662241640060494
+        },
+        "switch_band_correct_rate": {
+          "n": 20,
+          "mean": 0.5806249999999998,
+          "std": 0.2253010139235951,
+          "q25": 0.41000000000000003,
+          "q75": 0.764375,
+          "p95": 0.8525,
+          "better": "higher",
+          "thr_medium": 0.764375
+        },
+        "switch_margin_gap_signed": {
+          "n": 20,
+          "mean": -0.08525063842535019,
+          "std": 0.44045248217911703,
+          "q25": -0.36736150085926056,
+          "q75": 0.2751984968781471,
+          "p95": 0.40025365352630615,
+          "better": "higher",
+          "thr_medium": 0.2751984968781471
+        },
+        "peak_delay_min": {
+          "n": 20,
+          "mean": 114.0,
+          "std": 60.67124524847005,
+          "q25": 88.5,
+          "q75": 148.5,
+          "p95": 189.0,
+          "better": "lower",
+          "thr_medium": 83.66437737576497
+        },
+        "retained_gap_switch_signed": {
+          "n": 20,
+          "mean": -0.15390891721472144,
+          "std": 0.3697105634819948,
+          "q25": -0.35993040492758155,
+          "q75": 0.07061107456684113,
+          "p95": 0.336414635181427,
+          "better": "lower",
+          "thr_medium": -0.35993040492758155
+        }
+      }
+    },
+    "shuffle_global": {
+      "n": 5,
+      "metrics": {
+        "directional_align_overall": {
+          "n": 5,
+          "mean": 0.45807427323138966,
+          "std": 0.0,
+          "q25": 0.45807427323138966,
+          "q75": 0.45807427323138966,
+          "p95": 0.45807427323138966,
+          "better": "higher",
+          "thr_medium": 0.45807427323138966
+        },
+        "switch_band_correct_rate": {
+          "n": 5,
+          "mean": 0.49749999999999994,
+          "std": 5.551115123125783e-17,
+          "q25": 0.4975,
+          "q75": 0.4975,
+          "p95": 0.4975,
+          "better": "higher",
+          "thr_medium": 0.4975
+        },
+        "switch_margin_gap_signed": {
+          "n": 5,
+          "mean": -0.23997461795806885,
+          "std": 0.0,
+          "q25": -0.23997461795806885,
+          "q75": -0.23997461795806885,
+          "p95": -0.23997461795806885,
+          "better": "higher",
+          "thr_medium": -0.23997461795806885
+        },
+        "peak_delay_min": {
+          "n": 5,
+          "mean": 183.0,
+          "std": 0.0,
+          "q25": 183.0,
+          "q75": 183.0,
+          "p95": 183.0,
+          "better": "lower",
+          "thr_medium": 183.0
+        },
+        "retained_gap_switch_signed": {
+          "n": 5,
+          "mean": 0.003663778305053711,
+          "std": 0.0,
+          "q25": 0.003663778305053711,
+          "q75": 0.003663778305053711,
+          "p95": 0.003663778305053711,
+          "better": "lower",
+          "thr_medium": 0.003663778305053711
+        }
+      }
+    }
+  }
+}

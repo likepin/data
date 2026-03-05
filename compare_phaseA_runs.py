@@ -3,6 +3,7 @@ import csv
 import json
 import argparse
 import shutil
+import re
 
 import numpy as np
 
@@ -89,6 +90,16 @@ def infer_control_family(run_name):
     return "main"
 
 
+def infer_control_seed(run_name):
+    m = re.search(r"_s(\d+)$", str(run_name))
+    if not m:
+        return None
+    try:
+        return int(m.group(1))
+    except Exception:
+        return None
+
+
 def pick_metric(sanity, checks, key, default=np.nan):
     if key in sanity and sanity.get(key) is not None:
         return sanity.get(key)
@@ -105,6 +116,105 @@ def normalize_cell(v):
     if isinstance(v, (float, np.floating)) and np.isnan(v):
         return "NaN"
     return v
+
+
+def finite_list(values):
+    out = []
+    for v in values:
+        fv = to_float(v)
+        if not np.isnan(fv):
+            out.append(fv)
+    return out
+
+
+def row_peak_delay_min(row):
+    vals = finite_list([
+        row.get("peak_delay_lambda"),
+        row.get("peak_delay_gate"),
+        row.get("peak_delay_rel"),
+        row.get("peak_delay_min"),
+    ])
+    return float(min(vals)) if vals else np.nan
+
+
+def ensure_signed_abs_fields(row):
+    sp = to_float(row.get("switch_margin_pre_signed", row.get("switch_margin_pre")))
+    so = to_float(row.get("switch_margin_post_signed", row.get("switch_margin_post")))
+    rg = to_float(row.get("retained_gap_switch_signed", row.get("retained_gap_switch")))
+    if not np.isnan(sp) and not np.isnan(so):
+        sg = float(min(sp, so))
+    else:
+        sg = np.nan
+    row["switch_margin_pre_signed"] = sp
+    row["switch_margin_post_signed"] = so
+    row["switch_margin_pre_abs"] = float(abs(sp)) if not np.isnan(sp) else np.nan
+    row["switch_margin_post_abs"] = float(abs(so)) if not np.isnan(so) else np.nan
+    row["switch_margin_gap_signed"] = sg
+    row["switch_margin_gap_abs"] = float(abs(sg)) if not np.isnan(sg) else np.nan
+    row["retained_gap_switch_signed"] = rg
+    row["retained_gap_switch_abs"] = float(abs(rg)) if not np.isnan(rg) else np.nan
+    row["peak_delay_min"] = row_peak_delay_min(row)
+    return row
+
+
+def metric_value_oriented(row, spec):
+    metric = spec["name"]
+    better = spec["better"]
+    v = to_float(row.get(metric))
+    if np.isnan(v):
+        return np.nan
+    if better == "lower":
+        return -v
+    return v
+
+
+def load_window_checks(run_dir, base_window):
+    out = {}
+    base = read_json_or_none(os.path.join(run_dir, "checks.json")) or {}
+    bw = to_float(base.get("switch_window", base_window))
+    if np.isnan(bw):
+        bw = float(base_window)
+    out[int(bw)] = base
+    for w in (100, 200, 400):
+        p = os.path.join(run_dir, f"checks_sw{w}.json")
+        js = read_json_or_none(p)
+        if js:
+            out[int(w)] = js
+    return out
+
+
+METRIC_SPECS = [
+    {
+        "name": "directional_align_overall",
+        "better": "higher",
+        "abs_thr_default": 0.58,
+        "control_family_for_rel": "block_shuffle",
+    },
+    {
+        "name": "switch_band_correct_rate",
+        "better": "higher",
+        "abs_thr_default": 0.60,
+        "control_family_for_rel": "block_shuffle",
+    },
+    {
+        "name": "switch_margin_gap_signed",
+        "better": "higher",
+        "abs_thr_default": 0.0,
+        "control_family_for_rel": "block_shuffle",
+    },
+    {
+        "name": "peak_delay_min",
+        "better": "lower",
+        "abs_thr_default": np.nan,  # threshold uses switch_window
+        "control_family_for_rel": "shift",
+    },
+    {
+        "name": "retained_gap_switch_signed",
+        "better": "lower",
+        "abs_thr_default": -0.10,
+        "control_family_for_rel": "block_shuffle",
+    },
+]
 
 
 def main():
@@ -164,6 +274,9 @@ def main():
         lambda_strategy = sanity.get("config_name") or config_used.get("lambda_tag") or run_name
         run_type = config_used.get("run_type") or infer_run_type(run_name)
         control_family = config_used.get("control_family") or infer_control_family(run_name)
+        control_seed = config_used.get("control_seed")
+        if control_seed in ("", None):
+            control_seed = infer_control_seed(run_name)
 
         gate_direction = to_bool(checks.get("gate_direction", sanity.get("gate_direction")))
         high_closer = to_bool(checks.get("high_closer_A0", sanity.get("high_closer_A0")))
@@ -175,18 +288,21 @@ def main():
         pass_core_v3 = to_bool(checks.get("pass_core_checks_v3", sanity.get("pass_core_checks_v3")))
         if pass_core_v3 is None:
             pass_core_v3 = False
+        pass_core_v3_abs = to_bool(checks.get("pass_core_checks_v3_abs", sanity.get("pass_core_checks_v3_abs")))
+        if pass_core_v3_abs is None:
+            pass_core_v3_abs = False
         switch_band_pass = to_bool(pick_metric(sanity, checks, "switch_band_pass"))
         directional_align_pass = to_bool(pick_metric(sanity, checks, "directional_align_pass"))
         switch_margin_pass = to_bool(pick_metric(sanity, checks, "switch_margin_pass"))
         peak_delay_pass = to_bool(pick_metric(sanity, checks, "peak_delay_pass"))
         retained_gap_switch_pass = to_bool(pick_metric(sanity, checks, "retained_gap_switch_pass"))
 
-        config_rows.append(
-            {
+        cfg_row = {
                 "config_name": run_name,
                 "lambda_strategy": lambda_strategy,
                 "run_type": run_type,
                 "control_family": control_family,
+                "control_seed": control_seed,
                 "delta_mask_mode": sanity.get("delta_mask_mode", config_used.get("delta_mask_mode")),
                 "dist_mask_mode": sanity.get("dist_mask_mode", config_used.get("dist_mask_mode")),
                 "delta_mask_nnz": sanity.get("delta_mask_nnz", config_used.get("delta_mask_nnz")),
@@ -229,15 +345,20 @@ def main():
                 "corr_time_retained_switch": pick_metric(sanity, checks, "corr_time_retained_switch"),
                 "retained_gap": to_float(sanity.get("retained_gap", retained_gap)),
                 "retained_gap_switch": retained_gap_switch,
+                "regime_swapped": sanity.get("regime_swapped", config_used.get("regime_swapped")),
+                "swap_reason": sanity.get("swap_reason", config_used.get("swap_reason")),
                 "switch_band_pass": bool(switch_band_pass),
                 "directional_align_pass": bool(directional_align_pass),
                 "switch_margin_pass": bool(switch_margin_pass),
                 "peak_delay_pass": bool(peak_delay_pass),
                 "retained_gap_switch_pass": bool(retained_gap_switch_pass),
                 "pass_core_checks_v2": pass_core_v2,
+                "pass_core_checks_v3_abs": pass_core_v3_abs,
                 "pass_core_checks_v3": pass_core_v3,
+                "_run_dir": run_dir,
             }
-        )
+        ensure_signed_abs_fields(cfg_row)
+        config_rows.append(cfg_row)
 
         for r in subset_rows:
             subset_rows_out.append(
@@ -256,14 +377,17 @@ def main():
                 }
             )
 
-        check_rows.append(
-            {
+        check_row = {
                 "lambda_strategy": lambda_strategy,
+                "config_name": run_name,
                 "run_type": run_type,
                 "control_family": control_family,
+                "control_seed": control_seed,
                 "gate_direction": bool(gate_direction),
                 "high_closer_A0": bool(high_closer),
                 "low_closer_A1": bool(low_closer),
+                "regime_swapped": sanity.get("regime_swapped", config_used.get("regime_swapped")),
+                "swap_reason": sanity.get("swap_reason", config_used.get("swap_reason")),
                 "align_overall": sanity.get("align_overall", sanity.get("overall_align")),
                 "margin_pre": sanity.get("margin_pre", sanity.get("mean_margin_pre")),
                 "margin_post": sanity.get("margin_post", sanity.get("mean_margin_post")),
@@ -292,6 +416,10 @@ def main():
                 "corr_time_gate_switch": pick_metric(sanity, checks, "corr_time_gate_switch"),
                 "corr_time_retained_switch": pick_metric(sanity, checks, "corr_time_retained_switch"),
                 "retained_gap_switch": retained_gap_switch,
+                "switch_margin_pre_signed": pick_metric(sanity, checks, "switch_margin_pre_signed", pick_metric(sanity, checks, "switch_margin_pre")),
+                "switch_margin_post_signed": pick_metric(sanity, checks, "switch_margin_post_signed", pick_metric(sanity, checks, "switch_margin_post")),
+                "retained_gap_switch_signed": pick_metric(sanity, checks, "retained_gap_switch_signed", retained_gap_switch),
+                "peak_delay_min": pick_metric(sanity, checks, "peak_delay_min"),
                 "switch_band_pass": bool(switch_band_pass),
                 "directional_align_pass": bool(directional_align_pass),
                 "switch_margin_pass": bool(switch_margin_pass),
@@ -299,12 +427,217 @@ def main():
                 "retained_gap_switch_pass": bool(retained_gap_switch_pass),
                 "pass_core_checks": pass_core,
                 "pass_core_checks_v2": pass_core_v2,
+                "pass_core_checks_v3_abs": pass_core_v3_abs,
                 "pass_core_checks_v3": pass_core_v3,
+                "_run_dir": run_dir,
             }
-        )
+        ensure_signed_abs_fields(check_row)
+        check_rows.append(check_row)
 
     if not config_rows:
         raise RuntimeError("No valid run results found in runs_dir.")
+
+    # P0/P1: build control thresholds with metric->family mapping and medium strictness.
+    def calc_stats(values):
+        vals = [to_float(v) for v in values]
+        vals = [v for v in vals if not np.isnan(v)]
+        if not vals:
+            return {
+                "n": 0,
+                "mean": np.nan,
+                "std": np.nan,
+                "q25": np.nan,
+                "q75": np.nan,
+                "p95": np.nan,
+            }
+        arr = np.array(vals, dtype=float)
+        return {
+            "n": int(arr.size),
+            "mean": float(arr.mean()),
+            "std": float(arr.std()),
+            "q25": float(np.quantile(arr, 0.25)),
+            "q75": float(np.quantile(arr, 0.75)),
+            "p95": float(np.quantile(arr, 0.95)),
+        }
+
+    def medium_rel_thr(stat, better):
+        m = to_float(stat.get("mean"))
+        s = to_float(stat.get("std"))
+        q25 = to_float(stat.get("q25"))
+        q75 = to_float(stat.get("q75"))
+        if np.isnan(m) or np.isnan(s):
+            return np.nan
+        if better == "higher":
+            if np.isnan(q75):
+                return m + 0.5 * s
+            return max(m + 0.5 * s, q75)
+        if np.isnan(q25):
+            return m - 0.5 * s
+        return min(m - 0.5 * s, q25)
+
+    neg_rows = [r for r in config_rows if str(r.get("run_type", "")).lower() == "negative_control"]
+    known_families = sorted(set(str(r.get("control_family", "")).lower() for r in neg_rows if r.get("control_family")))
+    thresholds = {
+        "control_pool": "metric_mapped_family",
+        "rel_rule_medium": {
+            "higher": "value >= max(mean + 0.5*std, q75)",
+            "lower": "value <= min(mean - 0.5*std, q25)",
+        },
+        "metrics": {},
+        "per_family": {},
+    }
+
+    for fam in known_families:
+        fam_rows = [r for r in neg_rows if str(r.get("control_family", "")).lower() == fam]
+        fam_node = {"n": len(fam_rows), "metrics": {}}
+        for spec in METRIC_SPECS:
+            metric = spec["name"]
+            stat = calc_stats([r.get(metric) for r in fam_rows])
+            stat["better"] = spec["better"]
+            stat["thr_medium"] = medium_rel_thr(stat, spec["better"])
+            fam_node["metrics"][metric] = stat
+        thresholds["per_family"][fam] = fam_node
+
+    for spec in METRIC_SPECS:
+        metric = spec["name"]
+        fam = str(spec["control_family_for_rel"]).lower()
+        fam_rows = [r for r in neg_rows if str(r.get("control_family", "")).lower() == fam]
+        control_family_used = fam
+        fallback = None
+        if not fam_rows:
+            fam_rows = neg_rows
+            control_family_used = "all_negative_controls"
+            fallback = fam
+        stat = calc_stats([r.get(metric) for r in fam_rows])
+        stat["better"] = spec["better"]
+        stat["control_family"] = fam
+        stat["control_family_used"] = control_family_used
+        stat["fallback_from_family"] = fallback
+        stat["thr_medium"] = medium_rel_thr(stat, spec["better"])
+        thresholds["metrics"][metric] = stat
+    thresholds_json = os.path.join(compare_dir, "phaseA_thresholds.json")
+    with open(thresholds_json, "w", encoding="utf-8") as f:
+        json.dump(thresholds, f, indent=2)
+
+    # P0-3 + P1-2: dual v3 criteria (abs + relative-to-control + window robustness).
+    def abs_threshold_for(spec, row):
+        if spec["name"] == "peak_delay_min":
+            sw = to_float(row.get("switch_window"))
+            if np.isnan(sw):
+                sw = 200.0
+            return 0.5 * sw
+        return float(spec["abs_thr_default"])
+
+    def abs_pass_for(spec, value, abs_thr):
+        if np.isnan(value) or np.isnan(abs_thr):
+            return False
+        if spec["better"] == "higher":
+            return bool(value >= abs_thr)
+        return bool(value <= abs_thr)
+
+    def relative_pass_for(spec, value):
+        stat = thresholds["metrics"].get(spec["name"], {})
+        better = spec["better"]
+        m = to_float(stat.get("mean"))
+        s = to_float(stat.get("std"))
+        q25 = to_float(stat.get("q25"))
+        q75 = to_float(stat.get("q75"))
+        p95 = to_float(stat.get("p95"))
+        rel_thr = to_float(stat.get("thr_medium"))
+        if np.isnan(value) or np.isnan(m) or np.isnan(rel_thr):
+            return False, m, s, q25, q75, p95, rel_thr, np.nan
+        if better == "higher":
+            rel_pass = bool(value >= rel_thr)
+            margin = value - m
+        else:
+            rel_pass = bool(value <= rel_thr)
+            margin = m - value
+        return rel_pass, m, s, q25, q75, p95, rel_thr, margin
+
+    for row in config_rows:
+        abs_passes = []
+        rel_passes = []
+        for spec in METRIC_SPECS:
+            name = spec["name"]
+            value = to_float(row.get(name))
+            value_oriented = metric_value_oriented(row, spec)
+            abs_thr = abs_threshold_for(spec, row)
+            abs_pass = abs_pass_for(spec, value, abs_thr)
+            rel_pass, ctrl_mean, ctrl_std, ctrl_q25, ctrl_q75, ctrl_p95, rel_thr, margin_ctrl = relative_pass_for(spec, value)
+            key = name
+            row[f"{key}_better"] = spec["better"]
+            row[f"{key}_value"] = value
+            row[f"{key}_value_oriented"] = value_oriented
+            row[f"{key}_abs_thr"] = abs_thr
+            row[f"{key}_abs_pass"] = bool(abs_pass)
+            row[f"{key}_ctrl_mean"] = ctrl_mean
+            row[f"{key}_ctrl_std"] = ctrl_std
+            row[f"{key}_ctrl_q25"] = ctrl_q25
+            row[f"{key}_ctrl_q75"] = ctrl_q75
+            row[f"{key}_ctrl_p95"] = ctrl_p95
+            row[f"{key}_rel_control_family"] = thresholds["metrics"].get(name, {}).get("control_family_used")
+            row[f"{key}_rel_control_family_mapped"] = thresholds["metrics"].get(name, {}).get("control_family")
+            row[f"{key}_margin_vs_ctrl_mean"] = margin_ctrl
+            row[f"{key}_rel_thr"] = rel_thr
+            row[f"{key}_rel_pass"] = bool(rel_pass)
+            abs_passes.append(bool(abs_pass))
+            rel_passes.append(bool(rel_pass))
+
+        # multi-window robustness: at least 2/3 windows pass abs criteria.
+        run_dir = row.get("_run_dir")
+        window_checks = load_window_checks(run_dir, to_float(row.get("switch_window")) if run_dir else 200)
+        window_flags = []
+        for w in (100, 200, 400):
+            cj = window_checks.get(int(w))
+            if not cj:
+                row[f"window_{w}_abs_pass"] = False
+                continue
+            temp = {
+                "directional_align_overall": cj.get("directional_align_overall"),
+                "switch_band_correct_rate": cj.get("switch_band_correct_rate"),
+                "switch_margin_pre_signed": to_float(cj.get("switch_margin_pre_signed", cj.get("switch_margin_pre"))),
+                "switch_margin_post_signed": to_float(cj.get("switch_margin_post_signed", cj.get("switch_margin_post"))),
+                "retained_gap_switch_signed": to_float(cj.get("retained_gap_switch_signed", cj.get("retained_gap_switch"))),
+                "peak_delay_min": min(finite_list([cj.get("peak_delay_lambda"), cj.get("peak_delay_gate"), cj.get("peak_delay_rel"), cj.get("peak_delay_min")])) if finite_list([cj.get("peak_delay_lambda"), cj.get("peak_delay_gate"), cj.get("peak_delay_rel"), cj.get("peak_delay_min")]) else np.nan,
+                "switch_window": w,
+            }
+            if (not np.isnan(to_float(temp.get("switch_margin_pre_signed")))) and (not np.isnan(to_float(temp.get("switch_margin_post_signed")))):
+                temp["switch_margin_gap_signed"] = float(min(to_float(temp.get("switch_margin_pre_signed")), to_float(temp.get("switch_margin_post_signed"))))
+            else:
+                temp["switch_margin_gap_signed"] = np.nan
+            one_abs = []
+            for spec in METRIC_SPECS:
+                val_w = to_float(temp.get(spec["name"]))
+                thr_w = abs_threshold_for(spec, temp)
+                one_abs.append(abs_pass_for(spec, val_w, thr_w))
+            pass_w = bool(all(one_abs))
+            row[f"window_{w}_abs_pass"] = pass_w
+            window_flags.append(pass_w)
+        row["window_pass_count"] = int(sum(1 for x in window_flags if x))
+        row["window_total"] = 3
+        row["window_robust_pass"] = bool(row["window_pass_count"] >= 2)
+
+        legacy3 = bool(row.get("gate_direction")) and bool(row.get("high_closer_A0")) and bool(row.get("low_closer_A1"))
+        row["legacy3checks"] = legacy3
+        row["abs_pass_all"] = bool(all(abs_passes))
+        row["rel_pass_all"] = bool(all(rel_passes))
+        row["pass_core_checks_v3_abs"] = bool(legacy3 and row["abs_pass_all"])
+        row["pass_core_checks_v3"] = bool(legacy3 and row["abs_pass_all"] and row["rel_pass_all"] and row["window_robust_pass"])
+
+    # Mirror v3-dual fields back to check rows for unified reporting.
+    cfg_by_name = {str(r.get("config_name")): r for r in config_rows}
+    for row in check_rows:
+        src = cfg_by_name.get(str(row.get("config_name")))
+        if not src:
+            continue
+        for k, v in src.items():
+            if k.startswith("_"):
+                continue
+            row[k] = v
+    for row in config_rows:
+        row.pop("_run_dir", None)
+    for row in check_rows:
+        row.pop("_run_dir", None)
 
     cfg_csv = os.path.join(compare_dir, "compare_phaseA_configs.csv")
     cfg_md = os.path.join(compare_dir, "compare_phaseA_configs.md")
@@ -385,25 +718,50 @@ def main():
         peak_main = row_peak_delay(r)
         align_main = to_float(r.get("directional_align_overall"))
         switch_main = to_float(r.get("switch_band_correct_rate"))
-        main_vs_rows.append(
-            {
-                "config_name": r.get("config_name"),
-                "lambda_strategy": r.get("lambda_strategy"),
-                "run_type": r.get("run_type"),
-                "control_family": r.get("control_family"),
-                "directional_align_overall": align_main,
-                "switch_band_correct_rate": switch_main,
-                "peak_delay_main": peak_main,
-                "blockshuffle_align_mean": block_align_mean,
-                "blockshuffle_switch_mean": block_switch_mean,
-                "blockshuffle_peak_delay_mean": block_peak_mean,
-                "delta_align_vs_blockshuffle": align_main - block_align_mean if (not np.isnan(align_main) and not np.isnan(block_align_mean)) else np.nan,
-                "delta_switch_vs_blockshuffle": switch_main - block_switch_mean if (not np.isnan(switch_main) and not np.isnan(block_switch_mean)) else np.nan,
-                "delta_peakdelay_vs_blockshuffle": block_peak_mean - peak_main if (not np.isnan(peak_main) and not np.isnan(block_peak_mean)) else np.nan,
-                "pass_core_checks_v2": bool(r.get("pass_core_checks_v2")),
-                "pass_core_checks_v3": bool(r.get("pass_core_checks_v3")),
-            }
-        )
+        out = {
+            "config_name": r.get("config_name"),
+            "lambda_strategy": r.get("lambda_strategy"),
+            "run_type": r.get("run_type"),
+            "control_family": r.get("control_family"),
+            "switch_window": r.get("switch_window"),
+            "directional_align_overall": align_main,
+            "switch_band_correct_rate": switch_main,
+            "switch_margin_pre_signed": r.get("switch_margin_pre_signed"),
+            "switch_margin_post_signed": r.get("switch_margin_post_signed"),
+            "switch_margin_pre_abs": r.get("switch_margin_pre_abs"),
+            "switch_margin_post_abs": r.get("switch_margin_post_abs"),
+            "retained_gap_switch_signed": r.get("retained_gap_switch_signed"),
+            "retained_gap_switch_abs": r.get("retained_gap_switch_abs"),
+            "peak_delay_main": peak_main,
+            "blockshuffle_align_mean": block_align_mean,
+            "blockshuffle_switch_mean": block_switch_mean,
+            "blockshuffle_peak_delay_mean": block_peak_mean,
+            "delta_align_vs_blockshuffle": align_main - block_align_mean if (not np.isnan(align_main) and not np.isnan(block_align_mean)) else np.nan,
+            "delta_switch_vs_blockshuffle": switch_main - block_switch_mean if (not np.isnan(switch_main) and not np.isnan(block_switch_mean)) else np.nan,
+            "delta_peakdelay_vs_blockshuffle": block_peak_mean - peak_main if (not np.isnan(peak_main) and not np.isnan(block_peak_mean)) else np.nan,
+            "abs_pass_all": r.get("abs_pass_all"),
+            "rel_pass_all": r.get("rel_pass_all"),
+            "window_pass_count": r.get("window_pass_count"),
+            "window_total": r.get("window_total"),
+            "window_robust_pass": r.get("window_robust_pass"),
+            "pass_core_checks_v2": bool(r.get("pass_core_checks_v2")),
+            "pass_core_checks_v3": bool(r.get("pass_core_checks_v3")),
+        }
+        for spec in METRIC_SPECS:
+            key = spec["name"]
+            out[f"{key}_better"] = r.get(f"{key}_better", spec["better"])
+            out[f"{key}_value"] = r.get(f"{key}_value", r.get(key))
+            out[f"{key}_abs_thr"] = r.get(f"{key}_abs_thr")
+            out[f"{key}_abs_pass"] = r.get(f"{key}_abs_pass")
+            out[f"{key}_rel_control_family"] = r.get(f"{key}_rel_control_family")
+            out[f"{key}_ctrl_mean"] = r.get(f"{key}_ctrl_mean")
+            out[f"{key}_ctrl_std"] = r.get(f"{key}_ctrl_std")
+            out[f"{key}_ctrl_q25"] = r.get(f"{key}_ctrl_q25")
+            out[f"{key}_ctrl_q75"] = r.get(f"{key}_ctrl_q75")
+            out[f"{key}_rel_thr"] = r.get(f"{key}_rel_thr")
+            out[f"{key}_margin_vs_ctrl_mean"] = r.get(f"{key}_margin_vs_ctrl_mean")
+            out[f"{key}_rel_pass"] = r.get(f"{key}_rel_pass")
+        main_vs_rows.append(out)
     main_vs_headers = list(main_vs_rows[0].keys()) if main_vs_rows else [
         "config_name", "lambda_strategy", "run_type", "control_family",
         "directional_align_overall", "switch_band_correct_rate", "peak_delay_main",
@@ -419,7 +777,7 @@ def main():
             w.writerow(r)
 
     # mirror to exports root for convenience
-    for src in [cfg_csv, cfg_md, subsets_csv, checks_csv, block_csv, block_md, main_vs_csv]:
+    for src in [cfg_csv, cfg_md, subsets_csv, checks_csv, block_csv, block_md, main_vs_csv, thresholds_json]:
         dst = os.path.join(exports_dir, os.path.basename(src))
         try:
             shutil.copyfile(src, dst)
@@ -433,6 +791,7 @@ def main():
     print(f"[OK] {block_csv}")
     print(f"[OK] {block_md}")
     print(f"[OK] {main_vs_csv}")
+    print(f"[OK] {thresholds_json}")
 
 
 if __name__ == "__main__":

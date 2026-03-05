@@ -33,16 +33,55 @@ def find_lambda_file(configs_dir, stem):
     raise FileNotFoundError(f"lambda file not found: {path}")
 
 
-def write_phaseA_configs(configs_dir, lambda_files):
+def parse_seed_list(seed_text):
+    if seed_text is None:
+        return []
+    parts = [p.strip() for p in str(seed_text).split(",") if p.strip()]
+    out = []
+    for p in parts:
+        out.append(int(p))
+    return out
+
+
+def collect_lambda_files(configs_dir):
+    return {
+        "score_equal": find_lambda_file(configs_dir, "lambda_equal"),
+        "score_gating": find_lambda_file(configs_dir, "lambda_gating"),
+        "score_regime": find_lambda_file(configs_dir, "lambda_regime"),
+        "lambda_shuffle_global": find_lambda_file(configs_dir, "lambda_shuffle_global"),
+        "lambda_block_shuffle_50": find_lambda_file(configs_dir, "lambda_block_shuffle_50"),
+        "lambda_block_shuffle_100": find_lambda_file(configs_dir, "lambda_block_shuffle_100"),
+        "lambda_block_shuffle_200": find_lambda_file(configs_dir, "lambda_block_shuffle_200"),
+        "lambda_block_shuffle_500": find_lambda_file(configs_dir, "lambda_block_shuffle_500"),
+        "lambda_shift_100": find_lambda_file(configs_dir, "lambda_shift_100"),
+        "lambda_shift_300": find_lambda_file(configs_dir, "lambda_shift_300"),
+        "lambda_shift_600": find_lambda_file(configs_dir, "lambda_shift_600"),
+        "lambda_shift_1000": find_lambda_file(configs_dir, "lambda_shift_1000"),
+        "lambda_constant_05": find_lambda_file(configs_dir, "lambda_constant_05"),
+        "lambda_constant_10": find_lambda_file(configs_dir, "lambda_constant_10"),
+    }
+
+
+def write_phaseA_configs(
+    configs_dir,
+    lambda_files,
+    run_suffix="",
+    include_main=True,
+    include_controls=True,
+    run_seed=None,
+):
+    suffix = str(run_suffix or "")
     base_cfg = {
         "pred_prefix": "cmiknn",
         "gate_mode": "soft",
         "delta_mask_mode": "union_base_predchange",
         "dist_mask_mode": "true_change_only",
-        "auto_swap_regimes": False,
+        "regime_ref_source": "ground_truth",
+        "auto_swap_regimes": True,
         "subset_high_q": 0.9,
         "subset_low_q": 0.5,
         "switch_window": 200,
+        "switch_window_sweep": [100, 200, 400],
     }
     truechange_cfg = dict(base_cfg)
     truechange_cfg["dist_mask_mode"] = "true_change_only"
@@ -54,7 +93,7 @@ def write_phaseA_configs(configs_dir, lambda_files):
     write_json(cfg_paths["cfg_phaseA_base"], base_cfg)
     write_json(cfg_paths["cfg_phaseA_truechange_eval"], truechange_cfg)
 
-    run_cfg_map = {
+    run_cfg_all = {
         "score_equal": ("cfg_lambda_equal.json", lambda_files["score_equal"], "score_equal", "main", "main"),
         "score_gating": ("cfg_lambda_gating.json", lambda_files["score_gating"], "score_gating", "main", "main"),
         "score_regime": ("cfg_lambda_regime.json", lambda_files["score_regime"], "score_regime", "main", "main"),
@@ -70,25 +109,39 @@ def write_phaseA_configs(configs_dir, lambda_files):
         "lambda_constant_05": ("cfg_lambda_constant_05.json", lambda_files["lambda_constant_05"], "lambda_constant_05", "negative_control", "constant"),
         "lambda_constant_10": ("cfg_lambda_constant_10.json", lambda_files["lambda_constant_10"], "lambda_constant_10", "negative_control", "constant"),
     }
+    run_cfg_map = {}
+    for run_name, run_def in run_cfg_all.items():
+        is_main = run_def[3] == "main"
+        if is_main and not include_main:
+            continue
+        if (not is_main) and not include_controls:
+            continue
+        run_cfg_map[run_name] = run_def
 
     run_defs = []
     for run_name, (cfg_name, lambda_file, lambda_tag, run_type, control_family) in run_cfg_map.items():
-        cfg_path = os.path.join(configs_dir, cfg_name)
+        run_name_eff = f"{run_name}{suffix}" if suffix else run_name
+        cfg_base, cfg_ext = os.path.splitext(cfg_name)
+        cfg_name_eff = f"{cfg_base}{suffix}{cfg_ext}" if suffix else cfg_name
+        cfg_path = os.path.join(configs_dir, cfg_name_eff)
         cfg = dict(base_cfg)
         cfg["lambda_file"] = lambda_file
         cfg["lambda_tag"] = lambda_tag
-        cfg["config_name"] = run_name
+        cfg["config_name"] = run_name_eff
         cfg["run_type"] = run_type
         cfg["control_family"] = control_family
+        if run_seed is not None:
+            cfg["control_seed"] = int(run_seed)
         write_json(cfg_path, cfg)
         run_defs.append(
             {
-                "run_name": run_name,
+                "run_name": run_name_eff,
                 "run_type": run_type,
                 "control_family": control_family,
                 "lambda_tag": lambda_tag,
                 "lambda_file": lambda_file,
                 "config_path": cfg_path,
+                "control_seed": int(run_seed) if run_seed is not None else None,
             }
         )
     return run_defs, cfg_paths
@@ -114,6 +167,7 @@ def main():
     parser.add_argument("--data_dir", type=str, default="synthetic_step3_v2")
     parser.add_argument("--exports_dir", type=str, default=None)
     parser.add_argument("--seed", type=int, default=2026)
+    parser.add_argument("--control_seeds", type=str, default="2026,2027,2028,2029,2030")
     parser.add_argument("--fail_fast", action="store_true",
                         help="Stop immediately when a run fails. Default is continue-on-error.")
     parser.add_argument("--skip_export_lambdas", action="store_true")
@@ -129,28 +183,50 @@ def main():
     configs_dir = safe_mkdir(os.path.join(exports_dir, "configs"))
     _ = figs_dir  # reserved for follow-up plotting script
 
+    control_seeds = parse_seed_list(args.control_seeds)
+    if not control_seeds:
+        control_seeds = [int(args.seed)]
+    if int(args.seed) not in control_seeds:
+        control_seeds = [int(args.seed)] + control_seeds
+    control_seeds = sorted(set([int(s) for s in control_seeds]))
+
     if not args.skip_export_lambdas:
         export_lambda_variants(args.data_dir, exports_dir, seed=int(args.seed))
-
-    lambda_files = {
-        "score_equal": find_lambda_file(configs_dir, "lambda_equal"),
-        "score_gating": find_lambda_file(configs_dir, "lambda_gating"),
-        "score_regime": find_lambda_file(configs_dir, "lambda_regime"),
-        "lambda_shuffle_global": find_lambda_file(configs_dir, "lambda_shuffle_global"),
-        "lambda_block_shuffle_50": find_lambda_file(configs_dir, "lambda_block_shuffle_50"),
-        "lambda_block_shuffle_100": find_lambda_file(configs_dir, "lambda_block_shuffle_100"),
-        "lambda_block_shuffle_200": find_lambda_file(configs_dir, "lambda_block_shuffle_200"),
-        "lambda_block_shuffle_500": find_lambda_file(configs_dir, "lambda_block_shuffle_500"),
-        "lambda_shift_100": find_lambda_file(configs_dir, "lambda_shift_100"),
-        "lambda_shift_300": find_lambda_file(configs_dir, "lambda_shift_300"),
-        "lambda_shift_600": find_lambda_file(configs_dir, "lambda_shift_600"),
-        "lambda_shift_1000": find_lambda_file(configs_dir, "lambda_shift_1000"),
-        "lambda_constant_05": find_lambda_file(configs_dir, "lambda_constant_05"),
-        "lambda_constant_10": find_lambda_file(configs_dir, "lambda_constant_10"),
-    }
-
-    run_defs, cfg_paths = write_phaseA_configs(configs_dir, lambda_files)
-    write_json(os.path.join(configs_dir, "cfg_index_phaseA.json"), {"run_defs": run_defs, "cfg_paths": cfg_paths})
+    lambda_files_main = collect_lambda_files(configs_dir)
+    run_defs_main, cfg_paths = write_phaseA_configs(
+        configs_dir=configs_dir,
+        lambda_files=lambda_files_main,
+        run_suffix="",
+        include_main=True,
+        include_controls=False,
+        run_seed=int(args.seed),
+    )
+    run_defs = list(run_defs_main)
+    run_defs_ctrl = []
+    for ctrl_seed in control_seeds:
+        if not args.skip_export_lambdas:
+            export_lambda_variants(args.data_dir, exports_dir, seed=int(ctrl_seed))
+        lambda_files_ctrl = collect_lambda_files(configs_dir)
+        suffix = f"_s{int(ctrl_seed)}"
+        defs_ctrl, _ = write_phaseA_configs(
+            configs_dir=configs_dir,
+            lambda_files=lambda_files_ctrl,
+            run_suffix=suffix,
+            include_main=False,
+            include_controls=True,
+            run_seed=int(ctrl_seed),
+        )
+        run_defs_ctrl.extend(defs_ctrl)
+    run_defs.extend(run_defs_ctrl)
+    write_json(
+        os.path.join(configs_dir, "cfg_index_phaseA.json"),
+        {
+            "run_defs": run_defs,
+            "cfg_paths": cfg_paths,
+            "main_seed": int(args.seed),
+            "control_seeds": control_seeds,
+        },
+    )
 
     failed_log = os.path.join(compare_dir, "failed_runs.log")
     if os.path.isfile(failed_log):
@@ -165,7 +241,8 @@ def main():
             "lambda_file": run_def["lambda_file"],
             "run_type": run_def["run_type"],
             "control_family": run_def["control_family"],
-            "seed": int(args.seed),
+            "seed": int(run_def.get("control_seed")) if run_def.get("control_seed") is not None else int(args.seed),
+            "main_seed": int(args.seed),
             "config_path": run_def["config_path"],
         }
         write_json(os.path.join(run_dir, "lambda_source_info.json"), source_info)
@@ -186,6 +263,7 @@ def main():
                 "run_name": run_name,
                 "run_type": run_def["run_type"],
                 "control_family": run_def["control_family"],
+                "control_seed": run_def.get("control_seed"),
                 "status": status,
                 "run_dir": run_dir,
                 "error": err_msg,

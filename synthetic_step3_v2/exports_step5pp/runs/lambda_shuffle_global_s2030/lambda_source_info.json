@@ -1,0 +1,10 @@
+{
+  "lambda_strategy": "lambda_shuffle_global_s2030",
+  "lambda_tag": "lambda_shuffle_global",
+  "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shuffle_global.npz",
+  "run_type": "negative_control",
+  "control_family": "shuffle_global",
+  "seed": 2030,
+  "main_seed": 2026,
+  "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shuffle_global_s2030.json"
+}

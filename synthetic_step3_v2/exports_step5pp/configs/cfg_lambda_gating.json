@@ -3,13 +3,20 @@
   "gate_mode": "soft",
   "delta_mask_mode": "union_base_predchange",
   "dist_mask_mode": "true_change_only",
-  "auto_swap_regimes": false,
+  "regime_ref_source": "ground_truth",
+  "auto_swap_regimes": true,
   "subset_high_q": 0.9,
   "subset_low_q": 0.5,
   "switch_window": 200,
+  "switch_window_sweep": [
+    100,
+    200,
+    400
+  ],
   "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_gating.npz",
   "lambda_tag": "score_gating",
   "config_name": "score_gating",
   "run_type": "main",
-  "control_family": "main"
+  "control_family": "main",
+  "control_seed": 2026
 }

@@ -10,7 +10,7 @@
     "window": 80,
     "k": 3,
     "score": 4.739463600758125,
-    "seed": 2026
+    "seed": 2030
   },
   {
     "lambda_strategy": "score_gating",
@@ -23,7 +23,7 @@
     "window": 50,
     "k": 3,
     "score": 0.8997886166957111,
-    "seed": 2026
+    "seed": 2030
   },
   {
     "lambda_strategy": "score_regime",
@@ -36,7 +36,7 @@
     "window": 50,
     "k": 3,
     "score": 0.8997886166957111,
-    "seed": 2026
+    "seed": 2030
   },
   {
     "lambda_strategy": "lambda_shuffle_global",
@@ -49,7 +49,7 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2026
+    "seed": 2030
   },
   {
     "lambda_strategy": "lambda_block_shuffle_50",
@@ -62,7 +62,7 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2026
+    "seed": 2030
   },
   {
     "lambda_strategy": "lambda_block_shuffle_100",
@@ -75,7 +75,7 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2026
+    "seed": 2030
   },
   {
     "lambda_strategy": "lambda_block_shuffle_200",
@@ -88,7 +88,7 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2026
+    "seed": 2030
   },
   {
     "lambda_strategy": "lambda_block_shuffle_500",
@@ -101,7 +101,7 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2026
+    "seed": 2030
   },
   {
     "lambda_strategy": "lambda_shift_100",
@@ -114,7 +114,7 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2026
+    "seed": 2030
   },
   {
     "lambda_strategy": "lambda_shift_300",
@@ -127,7 +127,7 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2026
+    "seed": 2030
   },
   {
     "lambda_strategy": "lambda_shift_600",
@@ -140,7 +140,7 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2026
+    "seed": 2030
   },
   {
     "lambda_strategy": "lambda_shift_1000",
@@ -153,7 +153,7 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2026
+    "seed": 2030
   },
   {
     "lambda_strategy": "lambda_constant_05",
@@ -166,7 +166,7 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2026
+    "seed": 2030
   },
   {
     "lambda_strategy": "lambda_constant_10",
@@ -179,6 +179,6 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2026
+    "seed": 2030
   }
 ]

@@ -48,6 +48,13 @@ def mean_valid(rows, key):
     return float(np.mean(vals)) if vals else np.nan
 
 
+def pass_rate(rows, key):
+    if not rows:
+        return np.nan
+    vals = [1.0 if to_bool(r.get(key)) else 0.0 for r in rows]
+    return float(np.mean(vals)) if vals else np.nan
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", type=str, default="synthetic_step3_v2")
@@ -88,6 +95,30 @@ def main():
 
     main_directional_mean = mean_valid(main_checks, "directional_align_overall")
     neg_directional_mean = mean_valid(neg_checks, "directional_align_overall")
+    main_v3_abs_rate = pass_rate(main_checks, "pass_core_checks_v3_abs")
+    neg_v3_rate = pass_rate(neg_checks, "pass_core_checks_v3")
+    fail_keys = [
+        "rel_pass_all",
+        "switch_band_correct_rate_rel_pass",
+        "switch_margin_gap_signed_rel_pass",
+        "peak_delay_min_rel_pass",
+        "retained_gap_switch_signed_rel_pass",
+        "window_robust_pass",
+        "abs_pass_all",
+        "directional_align_overall_abs_pass",
+        "switch_band_correct_rate_abs_pass",
+        "switch_margin_gap_signed_abs_pass",
+        "retained_gap_switch_signed_abs_pass",
+    ]
+    fail_counts = {}
+    for r in main_checks:
+        if to_bool(r.get("pass_core_checks_v3")):
+            continue
+        for k in fail_keys:
+            if not to_bool(r.get(k)):
+                fail_counts[k] = fail_counts.get(k, 0) + 1
+    fail_rank = sorted(fail_counts.items(), key=lambda x: x[1], reverse=True)
+    top_fail_reasons = [{"key": k, "count": int(v)} for k, v in fail_rank[:5]]
     if np.isfinite(main_directional_mean) and np.isfinite(neg_directional_mean):
         negative_control_drop_v2 = float(main_directional_mean - neg_directional_mean)
     else:
@@ -106,9 +137,12 @@ def main():
         "main_runs_pass_rate_v1": main_pass_rate_v1,
         "main_runs_pass_rate_v2": main_pass_rate_v2,
         "main_runs_pass_rate_v3": main_pass_rate_v3,
+        "main_runs_pass_rate_v3_abs": main_v3_abs_rate,
+        "negative_control_pass_rate_v3": neg_v3_rate,
         "negative_control_drop_v2": negative_control_drop_v2,
         "main_directional_align_mean": main_directional_mean,
         "neg_directional_align_mean": neg_directional_mean,
+        "top_fail_reasons_v3": top_fail_reasons,
     }
 
     out_json = os.path.join(exports_dir, "phaseA_summary.json")
@@ -128,6 +162,8 @@ def main():
         f.write(f"- Main runs pass rate (legacy core checks): `{main_pass_rate_v1:.3f}`\n")
         f.write(f"- Main runs pass rate (v2 core checks): `{main_pass_rate_v2:.3f}`\n")
         f.write(f"- Main runs pass rate (v3 core checks): `{main_pass_rate_v3:.3f}`\n")
+        f.write(f"- Main runs pass rate (v3 abs-only): `{main_v3_abs_rate:.3f}`\n")
+        f.write(f"- Negative-control pass rate (v3): `{neg_v3_rate:.3f}`\n")
         if not np.isnan(negative_control_drop_v2):
             f.write(f"- Negative-control drop (directional_align_overall): `{negative_control_drop_v2:.6f}`\n")
         else:
@@ -140,6 +176,10 @@ def main():
         f.write("\n")
         f.write("### Notes\n")
         f.write("- v2 ranking uses switch-aware metrics to better separate true temporal alignment from shuffle/constant/shift controls.\n")
+        if top_fail_reasons:
+            f.write("\n### Top Fail Reasons (v3)\n")
+            for r in top_fail_reasons:
+                f.write(f"- {r['key']}: {r['count']}\n")
 
     out_block_md = os.path.join(exports_dir, "phaseA_blockshuffle_summary.md")
     if main_vs_rows and block_rows:

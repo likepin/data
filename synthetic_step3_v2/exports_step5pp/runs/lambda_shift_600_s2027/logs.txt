@@ -1,0 +1,47 @@
+=== Sanity Header ===
+data_dir=synthetic_step3_v2
+config_path=synthetic_step3_v2/exports_step5pp\configs\cfg_lambda_shift_600_s2027.json
+gate_fn=soft: g=1-lambda
+rel = dist_reg0 - dist_reg1; rel>0 => closer to A1
+delta_mask_mode=union_base_predchange
+dist_mask_mode=true_change_only
+regime_support_mode=union_base_predchange
+eff_anchor=A0
+regime_ref_source=ground_truth
+regime_swapped=True
+swap_reason=pre_rel_mean: pre_rel_mean=0.307515, post_rel_mean=0.262411, pre_count=3551, post_count=2400
+topk_mode=match_true
+k_source=K_true_from_DeltaA
+lambda_stats_pre={'mean': 0.3383091382900223, 'min': 0.0, 'max': 1.0}
+lambda_stats_post={'mean': 0.362024827992701, 'min': 0.0, 'max': 1.0}
+gate_stats_pre={'mean': 0.6616908617099776, 'min': 0.0, 'max': 1.0}
+gate_stats_post={'mean': 0.637975172007299, 'min': 0.0, 'max': 1.0}
+check_overall_pass=False
+pass_core_checks_v2=False
+pass_core_checks_v3_abs=False
+pass_core_checks_v3=False
+switch_window=200
+config: delta_mask_mode=union_base_predchange, dist_mask_mode=true_change_only, auto_swap_regimes=True
+A_base shape=(2, 10, 10) (sum over lags)
+A_base shape=(2, 10, 10) (sum over lags)
+A0/A1 loaded from GT (A_base + DeltaA)
+lambda loaded from --lambda_file: synthetic_step3_v2/exports_step5pp\configs\lambda_shift_600.npz
+lambda stats: min=0.0000 max=1.0000 mean=0.3479
+[21:05:15] DeltaA shape=(2, 10, 10)
+[21:05:15] K_true_from_DeltaA=6
+[21:05:15] violations=0
+A0/A1 auto-swapped. reason=pre_rel_mean: pre_rel_mean=0.307515, post_rel_mean=0.262411, pre_count=3551, post_count=2400
+A_base nnz=30
+A0 stats: min=-1.4634 max=1.1778 mean=0.0229 nnz=30
+A1 stats: min=-0.5853 max=0.5445 mean=0.0572 nnz=30
+regime_swapped=True
+swap_reason=pre_rel_mean: pre_rel_mean=0.307515, post_rel_mean=0.262411, pre_count=3551, post_count=2400
+delta_mask_nnz=20 dist_mask_nnz=6 tag=default
+A0_eff_nnz=30 A1_eff_nnz=30 tag=default
+WARN: matplotlib not available; skipping plots.
+delta_mask_nnz=20 dist_mask_nnz=6 tag=_diag
+A0_eff_nnz=30 A1_eff_nnz=30 tag=_diag
+delta_mask_nnz=20 dist_mask_nnz=6 tag=_sw100
+A0_eff_nnz=30 A1_eff_nnz=30 tag=_sw100
+delta_mask_nnz=20 dist_mask_nnz=6 tag=_sw400
+A0_eff_nnz=30 A1_eff_nnz=30 tag=_sw400

@@ -1,0 +1,22 @@
+{
+  "pred_prefix": "cmiknn",
+  "gate_mode": "soft",
+  "delta_mask_mode": "union_base_predchange",
+  "dist_mask_mode": "true_change_only",
+  "regime_ref_source": "ground_truth",
+  "auto_swap_regimes": true,
+  "subset_high_q": 0.9,
+  "subset_low_q": 0.5,
+  "switch_window": 200,
+  "switch_window_sweep": [
+    100,
+    200,
+    400
+  ],
+  "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shuffle_global.npz",
+  "lambda_tag": "lambda_shuffle_global",
+  "config_name": "lambda_shuffle_global_s2026",
+  "run_type": "negative_control",
+  "control_family": "shuffle_global",
+  "control_seed": 2026
+}

@@ -1,15 +1,39 @@
 {
-  "best_strategy_by_align": "score_gating",
-  "best_strategy_by_retained_gap": "score_equal",
+  "best_strategy_by_align": "score_equal",
+  "best_strategy_by_retained_gap": "score_gating",
   "main_runs_pass_rate": 1.0,
-  "negative_control_drop": 0.11109015307242731,
-  "best_strategy_by_directional_align": "score_gating",
-  "best_strategy_by_switch_auc": "score_gating",
-  "best_strategy_by_retained_gap_switch": "score_equal",
+  "negative_control_drop": 0.10890586900818072,
+  "best_strategy_by_directional_align": "score_equal",
+  "best_strategy_by_switch_auc": "score_equal",
+  "best_strategy_by_retained_gap_switch": "score_gating",
   "main_runs_pass_rate_v1": 1.0,
-  "main_runs_pass_rate_v2": 0.0,
+  "main_runs_pass_rate_v2": 0.3333333333333333,
   "main_runs_pass_rate_v3": 0.0,
-  "negative_control_drop_v2": 0.11109015307242731,
-  "main_directional_align_mean": 0.5704170805559672,
-  "neg_directional_align_mean": 0.45932692748353987
+  "main_runs_pass_rate_v3_abs": 0.3333333333333333,
+  "negative_control_pass_rate_v3": 0.0,
+  "negative_control_drop_v2": 0.10890586900818072,
+  "main_directional_align_mean": 0.5131618382112176,
+  "neg_directional_align_mean": 0.4042559692030369,
+  "top_fail_reasons_v3": [
+    {
+      "key": "window_robust_pass",
+      "count": 3
+    },
+    {
+      "key": "rel_pass_all",
+      "count": 2
+    },
+    {
+      "key": "switch_band_correct_rate_rel_pass",
+      "count": 2
+    },
+    {
+      "key": "switch_margin_gap_signed_rel_pass",
+      "count": 2
+    },
+    {
+      "key": "peak_delay_min_rel_pass",
+      "count": 2
+    }
+  ]
 }
