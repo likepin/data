@@ -189,30 +189,54 @@ METRIC_SPECS = [
         "better": "higher",
         "abs_thr_default": 0.58,
         "control_family_for_rel": "block_shuffle",
+        "abs_required": True,
+        "rel_required": True,
+        "window_vote": True,
     },
     {
         "name": "switch_band_correct_rate",
         "better": "higher",
         "abs_thr_default": 0.60,
         "control_family_for_rel": "block_shuffle",
+        "abs_required": True,
+        "rel_required": True,
+        "window_vote": True,
     },
     {
         "name": "switch_margin_gap_signed",
         "better": "higher",
         "abs_thr_default": 0.0,
         "control_family_for_rel": "block_shuffle",
+        "abs_required": True,
+        "rel_required": True,
+        "window_vote": True,
     },
     {
         "name": "peak_delay_min",
         "better": "lower",
         "abs_thr_default": np.nan,  # threshold uses switch_window
         "control_family_for_rel": "shift",
+        "abs_required": True,
+        "rel_required": True,
+        "window_vote": False,
+    },
+    {
+        "name": "retained_gap_switch_abs",
+        "better": "higher",
+        "abs_thr_default": 0.10,
+        "control_family_for_rel": "block_shuffle",
+        "abs_required": True,
+        "rel_required": False,
+        "window_vote": False,
     },
     {
         "name": "retained_gap_switch_signed",
         "better": "lower",
         "abs_thr_default": -0.10,
         "control_family_for_rel": "block_shuffle",
+        "abs_required": False,
+        "rel_required": False,
+        "window_vote": False,
     },
 ]
 
@@ -568,6 +592,8 @@ def main():
             row[f"{key}_better"] = spec["better"]
             row[f"{key}_value"] = value
             row[f"{key}_value_oriented"] = value_oriented
+            row[f"{key}_abs_required"] = bool(spec.get("abs_required", True))
+            row[f"{key}_rel_required"] = bool(spec.get("rel_required", True))
             row[f"{key}_abs_thr"] = abs_thr
             row[f"{key}_abs_pass"] = bool(abs_pass)
             row[f"{key}_ctrl_mean"] = ctrl_mean
@@ -580,10 +606,12 @@ def main():
             row[f"{key}_margin_vs_ctrl_mean"] = margin_ctrl
             row[f"{key}_rel_thr"] = rel_thr
             row[f"{key}_rel_pass"] = bool(rel_pass)
-            abs_passes.append(bool(abs_pass))
-            rel_passes.append(bool(rel_pass))
+            if spec.get("abs_required", True):
+                abs_passes.append(bool(abs_pass))
+            if spec.get("rel_required", True):
+                rel_passes.append(bool(rel_pass))
 
-        # multi-window robustness: at least 2/3 windows pass abs criteria.
+        # multi-window robustness: require 200-window pass and at least one flank window pass.
         run_dir = row.get("_run_dir")
         window_checks = load_window_checks(run_dir, to_float(row.get("switch_window")) if run_dir else 200)
         window_flags = []
@@ -607,6 +635,8 @@ def main():
                 temp["switch_margin_gap_signed"] = np.nan
             one_abs = []
             for spec in METRIC_SPECS:
+                if not spec.get("window_vote", False):
+                    continue
                 val_w = to_float(temp.get(spec["name"]))
                 thr_w = abs_threshold_for(spec, temp)
                 one_abs.append(abs_pass_for(spec, val_w, thr_w))
@@ -615,7 +645,10 @@ def main():
             window_flags.append(pass_w)
         row["window_pass_count"] = int(sum(1 for x in window_flags if x))
         row["window_total"] = 3
-        row["window_robust_pass"] = bool(row["window_pass_count"] >= 2)
+        w100 = bool(row.get("window_100_abs_pass"))
+        w200 = bool(row.get("window_200_abs_pass"))
+        w400 = bool(row.get("window_400_abs_pass"))
+        row["window_robust_pass"] = bool(w200 and (w100 or w400))
 
         legacy3 = bool(row.get("gate_direction")) and bool(row.get("high_closer_A0")) and bool(row.get("low_closer_A1"))
         row["legacy3checks"] = legacy3
@@ -623,6 +656,22 @@ def main():
         row["rel_pass_all"] = bool(all(rel_passes))
         row["pass_core_checks_v3_abs"] = bool(legacy3 and row["abs_pass_all"])
         row["pass_core_checks_v3"] = bool(legacy3 and row["abs_pass_all"] and row["rel_pass_all"] and row["window_robust_pass"])
+
+    # Hard guardrail: if too many negative controls pass v3, fail v3 globally.
+    neg_rows_eval = [r for r in config_rows if str(r.get("run_type", "")).lower() == "negative_control"]
+    neg_v3_pass_count = int(sum(1 for r in neg_rows_eval if bool(r.get("pass_core_checks_v3"))))
+    neg_v3_max_allowed = 1
+    neg_v3_guardrail_ok = bool(neg_v3_pass_count <= neg_v3_max_allowed)
+    for row in config_rows:
+        row["pass_core_checks_v3_before_guardrail"] = bool(row.get("pass_core_checks_v3"))
+        row["negative_control_v3_pass_count"] = neg_v3_pass_count
+        row["negative_control_v3_pass_max_allowed"] = neg_v3_max_allowed
+        row["negative_control_v3_guardrail_pass"] = neg_v3_guardrail_ok
+        if not neg_v3_guardrail_ok:
+            row["pass_core_checks_v3"] = False
+            row["v3_guardrail_reason"] = "negative_control_pass_count_exceeded"
+        else:
+            row["v3_guardrail_reason"] = ""
 
     # Mirror v3-dual fields back to check rows for unified reporting.
     cfg_by_name = {str(r.get("config_name")): r for r in config_rows}
@@ -745,7 +794,11 @@ def main():
             "window_total": r.get("window_total"),
             "window_robust_pass": r.get("window_robust_pass"),
             "pass_core_checks_v2": bool(r.get("pass_core_checks_v2")),
+            "pass_core_checks_v3_before_guardrail": bool(r.get("pass_core_checks_v3_before_guardrail")),
             "pass_core_checks_v3": bool(r.get("pass_core_checks_v3")),
+            "negative_control_v3_pass_count": r.get("negative_control_v3_pass_count"),
+            "negative_control_v3_pass_max_allowed": r.get("negative_control_v3_pass_max_allowed"),
+            "negative_control_v3_guardrail_pass": r.get("negative_control_v3_guardrail_pass"),
         }
         for spec in METRIC_SPECS:
             key = spec["name"]

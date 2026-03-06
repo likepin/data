@@ -89,26 +89,36 @@ def main():
     pass_v1_vals = [1.0 if to_bool(r.get("pass_core_checks")) else 0.0 for r in main_checks]
     pass_v2_vals = [1.0 if to_bool(r.get("pass_core_checks_v2")) else 0.0 for r in main_checks]
     pass_v3_vals = [1.0 if to_bool(r.get("pass_core_checks_v3")) else 0.0 for r in main_checks]
+    pass_v3_raw_vals = [1.0 if to_bool(r.get("pass_core_checks_v3_before_guardrail")) else 0.0 for r in main_checks]
     main_pass_rate_v1 = float(np.mean(pass_v1_vals)) if pass_v1_vals else np.nan
     main_pass_rate_v2 = float(np.mean(pass_v2_vals)) if pass_v2_vals else np.nan
     main_pass_rate_v3 = float(np.mean(pass_v3_vals)) if pass_v3_vals else np.nan
+    main_pass_rate_v3_before_guardrail = float(np.mean(pass_v3_raw_vals)) if pass_v3_raw_vals else np.nan
 
     main_directional_mean = mean_valid(main_checks, "directional_align_overall")
     neg_directional_mean = mean_valid(neg_checks, "directional_align_overall")
     main_v3_abs_rate = pass_rate(main_checks, "pass_core_checks_v3_abs")
     neg_v3_rate = pass_rate(neg_checks, "pass_core_checks_v3")
+    neg_v3_pass_count = int(sum(1 for r in neg_checks if to_bool(r.get("pass_core_checks_v3"))))
+    guardrail_max_allowed_raw = to_float((main_checks or neg_checks or [{}])[0].get("negative_control_v3_pass_max_allowed"))
+    guardrail_max_allowed = int(guardrail_max_allowed_raw) if np.isfinite(guardrail_max_allowed_raw) else 1
+    if guardrail_max_allowed <= 0:
+        guardrail_max_allowed = 1
+    guardrail_ok = bool(neg_v3_pass_count <= guardrail_max_allowed)
     fail_keys = [
         "rel_pass_all",
         "switch_band_correct_rate_rel_pass",
         "switch_margin_gap_signed_rel_pass",
         "peak_delay_min_rel_pass",
-        "retained_gap_switch_signed_rel_pass",
+        "retained_gap_switch_abs_abs_pass",
         "window_robust_pass",
+        "window_100_abs_pass",
+        "window_200_abs_pass",
+        "window_400_abs_pass",
         "abs_pass_all",
         "directional_align_overall_abs_pass",
         "switch_band_correct_rate_abs_pass",
         "switch_margin_gap_signed_abs_pass",
-        "retained_gap_switch_signed_abs_pass",
     ]
     fail_counts = {}
     for r in main_checks:
@@ -119,10 +129,22 @@ def main():
                 fail_counts[k] = fail_counts.get(k, 0) + 1
     fail_rank = sorted(fail_counts.items(), key=lambda x: x[1], reverse=True)
     top_fail_reasons = [{"key": k, "count": int(v)} for k, v in fail_rank[:5]]
+    failed_main_rows = [r for r in main_checks if not to_bool(r.get("pass_core_checks_v3"))]
+    window_fail_breakdown = {
+        "window_100_abs_fail_count": int(sum(1 for r in failed_main_rows if not to_bool(r.get("window_100_abs_pass")))),
+        "window_200_abs_fail_count": int(sum(1 for r in failed_main_rows if not to_bool(r.get("window_200_abs_pass")))),
+        "window_400_abs_fail_count": int(sum(1 for r in failed_main_rows if not to_bool(r.get("window_400_abs_pass")))),
+    }
     if np.isfinite(main_directional_mean) and np.isfinite(neg_directional_mean):
         negative_control_drop_v2 = float(main_directional_mean - neg_directional_mean)
     else:
         negative_control_drop_v2 = np.nan
+
+    shift_rows = [r for r in neg_checks if str(r.get("control_family", "")).lower() == "shift"]
+    block_shuffle_rows = [r for r in neg_checks if str(r.get("control_family", "")).lower() == "block_shuffle"]
+    main_peak_delay_mean = mean_valid(main_checks, "peak_delay_min")
+    shift_peak_delay_mean = mean_valid(shift_rows, "peak_delay_min")
+    block_peak_delay_mean = mean_valid(block_shuffle_rows, "peak_delay_min")
 
     summary_json = {
         # legacy-compatible keys
@@ -137,11 +159,19 @@ def main():
         "main_runs_pass_rate_v1": main_pass_rate_v1,
         "main_runs_pass_rate_v2": main_pass_rate_v2,
         "main_runs_pass_rate_v3": main_pass_rate_v3,
+        "main_runs_pass_rate_v3_before_guardrail": main_pass_rate_v3_before_guardrail,
         "main_runs_pass_rate_v3_abs": main_v3_abs_rate,
         "negative_control_pass_rate_v3": neg_v3_rate,
+        "negative_control_v3_pass_count": neg_v3_pass_count,
+        "negative_control_v3_pass_max_allowed": guardrail_max_allowed,
+        "negative_control_v3_guardrail_pass": guardrail_ok,
         "negative_control_drop_v2": negative_control_drop_v2,
         "main_directional_align_mean": main_directional_mean,
         "neg_directional_align_mean": neg_directional_mean,
+        "main_peak_delay_min_mean": main_peak_delay_mean,
+        "shift_peak_delay_min_mean": shift_peak_delay_mean,
+        "block_shuffle_peak_delay_min_mean": block_peak_delay_mean,
+        "window_fail_breakdown_v3": window_fail_breakdown,
         "top_fail_reasons_v3": top_fail_reasons,
     }
 
@@ -162,20 +192,35 @@ def main():
         f.write(f"- Main runs pass rate (legacy core checks): `{main_pass_rate_v1:.3f}`\n")
         f.write(f"- Main runs pass rate (v2 core checks): `{main_pass_rate_v2:.3f}`\n")
         f.write(f"- Main runs pass rate (v3 core checks): `{main_pass_rate_v3:.3f}`\n")
+        f.write(f"- Main runs pass rate (v3 before guardrail): `{main_pass_rate_v3_before_guardrail:.3f}`\n")
         f.write(f"- Main runs pass rate (v3 abs-only): `{main_v3_abs_rate:.3f}`\n")
         f.write(f"- Negative-control pass rate (v3): `{neg_v3_rate:.3f}`\n")
+        f.write(f"- Negative-control v3 pass count: `{neg_v3_pass_count}` / max `{guardrail_max_allowed}` ({'PASS' if guardrail_ok else 'FAIL'})\n")
         if not np.isnan(negative_control_drop_v2):
             f.write(f"- Negative-control drop (directional_align_overall): `{negative_control_drop_v2:.6f}`\n")
         else:
             f.write("- Negative-control drop (directional_align_overall): `nan`\n")
+        if np.isfinite(main_peak_delay_mean):
+            f.write(f"- peak_delay_min mean (main): `{main_peak_delay_mean:.6f}`\n")
+        if np.isfinite(shift_peak_delay_mean):
+            f.write(f"- peak_delay_min mean (shift): `{shift_peak_delay_mean:.6f}`\n")
+        if np.isfinite(block_peak_delay_mean):
+            f.write(f"- peak_delay_min mean (block_shuffle): `{block_peak_delay_mean:.6f}`\n")
         f.write("\n")
         f.write("### V2 Check Summary\n")
         f.write(f"- directional_align_pass: {'PASS' if directional_pass else 'FAIL'}\n")
         f.write(f"- switch_band_pass: {'PASS' if switch_band_pass else 'FAIL'}\n")
         f.write(f"- pass_core_checks_v2: {'PASS' if v2_pass_all else 'FAIL'}\n")
         f.write("\n")
+        f.write("### Window Fail Breakdown (failed main rows)\n")
+        f.write(f"- window_100_abs_fail_count: {window_fail_breakdown['window_100_abs_fail_count']}\n")
+        f.write(f"- window_200_abs_fail_count: {window_fail_breakdown['window_200_abs_fail_count']}\n")
+        f.write(f"- window_400_abs_fail_count: {window_fail_breakdown['window_400_abs_fail_count']}\n")
+        f.write("\n")
         f.write("### Notes\n")
         f.write("- v2 ranking uses switch-aware metrics to better separate true temporal alignment from shuffle/constant/shift controls.\n")
+        if not guardrail_ok:
+            f.write("- Guardrail triggered: too many negative controls passed v3; all v3 passes are invalidated.\n")
         if top_fail_reasons:
             f.write("\n### Top Fail Reasons (v3)\n")
             for r in top_fail_reasons:

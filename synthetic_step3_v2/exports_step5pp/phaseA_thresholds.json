@@ -57,6 +57,19 @@
       "fallback_from_family": null,
       "thr_medium": 83.66437737576497
     },
+    "retained_gap_switch_abs": {
+      "n": 20,
+      "mean": 0.353844977915287,
+      "std": 0.049508743568015705,
+      "q25": 0.32911551743745804,
+      "q75": 0.3630334585905075,
+      "p95": 0.43586137890815735,
+      "better": "higher",
+      "control_family": "block_shuffle",
+      "control_family_used": "block_shuffle",
+      "fallback_from_family": null,
+      "thr_medium": 0.3785993496992949
+    },
     "retained_gap_switch_signed": {
       "n": 20,
       "mean": 0.18491972237825394,
@@ -115,6 +128,16 @@
           "better": "lower",
           "thr_medium": 57.30050551940349
         },
+        "retained_gap_switch_abs": {
+          "n": 20,
+          "mean": 0.353844977915287,
+          "std": 0.049508743568015705,
+          "q25": 0.32911551743745804,
+          "q75": 0.3630334585905075,
+          "p95": 0.43586137890815735,
+          "better": "higher",
+          "thr_medium": 0.3785993496992949
+        },
         "retained_gap_switch_signed": {
           "n": 20,
           "mean": 0.18491972237825394,
@@ -169,6 +192,16 @@
           "p95": 200.0,
           "better": "lower",
           "thr_medium": 200.0
+        },
+        "retained_gap_switch_abs": {
+          "n": 10,
+          "mean": 0.0,
+          "std": 0.0,
+          "q25": 0.0,
+          "q75": 0.0,
+          "p95": 0.0,
+          "better": "higher",
+          "thr_medium": 0.0
         },
         "retained_gap_switch_signed": {
           "n": 10,
@@ -225,6 +258,16 @@
           "better": "lower",
           "thr_medium": 83.66437737576497
         },
+        "retained_gap_switch_abs": {
+          "n": 20,
+          "mean": 0.32211623480543494,
+          "std": 0.23793904014085632,
+          "q25": 0.19412056356668472,
+          "q75": 0.42261834582313895,
+          "p95": 0.6812294777482748,
+          "better": "higher",
+          "thr_medium": 0.4410857548758631
+        },
         "retained_gap_switch_signed": {
           "n": 20,
           "mean": -0.15390891721472144,
@@ -279,6 +322,16 @@
           "p95": 183.0,
           "better": "lower",
           "thr_medium": 183.0
+        },
+        "retained_gap_switch_abs": {
+          "n": 5,
+          "mean": 0.003663778305053711,
+          "std": 0.0,
+          "q25": 0.003663778305053711,
+          "q75": 0.003663778305053711,
+          "p95": 0.003663778305053711,
+          "better": "higher",
+          "thr_medium": 0.003663778305053711
         },
         "retained_gap_switch_signed": {
           "n": 5,
