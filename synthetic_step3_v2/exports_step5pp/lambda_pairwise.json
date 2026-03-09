@@ -1,0 +1,26 @@
+[
+  {
+    "variant_a": "score_equal",
+    "variant_b": "score_gating",
+    "corr": 0.7533583309209053,
+    "mean_abs_diff": 0.1681011943743533,
+    "overlap_count": 5951,
+    "hash_same": false
+  },
+  {
+    "variant_a": "score_equal",
+    "variant_b": "score_regime",
+    "corr": 0.8641804628423675,
+    "mean_abs_diff": 0.13045610680031638,
+    "overlap_count": 5951,
+    "hash_same": false
+  },
+  {
+    "variant_a": "score_gating",
+    "variant_b": "score_regime",
+    "corr": 0.8890241459041167,
+    "mean_abs_diff": 0.09984745326476023,
+    "overlap_count": 5951,
+    "hash_same": false
+  }
+]

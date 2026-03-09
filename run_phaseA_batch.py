@@ -271,6 +271,9 @@ def main():
         )
 
     write_json(os.path.join(compare_dir, "batch_run_status.json"), results)
+    # Restore main-seed lambda artifacts at exports root so summary/diagnostics align to main strategy round.
+    if not args.skip_export_lambdas:
+        export_lambda_variants(args.data_dir, exports_dir, seed=int(args.seed))
     print(f"[OK] runs_dir={runs_dir}")
     print(f"[OK] status={os.path.join(compare_dir, 'batch_run_status.json')}")
     if any(r["status"] == "failed" for r in results):

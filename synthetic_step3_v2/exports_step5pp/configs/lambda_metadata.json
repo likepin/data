@@ -1,47 +1,47 @@
 [
   {
     "lambda_strategy": "score_equal",
-    "lambda_file_npy": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_equal.npy",
-    "lambda_file_npz": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_equal.npz",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_equal.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_equal.npz",
     "source_type": "step4_rescored",
     "run_type": "main",
     "control_family": "main",
     "source_score_key": "score_equal",
-    "window": 80,
+    "window": 50,
     "k": 3,
-    "score": 4.739463600758125,
-    "seed": 2030
+    "score": 7.28817907702216,
+    "seed": 2026
   },
   {
     "lambda_strategy": "score_gating",
-    "lambda_file_npy": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_gating.npy",
-    "lambda_file_npz": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_gating.npz",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_gating.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_gating.npz",
     "source_type": "step4_rescored",
     "run_type": "main",
     "control_family": "main",
     "source_score_key": "score_gating",
-    "window": 50,
-    "k": 3,
-    "score": 0.8997886166957111,
-    "seed": 2030
+    "window": 30,
+    "k": 2,
+    "score": 0.7728705409801073,
+    "seed": 2026
   },
   {
     "lambda_strategy": "score_regime",
-    "lambda_file_npy": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_regime.npy",
-    "lambda_file_npz": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_regime.npz",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_regime.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_regime.npz",
     "source_type": "step4_rescored",
     "run_type": "main",
     "control_family": "main",
     "source_score_key": "score_regime",
     "window": 50,
-    "k": 3,
-    "score": 0.8997886166957111,
-    "seed": 2030
+    "k": 2,
+    "score": 0.7911847831992067,
+    "seed": 2026
   },
   {
     "lambda_strategy": "lambda_shuffle_global",
-    "lambda_file_npy": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shuffle_global.npy",
-    "lambda_file_npz": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shuffle_global.npz",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shuffle_global.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shuffle_global.npz",
     "source_type": "shuffle_from_gating",
     "run_type": "negative_control",
     "control_family": "shuffle_global",
@@ -49,12 +49,12 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2030
+    "seed": 2026
   },
   {
     "lambda_strategy": "lambda_block_shuffle_50",
-    "lambda_file_npy": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_50.npy",
-    "lambda_file_npz": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_50.npz",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_50.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_50.npz",
     "source_type": "block_shuffle_50_from_gating",
     "run_type": "negative_control",
     "control_family": "block_shuffle",
@@ -62,12 +62,12 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2030
+    "seed": 2026
   },
   {
     "lambda_strategy": "lambda_block_shuffle_100",
-    "lambda_file_npy": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_100.npy",
-    "lambda_file_npz": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_100.npz",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_100.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_100.npz",
     "source_type": "block_shuffle_100_from_gating",
     "run_type": "negative_control",
     "control_family": "block_shuffle",
@@ -75,12 +75,12 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2030
+    "seed": 2026
   },
   {
     "lambda_strategy": "lambda_block_shuffle_200",
-    "lambda_file_npy": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_200.npy",
-    "lambda_file_npz": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_200.npz",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_200.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_200.npz",
     "source_type": "block_shuffle_200_from_gating",
     "run_type": "negative_control",
     "control_family": "block_shuffle",
@@ -88,12 +88,12 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2030
+    "seed": 2026
   },
   {
     "lambda_strategy": "lambda_block_shuffle_500",
-    "lambda_file_npy": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_500.npy",
-    "lambda_file_npz": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_500.npz",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_500.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_500.npz",
     "source_type": "block_shuffle_500_from_gating",
     "run_type": "negative_control",
     "control_family": "block_shuffle",
@@ -101,12 +101,12 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2030
+    "seed": 2026
   },
   {
     "lambda_strategy": "lambda_shift_100",
-    "lambda_file_npy": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_100.npy",
-    "lambda_file_npz": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_100.npz",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_100.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_100.npz",
     "source_type": "shift_100_from_gating",
     "run_type": "negative_control",
     "control_family": "shift",
@@ -114,12 +114,12 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2030
+    "seed": 2026
   },
   {
     "lambda_strategy": "lambda_shift_300",
-    "lambda_file_npy": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_300.npy",
-    "lambda_file_npz": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_300.npz",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_300.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_300.npz",
     "source_type": "shift_300_from_gating",
     "run_type": "negative_control",
     "control_family": "shift",
@@ -127,12 +127,12 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2030
+    "seed": 2026
   },
   {
     "lambda_strategy": "lambda_shift_600",
-    "lambda_file_npy": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_600.npy",
-    "lambda_file_npz": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_600.npz",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_600.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_600.npz",
     "source_type": "shift_600_from_gating",
     "run_type": "negative_control",
     "control_family": "shift",
@@ -140,12 +140,12 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2030
+    "seed": 2026
   },
   {
     "lambda_strategy": "lambda_shift_1000",
-    "lambda_file_npy": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_1000.npy",
-    "lambda_file_npz": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_1000.npz",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_1000.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_1000.npz",
     "source_type": "shift_1000_from_gating",
     "run_type": "negative_control",
     "control_family": "shift",
@@ -153,12 +153,12 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2030
+    "seed": 2026
   },
   {
     "lambda_strategy": "lambda_constant_05",
-    "lambda_file_npy": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_05.npy",
-    "lambda_file_npz": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_05.npz",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_constant_05.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_constant_05.npz",
     "source_type": "constant",
     "run_type": "negative_control",
     "control_family": "constant",
@@ -166,12 +166,12 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2030
+    "seed": 2026
   },
   {
     "lambda_strategy": "lambda_constant_10",
-    "lambda_file_npy": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_10.npy",
-    "lambda_file_npz": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_10.npz",
+    "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_constant_10.npy",
+    "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_constant_10.npz",
     "source_type": "constant",
     "run_type": "negative_control",
     "control_family": "constant",
@@ -179,6 +179,6 @@
     "window": "",
     "k": "",
     "score": "",
-    "seed": 2030
+    "seed": 2026
   }
 ]

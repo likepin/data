@@ -1,7 +1,7 @@
 metric,value
-dist_std_base,2.9802322387695312e-08
-dist_std_reg0,2.9802322387695312e-08
-dist_std_reg1,2.9802322387695312e-08
+dist_std_base,5.960464477539063e-08
+dist_std_reg0,5.960464477539063e-08
+dist_std_reg1,5.960464477539063e-08
 rel_pre_mean,0.0
 rel_pre_std,0.0
 rel_post_mean,0.0

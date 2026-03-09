@@ -1,7 +1,7 @@
 metric,value
 dist_std_base,0.0
 dist_std_reg0,0.0
-dist_std_reg1,5.960464477539063e-08
+dist_std_reg1,1.1920928955078125e-07
 rel_pre_mean,-0.9509360790252686
 rel_pre_std,1.7881393432617188e-07
 rel_post_mean,-0.950935959815979
@@ -11,7 +11,7 @@ retained_low_mean,0.0
 retained_gap,0.0
 pre_correct_rate,1.0
 post_correct_rate,0.0
-directional_align_overall,0.5967064358931272
+directional_align_overall,0.5980572768380505
 switch_window,200
 switch_pre_correct_rate,1.0
 switch_post_correct_rate,0.0

@@ -1,4 +1,5 @@
 import os
+import csv
 import numpy as np
 
 
@@ -121,17 +122,20 @@ def pick_lambda_configs_from_step4(data_dir, score_type, top_m):
     out_dir = os.path.join(data_dir, "exports_step4")
     if not os.path.isdir(out_dir):
         raise FileNotFoundError("exports_step4 not found.")
-    candidates = [f for f in os.listdir(out_dir) if f.startswith("rescored_results_") and f.endswith(".csv")]
+    candidates = []
+    for f in os.listdir(out_dir):
+        if not f.endswith(".csv"):
+            continue
+        if f.startswith("rescored_results_") or f.startswith("rescore_results_"):
+            candidates.append(f)
     if not candidates:
-        raise FileNotFoundError("rescored_results_*.csv not found in exports_step4.")
+        raise FileNotFoundError("rescored_results_*.csv or rescore_results_*.csv not found in exports_step4.")
     path = os.path.join(out_dir, sorted(candidates)[-1])
     rows = []
     with open(path, "r", encoding="utf-8") as f:
-        header = f.readline().strip().split(",")
-        for line in f:
-            vals = line.strip().split(",")
-            r = {header[i]: vals[i] if i < len(vals) else "" for i in range(len(header))}
-            rows.append(r)
+        reader = csv.DictReader(f)
+        for r in reader:
+            rows.append(dict(r))
     key = score_type
     def to_float(v):
         try:
@@ -145,5 +149,8 @@ def pick_lambda_configs_from_step4(data_dir, score_type, top_m):
             "window": int(float(r.get("window", 0))),
             "k": int(float(r.get("k", 0))),
             "score": to_float(r.get(key, "")),
+            "score_key": key,
+            "source_csv": path,
+            "picked_row_raw": dict(r),
         })
     return out

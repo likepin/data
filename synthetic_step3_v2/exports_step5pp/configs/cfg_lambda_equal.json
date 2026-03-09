@@ -13,7 +13,7 @@
     200,
     400
   ],
-  "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_equal.npz",
+  "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_equal.npz",
   "lambda_tag": "score_equal",
   "config_name": "score_equal",
   "run_type": "main",

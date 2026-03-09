@@ -13,7 +13,7 @@
     200,
     400
   ],
-  "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_100.npz",
+  "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_100.npz",
   "lambda_tag": "lambda_shift_100",
   "config_name": "lambda_shift_100_s2027",
   "run_type": "negative_control",

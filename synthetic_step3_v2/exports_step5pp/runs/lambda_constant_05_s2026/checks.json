@@ -52,5 +52,5 @@
   "pass_core_checks_v3": false,
   "switch_nan_reasons": [],
   "regime_swapped": true,
-  "swap_reason": "pre_rel_mean: pre_rel_mean=0.000000, post_rel_mean=0.000000, pre_count=3551, post_count=2400"
+  "swap_reason": "pre_rel_mean: pre_rel_mean=0.000000, post_rel_mean=0.000000, pre_count=3571, post_count=2400"
 }

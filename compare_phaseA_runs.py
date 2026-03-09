@@ -137,6 +137,10 @@ def row_peak_delay_min(row):
     return float(min(vals)) if vals else np.nan
 
 
+def semicolon_join(parts):
+    return ";".join([str(p) for p in parts if str(p).strip()])
+
+
 def ensure_signed_abs_fields(row):
     sp = to_float(row.get("switch_margin_pre_signed", row.get("switch_margin_pre")))
     so = to_float(row.get("switch_margin_post_signed", row.get("switch_margin_post")))
@@ -470,8 +474,10 @@ def main():
                 "n": 0,
                 "mean": np.nan,
                 "std": np.nan,
+                "q10": np.nan,
                 "q25": np.nan,
                 "q75": np.nan,
+                "q90": np.nan,
                 "p95": np.nan,
             }
         arr = np.array(vals, dtype=float)
@@ -479,8 +485,10 @@ def main():
             "n": int(arr.size),
             "mean": float(arr.mean()),
             "std": float(arr.std()),
+            "q10": float(np.quantile(arr, 0.10)),
             "q25": float(np.quantile(arr, 0.25)),
             "q75": float(np.quantile(arr, 0.75)),
+            "q90": float(np.quantile(arr, 0.90)),
             "p95": float(np.quantile(arr, 0.95)),
         }
 
@@ -507,8 +515,13 @@ def main():
             "higher": "value >= max(mean + 0.5*std, q75)",
             "lower": "value <= min(mean - 0.5*std, q25)",
         },
+        "abs_rule_v2": {
+            "directional_align_overall": "min(default_abs_thr, max(0.52, mapped_q75 + 0.10, all_negative_q90 + 0.01))",
+            "others": "default_abs_thr",
+        },
         "metrics": {},
         "per_family": {},
+        "all_negative_controls": {"n": len(neg_rows), "metrics": {}},
     }
 
     for fam in known_families:
@@ -521,6 +534,13 @@ def main():
             stat["thr_medium"] = medium_rel_thr(stat, spec["better"])
             fam_node["metrics"][metric] = stat
         thresholds["per_family"][fam] = fam_node
+
+    for spec in METRIC_SPECS:
+        metric = spec["name"]
+        stat = calc_stats([r.get(metric) for r in neg_rows])
+        stat["better"] = spec["better"]
+        stat["thr_medium"] = medium_rel_thr(stat, spec["better"])
+        thresholds["all_negative_controls"]["metrics"][metric] = stat
 
     for spec in METRIC_SPECS:
         metric = spec["name"]
@@ -559,35 +579,58 @@ def main():
             return bool(value >= abs_thr)
         return bool(value <= abs_thr)
 
+    def abs_threshold_for_v2(spec, row):
+        default_thr = abs_threshold_for(spec, row)
+        if spec["name"] != "directional_align_overall":
+            return default_thr, "default_abs_thr"
+        mapped_stat = thresholds["metrics"].get(spec["name"], {})
+        all_neg_stat = thresholds["all_negative_controls"]["metrics"].get(spec["name"], {})
+        mapped_q75 = to_float(mapped_stat.get("q75"))
+        all_neg_q90 = to_float(all_neg_stat.get("q90"))
+        candidates = [0.52]
+        if not np.isnan(mapped_q75):
+            candidates.append(mapped_q75 + 0.10)
+        if not np.isnan(all_neg_q90):
+            candidates.append(all_neg_q90 + 0.01)
+        thr = float(min(default_thr, max(candidates))) if not np.isnan(default_thr) else float(max(candidates))
+        return thr, "min(default_abs_thr,max(0.52,mapped_q75+0.10,all_negative_q90+0.01))"
+
     def relative_pass_for(spec, value):
         stat = thresholds["metrics"].get(spec["name"], {})
         better = spec["better"]
         m = to_float(stat.get("mean"))
         s = to_float(stat.get("std"))
+        q10 = to_float(stat.get("q10"))
         q25 = to_float(stat.get("q25"))
         q75 = to_float(stat.get("q75"))
+        q90 = to_float(stat.get("q90"))
         p95 = to_float(stat.get("p95"))
         rel_thr = to_float(stat.get("thr_medium"))
         if np.isnan(value) or np.isnan(m) or np.isnan(rel_thr):
-            return False, m, s, q25, q75, p95, rel_thr, np.nan
+            return False, m, s, q10, q25, q75, q90, p95, rel_thr, np.nan
         if better == "higher":
             rel_pass = bool(value >= rel_thr)
             margin = value - m
         else:
             rel_pass = bool(value <= rel_thr)
             margin = m - value
-        return rel_pass, m, s, q25, q75, p95, rel_thr, margin
+        return rel_pass, m, s, q10, q25, q75, q90, p95, rel_thr, margin
 
     for row in config_rows:
         abs_passes = []
         rel_passes = []
+        abs_passes_v2 = []
+        rel_passes_v2 = []
+        fail_flags_v2 = []
         for spec in METRIC_SPECS:
             name = spec["name"]
             value = to_float(row.get(name))
             value_oriented = metric_value_oriented(row, spec)
             abs_thr = abs_threshold_for(spec, row)
             abs_pass = abs_pass_for(spec, value, abs_thr)
-            rel_pass, ctrl_mean, ctrl_std, ctrl_q25, ctrl_q75, ctrl_p95, rel_thr, margin_ctrl = relative_pass_for(spec, value)
+            abs_thr_v2, abs_rule_v2 = abs_threshold_for_v2(spec, row)
+            abs_pass_v2 = abs_pass_for(spec, value, abs_thr_v2)
+            rel_pass, ctrl_mean, ctrl_std, ctrl_q10, ctrl_q25, ctrl_q75, ctrl_q90, ctrl_p95, rel_thr, margin_ctrl = relative_pass_for(spec, value)
             key = name
             row[f"{key}_better"] = spec["better"]
             row[f"{key}_value"] = value
@@ -598,27 +641,43 @@ def main():
             row[f"{key}_abs_pass"] = bool(abs_pass)
             row[f"{key}_ctrl_mean"] = ctrl_mean
             row[f"{key}_ctrl_std"] = ctrl_std
+            row[f"{key}_ctrl_q10"] = ctrl_q10
             row[f"{key}_ctrl_q25"] = ctrl_q25
             row[f"{key}_ctrl_q75"] = ctrl_q75
+            row[f"{key}_ctrl_q90"] = ctrl_q90
             row[f"{key}_ctrl_p95"] = ctrl_p95
             row[f"{key}_rel_control_family"] = thresholds["metrics"].get(name, {}).get("control_family_used")
             row[f"{key}_rel_control_family_mapped"] = thresholds["metrics"].get(name, {}).get("control_family")
             row[f"{key}_margin_vs_ctrl_mean"] = margin_ctrl
             row[f"{key}_rel_thr"] = rel_thr
             row[f"{key}_rel_pass"] = bool(rel_pass)
+            row[f"{key}_abs_thr_v2"] = abs_thr_v2
+            row[f"{key}_abs_rule_v2"] = abs_rule_v2
+            row[f"{key}_abs_pass_v2"] = bool(abs_pass_v2)
+            row[f"{key}_rel_thr_v2"] = rel_thr
+            row[f"{key}_rel_pass_v2"] = bool(rel_pass)
             if spec.get("abs_required", True):
                 abs_passes.append(bool(abs_pass))
+                abs_passes_v2.append(bool(abs_pass_v2))
+                if not bool(abs_pass_v2):
+                    fail_flags_v2.append(f"{key}_abs_pass_v2")
             if spec.get("rel_required", True):
                 rel_passes.append(bool(rel_pass))
+                rel_passes_v2.append(bool(rel_pass))
+                if not bool(rel_pass):
+                    fail_flags_v2.append(f"{key}_rel_pass_v2")
 
         # multi-window robustness: require 200-window pass and at least one flank window pass.
         run_dir = row.get("_run_dir")
         window_checks = load_window_checks(run_dir, to_float(row.get("switch_window")) if run_dir else 200)
         window_flags = []
+        window_flags_v2 = []
         for w in (100, 200, 400):
             cj = window_checks.get(int(w))
             if not cj:
                 row[f"window_{w}_abs_pass"] = False
+                row[f"window_{w}_core_abs_pass_v2"] = False
+                row[f"window_{w}_fail_reasons_v2"] = "missing_window_checks"
                 continue
             temp = {
                 "directional_align_overall": cj.get("directional_align_overall"),
@@ -634,21 +693,44 @@ def main():
             else:
                 temp["switch_margin_gap_signed"] = np.nan
             one_abs = []
+            one_abs_v2 = []
+            fail_reasons_v2 = []
             for spec in METRIC_SPECS:
                 if not spec.get("window_vote", False):
                     continue
                 val_w = to_float(temp.get(spec["name"]))
                 thr_w = abs_threshold_for(spec, temp)
+                thr_w_v2, _ = abs_threshold_for_v2(spec, temp)
                 one_abs.append(abs_pass_for(spec, val_w, thr_w))
+                pass_w_v2 = abs_pass_for(spec, val_w, thr_w_v2)
+                one_abs_v2.append(pass_w_v2)
+                if not pass_w_v2:
+                    fail_reasons_v2.append(spec["name"])
             pass_w = bool(all(one_abs))
+            pass_w_v2 = bool(all(one_abs_v2))
             row[f"window_{w}_abs_pass"] = pass_w
+            row[f"window_{w}_core_abs_pass_v2"] = pass_w_v2
+            row[f"window_{w}_fail_reasons_v2"] = semicolon_join(fail_reasons_v2)
             window_flags.append(pass_w)
+            window_flags_v2.append(pass_w_v2)
         row["window_pass_count"] = int(sum(1 for x in window_flags if x))
         row["window_total"] = 3
         w100 = bool(row.get("window_100_abs_pass"))
         w200 = bool(row.get("window_200_abs_pass"))
         w400 = bool(row.get("window_400_abs_pass"))
         row["window_robust_pass"] = bool(w200 and (w100 or w400))
+        row["window_pass_count_v2"] = int(sum(1 for x in window_flags_v2 if x))
+        row["window_total_v2"] = 3
+        w100_v2 = bool(row.get("window_100_core_abs_pass_v2"))
+        w200_v2 = bool(row.get("window_200_core_abs_pass_v2"))
+        w400_v2 = bool(row.get("window_400_core_abs_pass_v2"))
+        row["window_robust_pass_v2"] = bool(w200_v2 and (w100_v2 or w400_v2))
+        if not w200_v2:
+            fail_flags_v2.append("window_200_core_abs_pass_v2")
+        if not row["window_robust_pass_v2"]:
+            if not w100_v2 and not w400_v2:
+                fail_flags_v2.append("window_flank_core_abs_pass_v2")
+            fail_flags_v2.append("window_robust_pass_v2")
 
         legacy3 = bool(row.get("gate_direction")) and bool(row.get("high_closer_A0")) and bool(row.get("low_closer_A1"))
         row["legacy3checks"] = legacy3
@@ -656,6 +738,18 @@ def main():
         row["rel_pass_all"] = bool(all(rel_passes))
         row["pass_core_checks_v3_abs"] = bool(legacy3 and row["abs_pass_all"])
         row["pass_core_checks_v3"] = bool(legacy3 and row["abs_pass_all"] and row["rel_pass_all"] and row["window_robust_pass"])
+        row["abs_pass_all_v2"] = bool(all(abs_passes_v2))
+        row["rel_pass_all_v2"] = bool(all(rel_passes_v2))
+        row["pass_core_checks_v3_abs_v2"] = bool(legacy3 and row["abs_pass_all_v2"])
+        row["pass_core_checks_v3_v2_before_guardrail"] = bool(
+            legacy3 and
+            row["abs_pass_all_v2"] and
+            row["rel_pass_all_v2"] and
+            row["window_robust_pass_v2"]
+        )
+        row["pass_core_checks_v3_v2"] = bool(row["pass_core_checks_v3_v2_before_guardrail"])
+        row["fail_reasons_v2"] = semicolon_join(fail_flags_v2)
+        row["top_fail_reason_v2"] = fail_flags_v2[0] if fail_flags_v2 else ""
 
     # Hard guardrail: if too many negative controls pass v3, fail v3 globally.
     neg_rows_eval = [r for r in config_rows if str(r.get("run_type", "")).lower() == "negative_control"]
@@ -672,6 +766,20 @@ def main():
             row["v3_guardrail_reason"] = "negative_control_pass_count_exceeded"
         else:
             row["v3_guardrail_reason"] = ""
+
+    neg_v3_v2_pass_count = int(sum(1 for r in neg_rows_eval if bool(r.get("pass_core_checks_v3_v2"))))
+    neg_v3_v2_max_allowed = 1
+    neg_v3_v2_guardrail_ok = bool(neg_v3_v2_pass_count <= neg_v3_v2_max_allowed)
+    for row in config_rows:
+        row["pass_core_checks_v3_v2_before_global_guardrail"] = bool(row.get("pass_core_checks_v3_v2"))
+        row["negative_control_v3_v2_pass_count"] = neg_v3_v2_pass_count
+        row["negative_control_v3_v2_pass_max_allowed"] = neg_v3_v2_max_allowed
+        row["negative_control_v3_v2_guardrail_pass"] = neg_v3_v2_guardrail_ok
+        if not neg_v3_v2_guardrail_ok:
+            row["pass_core_checks_v3_v2"] = False
+            row["v3_v2_guardrail_reason"] = "negative_control_pass_count_exceeded"
+        else:
+            row["v3_v2_guardrail_reason"] = ""
 
     # Mirror v3-dual fields back to check rows for unified reporting.
     cfg_by_name = {str(r.get("config_name")): r for r in config_rows}
@@ -793,12 +901,24 @@ def main():
             "window_pass_count": r.get("window_pass_count"),
             "window_total": r.get("window_total"),
             "window_robust_pass": r.get("window_robust_pass"),
+            "abs_pass_all_v2": r.get("abs_pass_all_v2"),
+            "rel_pass_all_v2": r.get("rel_pass_all_v2"),
+            "window_pass_count_v2": r.get("window_pass_count_v2"),
+            "window_total_v2": r.get("window_total_v2"),
+            "window_robust_pass_v2": r.get("window_robust_pass_v2"),
+            "top_fail_reason_v2": r.get("top_fail_reason_v2"),
+            "fail_reasons_v2": r.get("fail_reasons_v2"),
             "pass_core_checks_v2": bool(r.get("pass_core_checks_v2")),
             "pass_core_checks_v3_before_guardrail": bool(r.get("pass_core_checks_v3_before_guardrail")),
             "pass_core_checks_v3": bool(r.get("pass_core_checks_v3")),
+            "pass_core_checks_v3_v2_before_guardrail": bool(r.get("pass_core_checks_v3_v2_before_guardrail")),
+            "pass_core_checks_v3_v2": bool(r.get("pass_core_checks_v3_v2")),
             "negative_control_v3_pass_count": r.get("negative_control_v3_pass_count"),
             "negative_control_v3_pass_max_allowed": r.get("negative_control_v3_pass_max_allowed"),
             "negative_control_v3_guardrail_pass": r.get("negative_control_v3_guardrail_pass"),
+            "negative_control_v3_v2_pass_count": r.get("negative_control_v3_v2_pass_count"),
+            "negative_control_v3_v2_pass_max_allowed": r.get("negative_control_v3_v2_pass_max_allowed"),
+            "negative_control_v3_v2_guardrail_pass": r.get("negative_control_v3_v2_guardrail_pass"),
         }
         for spec in METRIC_SPECS:
             key = spec["name"]
@@ -806,14 +926,20 @@ def main():
             out[f"{key}_value"] = r.get(f"{key}_value", r.get(key))
             out[f"{key}_abs_thr"] = r.get(f"{key}_abs_thr")
             out[f"{key}_abs_pass"] = r.get(f"{key}_abs_pass")
+            out[f"{key}_abs_thr_v2"] = r.get(f"{key}_abs_thr_v2")
+            out[f"{key}_abs_pass_v2"] = r.get(f"{key}_abs_pass_v2")
             out[f"{key}_rel_control_family"] = r.get(f"{key}_rel_control_family")
             out[f"{key}_ctrl_mean"] = r.get(f"{key}_ctrl_mean")
             out[f"{key}_ctrl_std"] = r.get(f"{key}_ctrl_std")
+            out[f"{key}_ctrl_q10"] = r.get(f"{key}_ctrl_q10")
             out[f"{key}_ctrl_q25"] = r.get(f"{key}_ctrl_q25")
             out[f"{key}_ctrl_q75"] = r.get(f"{key}_ctrl_q75")
+            out[f"{key}_ctrl_q90"] = r.get(f"{key}_ctrl_q90")
             out[f"{key}_rel_thr"] = r.get(f"{key}_rel_thr")
             out[f"{key}_margin_vs_ctrl_mean"] = r.get(f"{key}_margin_vs_ctrl_mean")
             out[f"{key}_rel_pass"] = r.get(f"{key}_rel_pass")
+            out[f"{key}_rel_thr_v2"] = r.get(f"{key}_rel_thr_v2")
+            out[f"{key}_rel_pass_v2"] = r.get(f"{key}_rel_pass_v2")
         main_vs_rows.append(out)
     main_vs_headers = list(main_vs_rows[0].keys()) if main_vs_rows else [
         "config_name", "lambda_strategy", "run_type", "control_family",

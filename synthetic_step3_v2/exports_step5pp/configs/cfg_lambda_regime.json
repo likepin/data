@@ -13,7 +13,7 @@
     200,
     400
   ],
-  "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_regime.npz",
+  "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_regime.npz",
   "lambda_tag": "score_regime",
   "config_name": "score_regime",
   "run_type": "main",
