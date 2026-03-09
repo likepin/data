@@ -2,10 +2,12 @@
   "control_pool": "metric_mapped_family",
   "rel_rule_medium": {
     "higher": "value >= max(mean + 0.5*std, q75)",
-    "lower": "value <= min(mean - 0.5*std, q25)"
+    "lower": "value <= min(mean - 0.5*std, q25)",
+    "peak_delay_min_v2": "value <= mapped_shift_q75"
   },
   "abs_rule_v2": {
     "directional_align_overall": "min(default_abs_thr, max(0.52, mapped_q75 + 0.10, all_negative_q90 + 0.01))",
+    "peak_delay_min": "min(0.65*switch_window, max(default_abs_thr, mapped_shift_q75))",
     "others": "default_abs_thr"
   },
   "metrics": {

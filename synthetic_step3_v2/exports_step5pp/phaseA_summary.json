@@ -11,9 +11,9 @@
   "main_runs_pass_rate_v3": 0.0,
   "main_runs_pass_rate_v3_before_guardrail": 0.0,
   "main_runs_pass_rate_v3_abs": 0.0,
-  "main_runs_pass_rate_v3_v2": 0.3333333333333333,
-  "main_runs_pass_rate_v3_v2_before_guardrail": 0.3333333333333333,
-  "main_runs_pass_rate_v3_abs_v2": 0.3333333333333333,
+  "main_runs_pass_rate_v3_v2": 0.6666666666666666,
+  "main_runs_pass_rate_v3_v2_before_guardrail": 0.6666666666666666,
+  "main_runs_pass_rate_v3_abs_v2": 0.6666666666666666,
   "negative_control_pass_rate_v3": 0.0,
   "negative_control_pass_rate_v3_v2": 0.0,
   "negative_control_v3_pass_count": 0,
@@ -28,25 +28,25 @@
   "main_peak_delay_min_mean": 98.66666666666667,
   "shift_peak_delay_min_mean": 88.75,
   "block_shuffle_peak_delay_min_mean": 72.75,
+  "provisional_phaseA_rule": {
+    "legacy_fields_retained": true,
+    "peak_delay_min_abs_thr_v2": 121.75,
+    "peak_delay_min_rel_thr_v2": 121.75,
+    "peak_delay_min_abs_rule_v2": "min(0.65*switch_window,max(default_abs_thr,mapped_shift_q75))",
+    "peak_delay_min_rel_rule_v2": "value <= mapped_shift_q75",
+    "note": "Current synthetic PhaseA provisional standard. Re-validate before using on real data."
+  },
   "lambda_pair_corr_score_gating_score_regime": 0.8890241459041167,
   "lambda_pair_mean_abs_diff_score_gating_score_regime": 0.09984745326476023,
   "lambda_pair_hash_same_score_gating_score_regime": false,
   "strategy_collapse": false,
   "collapse_reason": "",
   "window_fail_breakdown_v3_v2": {
-    "window_100_core_abs_fail_count_v2": 2,
+    "window_100_core_abs_fail_count_v2": 1,
     "window_200_core_abs_fail_count_v2": 1,
     "window_400_core_abs_fail_count_v2": 1
   },
   "top_fail_reasons_v3_v2": [
-    {
-      "key": "peak_delay_min_abs_pass_v2",
-      "count": 2
-    },
-    {
-      "key": "peak_delay_min_rel_pass_v2",
-      "count": 2
-    },
     {
       "key": "directional_align_overall_abs_pass_v2",
       "count": 1
@@ -69,6 +69,14 @@
     },
     {
       "key": "retained_gap_switch_abs_abs_pass_v2",
+      "count": 1
+    },
+    {
+      "key": "window_200_core_abs_pass_v2",
+      "count": 1
+    },
+    {
+      "key": "window_flank_core_abs_pass_v2",
       "count": 1
     }
   ]

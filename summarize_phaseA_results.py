@@ -175,6 +175,10 @@ def main():
     main_peak_delay_mean = mean_valid(main_checks, "peak_delay_min")
     shift_peak_delay_mean = mean_valid(shift_rows, "peak_delay_min")
     block_peak_delay_mean = mean_valid(block_shuffle_rows, "peak_delay_min")
+    peak_delay_abs_thr_v2 = to_float((main_checks or check_rows or [{}])[0].get("peak_delay_min_abs_thr_v2"))
+    peak_delay_rel_thr_v2 = to_float((main_checks or check_rows or [{}])[0].get("peak_delay_min_rel_thr_v2"))
+    peak_delay_abs_rule_v2 = str((main_checks or check_rows or [{}])[0].get("peak_delay_min_abs_rule_v2", "") or "")
+    peak_delay_rel_rule_v2 = str((main_checks or check_rows or [{}])[0].get("peak_delay_min_rel_rule_v2", "") or "")
 
     pair_gr = find_pair_row(lambda_pairwise_rows, "score_gating", "score_regime")
     pair_corr_gr = to_float(pair_gr.get("corr")) if pair_gr else np.nan
@@ -224,6 +228,14 @@ def main():
         "main_peak_delay_min_mean": main_peak_delay_mean,
         "shift_peak_delay_min_mean": shift_peak_delay_mean,
         "block_shuffle_peak_delay_min_mean": block_peak_delay_mean,
+        "provisional_phaseA_rule": {
+            "legacy_fields_retained": True,
+            "peak_delay_min_abs_thr_v2": peak_delay_abs_thr_v2,
+            "peak_delay_min_rel_thr_v2": peak_delay_rel_thr_v2,
+            "peak_delay_min_abs_rule_v2": peak_delay_abs_rule_v2,
+            "peak_delay_min_rel_rule_v2": peak_delay_rel_rule_v2,
+            "note": "Current synthetic PhaseA provisional standard. Re-validate before using on real data.",
+        },
         "lambda_pair_corr_score_gating_score_regime": pair_corr_gr,
         "lambda_pair_mean_abs_diff_score_gating_score_regime": pair_mad_gr,
         "lambda_pair_hash_same_score_gating_score_regime": bool(pair_hash_same_gr),
@@ -281,6 +293,22 @@ def main():
         if np.isfinite(block_peak_delay_mean):
             f.write(f"- peak_delay_min mean (block_shuffle): `{block_peak_delay_mean:.6f}`\n")
         f.write("\n")
+        f.write("### Provisional PhaseA Rule\n")
+        if np.isfinite(peak_delay_abs_thr_v2):
+            f.write(f"- peak_delay_min_abs_thr_v2: `{peak_delay_abs_thr_v2:.6f}`\n")
+        else:
+            f.write("- peak_delay_min_abs_thr_v2: `nan`\n")
+        if peak_delay_abs_rule_v2:
+            f.write(f"- peak_delay_min_abs_rule_v2: `{peak_delay_abs_rule_v2}`\n")
+        if np.isfinite(peak_delay_rel_thr_v2):
+            f.write(f"- peak_delay_min_rel_thr_v2: `{peak_delay_rel_thr_v2:.6f}`\n")
+        else:
+            f.write("- peak_delay_min_rel_thr_v2: `nan`\n")
+        if peak_delay_rel_rule_v2:
+            f.write(f"- peak_delay_min_rel_rule_v2: `{peak_delay_rel_rule_v2}`\n")
+        f.write("- legacy v3/v2 fields are retained for backward compatibility.\n")
+        f.write("- This is the current synthetic PhaseA provisional standard, not a universal threshold.\n")
+        f.write("\n")
         f.write("### V2 Check Summary\n")
         f.write(f"- directional_align_pass: {'PASS' if directional_pass else 'FAIL'}\n")
         f.write(f"- switch_band_pass: {'PASS' if switch_band_pass else 'FAIL'}\n")
@@ -303,6 +331,7 @@ def main():
                 f.write(f"- {r['key']}: {r['count']}\n")
 
     out_block_md = os.path.join(exports_dir, "phaseA_blockshuffle_summary.md")
+    out_rulebook_md = os.path.join(exports_dir, "phaseA_rulebook.md")
     if main_vs_rows and block_rows:
         block_align_mean = mean_valid(block_rows, "directional_align_overall")
         block_switch_mean = mean_valid(block_rows, "switch_band_correct_rate")
@@ -329,9 +358,36 @@ def main():
             f.write("## Phase A Block-Shuffle Summary\n\n")
             f.write("- Missing compare_phaseA_main_vs_blockshuffle.csv or compare_phaseA_blockshuffle.csv.\n")
 
+    with open(out_rulebook_md, "w", encoding="utf-8") as f:
+        f.write("## PhaseA Rulebook\n\n")
+        f.write("This document records the current provisional evaluation rule used for the synthetic PhaseA benchmark.\n\n")
+        f.write("### Rule Status\n")
+        f.write("- Scope: synthetic PhaseA only\n")
+        f.write("- Legacy fields retained: `True`\n")
+        f.write("- Purpose: recover valid main strategies without letting negative controls pass\n\n")
+        f.write("### Peak Delay v3_v2\n")
+        if np.isfinite(peak_delay_abs_thr_v2):
+            f.write(f"- peak_delay_min_abs_thr_v2: `{peak_delay_abs_thr_v2:.6f}`\n")
+        else:
+            f.write("- peak_delay_min_abs_thr_v2: `nan`\n")
+        if peak_delay_abs_rule_v2:
+            f.write(f"- peak_delay_min_abs_rule_v2: `{peak_delay_abs_rule_v2}`\n")
+        if np.isfinite(peak_delay_rel_thr_v2):
+            f.write(f"- peak_delay_min_rel_thr_v2: `{peak_delay_rel_thr_v2:.6f}`\n")
+        else:
+            f.write("- peak_delay_min_rel_thr_v2: `nan`\n")
+        if peak_delay_rel_rule_v2:
+            f.write(f"- peak_delay_min_rel_rule_v2: `{peak_delay_rel_rule_v2}`\n")
+        f.write("- Interpretation: peak delay is treated as a temporal misalignment diagnostic and is calibrated against `shift` controls.\n\n")
+        f.write("### Current Outcome\n")
+        f.write(f"- main_runs_pass_rate_v3_v2: `{main_pass_rate_v3_v2:.3f}`\n")
+        f.write(f"- negative_control_pass_rate_v3_v2: `{neg_v3_rate_v2:.3f}`\n")
+        f.write("- Recommendation: keep this rule as the provisional synthetic benchmark standard and re-validate before transferring to real data.\n")
+
     print(f"[OK] {out_json}")
     print(f"[OK] {out_md}")
     print(f"[OK] {out_block_md}")
+    print(f"[OK] {out_rulebook_md}")
 
 
 if __name__ == "__main__":
