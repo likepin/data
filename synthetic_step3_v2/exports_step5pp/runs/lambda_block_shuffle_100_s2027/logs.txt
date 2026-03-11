@@ -27,9 +27,9 @@ A_base shape=(2, 10, 10) (sum over lags)
 A0/A1 loaded from GT (A_base + DeltaA)
 lambda loaded from --lambda_file: synthetic_step3_v2/exports_step5pp\configs\lambda_block_shuffle_100.npz
 lambda stats: min=0.0000 max=1.0000 mean=0.3952
-[00:09:27] DeltaA shape=(2, 10, 10)
-[00:09:27] K_true_from_DeltaA=6
-[00:09:27] violations=0
+[01:00:52] DeltaA shape=(2, 10, 10)
+[01:00:52] K_true_from_DeltaA=6
+[01:00:52] violations=0
 A0/A1 auto-swapped. reason=pre_rel_mean: pre_rel_mean=0.201017, post_rel_mean=0.196905, pre_count=3561, post_count=2400
 A_base nnz=30
 A0 stats: min=-1.4634 max=1.1778 mean=0.0229 nnz=30

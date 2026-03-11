@@ -1,7 +1,7 @@
 lambda_strategy,lambda_file_npy,lambda_file_npz,source_type,run_type,control_family,source_score_key,window,k,score,seed
 score_equal,synthetic_step3_v2/exports_step5pp\configs\lambda_equal.npy,synthetic_step3_v2/exports_step5pp\configs\lambda_equal.npz,phaseB_locked,main,main,score_equal,120,2,7.4791846069363785,2026
 score_gating,synthetic_step3_v2/exports_step5pp\configs\lambda_gating.npy,synthetic_step3_v2/exports_step5pp\configs\lambda_gating.npz,phaseB_locked,main,main,score_gating,40,2,0.7735530948540701,2026
-score_regime,synthetic_step3_v2/exports_step5pp\configs\lambda_regime.npy,synthetic_step3_v2/exports_step5pp\configs\lambda_regime.npz,step4_rescored,main,main,score_regime,80,2,0.8825064479230728,2026
+score_regime,synthetic_step3_v2/exports_step5pp\configs\lambda_regime.npy,synthetic_step3_v2/exports_step5pp\configs\lambda_regime.npz,step4_rescored,main,main,score_regime,120,8,0.9352545379558819,2026
 lambda_shuffle_global,synthetic_step3_v2/exports_step5pp\configs\lambda_shuffle_global.npy,synthetic_step3_v2/exports_step5pp\configs\lambda_shuffle_global.npz,shuffle_from_gating,negative_control,shuffle_global,,,,,2026
 lambda_block_shuffle_50,synthetic_step3_v2/exports_step5pp\configs\lambda_block_shuffle_50.npy,synthetic_step3_v2/exports_step5pp\configs\lambda_block_shuffle_50.npz,block_shuffle_50_from_gating,negative_control,block_shuffle,,,,,2026
 lambda_block_shuffle_100,synthetic_step3_v2/exports_step5pp\configs\lambda_block_shuffle_100.npy,synthetic_step3_v2/exports_step5pp\configs\lambda_block_shuffle_100.npz,block_shuffle_100_from_gating,negative_control,block_shuffle,,,,,2026

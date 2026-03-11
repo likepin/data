@@ -33,9 +33,9 @@
     "run_type": "main",
     "control_family": "main",
     "source_score_key": "score_regime",
-    "window": 80,
-    "k": 2,
-    "score": 0.8825064479230728,
+    "window": 120,
+    "k": 8,
+    "score": 0.9352545379558819,
     "seed": 2026
   },
   {

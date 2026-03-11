@@ -16,7 +16,7 @@ This document records the current provisional evaluation rule used for the synth
 - Interpretation: peak delay is treated as a temporal misalignment diagnostic and is calibrated against `shift` controls.
 
 ### Current Outcome
-- main_runs_pass_rate_v3_v2: `0.333`
+- main_runs_pass_rate_v3_v2: `0.000`
 - negative_control_pass_rate_v3_v2: `0.000`
 - Phase B baseline snapshot: `phaseB_baseline_regime.json`
 - Phase B iteration ledger: `compare_regime_iteration.csv` / `compare_regime_iteration.md`

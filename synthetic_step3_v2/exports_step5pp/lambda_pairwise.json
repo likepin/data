@@ -10,17 +10,17 @@
   {
     "variant_a": "score_equal",
     "variant_b": "score_regime",
-    "corr": 0.8865507210696418,
-    "mean_abs_diff": 0.0947112804435814,
+    "corr": 0.7266020343400083,
+    "mean_abs_diff": 0.17498077624025676,
     "overlap_count": 5881,
     "hash_same": false
   },
   {
     "variant_a": "score_gating",
     "variant_b": "score_regime",
-    "corr": 0.8400148199482447,
-    "mean_abs_diff": 0.1201029624518832,
-    "overlap_count": 5921,
+    "corr": 0.5690423137387092,
+    "mean_abs_diff": 0.2183536215326071,
+    "overlap_count": 5881,
     "hash_same": false
   }
 ]

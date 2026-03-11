@@ -24,12 +24,17 @@ def build_window_features(X, window):
         std = w.std(axis=0)
         skw = skewness(w)
         rng = w.max(axis=0) - w.min(axis=0)
-        feat = np.concatenate([mean, std, skw, rng], axis=0)
+        split = max(1, w.shape[0] // 2)
+        first_half = w[:split]
+        second_half = w[-split:]
+        # Minimal switch-aware augmentation: emphasize front-vs-back drift inside the window.
+        half_mean_delta = second_half.mean(axis=0) - first_half.mean(axis=0)
+        feat = np.concatenate([mean, std, skw, rng, half_mean_delta], axis=0)
         feats.append(feat)
         indices.append(t)
         valid_mask[t] = True
     if len(feats) == 0:
-        return np.zeros((0, 4 * N), dtype=np.float64), np.array([], dtype=np.int64), valid_mask
+        return np.zeros((0, 5 * N), dtype=np.float64), np.array([], dtype=np.int64), valid_mask
     return np.vstack(feats).astype(np.float64), np.array(indices, dtype=np.int64), valid_mask
 
 
