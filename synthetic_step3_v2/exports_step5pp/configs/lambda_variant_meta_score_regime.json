@@ -75,6 +75,8 @@
   "picked_reason": "top1 by score_regime; non-collapse (corr<= 0.99, mad>= 0.001)",
   "collapse_with_existing": false,
   "collapse_with_existing_details": [],
+  "locked_phaseb": false,
+  "lock_source": "",
   "collapse_rule": {
     "corr_thr": 0.99,
     "mad_thr": 0.001

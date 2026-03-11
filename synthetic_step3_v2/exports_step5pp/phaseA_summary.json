@@ -74,6 +74,9 @@
   ],
   "benchmark_version": "phaseA_v0.1_synth",
   "phaseB_baseline_regime_path": "synthetic_step3_v2\\exports_step5pp\\phaseB_baseline_regime.json",
+  "phaseB_locked_variants_path": "synthetic_step3_v2\\exports_step5pp\\phaseB_locked_variants.json",
+  "phaseB_locked_variants_present": true,
+  "phaseB_baseline_promoted_this_run": false,
   "compare_regime_iteration_csv": "synthetic_step3_v2\\exports_step5pp\\compare\\compare_regime_iteration.csv",
   "compare_regime_iteration_md": "synthetic_step3_v2\\exports_step5pp\\compare\\compare_regime_iteration.md"
 }

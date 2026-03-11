@@ -251,6 +251,13 @@ def main():
 
     benchmark_version = BENCHMARK_VERSION
     generated_at = datetime.now().isoformat(timespec="seconds")
+    phaseb_lock_path = os.path.join(exports_dir, "phaseB_locked_variants.json")
+    phaseb_lock_payload = read_json(phaseb_lock_path)
+    phaseb_locked_variants = {}
+    if isinstance(phaseb_lock_payload, dict):
+        raw_locked = phaseb_lock_payload.get("locked_variants", {})
+        if isinstance(raw_locked, dict):
+            phaseb_locked_variants = raw_locked
 
     current_regime_cfg = find_row(main_cfg, "lambda_strategy", "score_regime") or find_row(main_cfg, "config_name", "score_regime")
     current_regime_check = find_row(main_checks, "lambda_strategy", "score_regime") or find_row(main_checks, "config_name", "score_regime")
@@ -301,7 +308,7 @@ def main():
             "benchmark_version": benchmark_version,
             "created_at": generated_at,
             "snapshot": regime_snapshot,
-            "note": "Frozen Phase B baseline regime lambda under current synthetic benchmark.",
+            "note": "Frozen Phase B baseline regime lambda under current synthetic benchmark. Baseline is only promoted after iteration_accept=True.",
         }
         with open(phaseb_baseline_path, "w", encoding="utf-8") as f:
             json.dump(baseline_payload, f, indent=2)
@@ -381,6 +388,9 @@ def main():
             "timestamp": generated_at,
             "benchmark_version": benchmark_version,
             "iteration_role": role,
+            "regime_baseline_hash_used": baseline.get("lambda_hash_round6", ""),
+            "regime_baseline_window_used": baseline.get("window", ""),
+            "regime_baseline_k_used": baseline.get("k", ""),
             "regime_lambda_strategy": snapshot.get("lambda_strategy", "score_regime"),
             "regime_config_name": snapshot.get("config_name", "score_regime"),
             "regime_lambda_hash_round6": snapshot.get("lambda_hash_round6", ""),
@@ -470,11 +480,26 @@ def main():
     for idx, row in enumerate(iteration_rows):
         row["iteration_id"] = idx
 
+    baseline_promoted_this_run = False
+    if current_role == "candidate" and bool(current_iteration_row.get("iteration_accept")):
+        baseline_payload = {
+            "benchmark_version": benchmark_version,
+            "created_at": baseline_payload.get("created_at", generated_at),
+            "updated_at": generated_at,
+            "promoted_from_iteration_key": current_iteration_row.get("iteration_key", ""),
+            "snapshot": regime_snapshot,
+            "note": "Frozen Phase B baseline regime lambda under current synthetic benchmark. Baseline is only promoted after iteration_accept=True.",
+        }
+        with open(phaseb_baseline_path, "w", encoding="utf-8") as f:
+            json.dump(baseline_payload, f, indent=2)
+        baseline_promoted_this_run = True
+
     iteration_md_cols = [
         "iteration_id",
         "timestamp",
         "iteration_role",
         "benchmark_version",
+        "regime_baseline_hash_used",
         "regime_lambda_hash_round6",
         "switch_band_correct_rate",
         "delta_switch_band_vs_baseline",
@@ -547,6 +572,9 @@ def main():
         "top_fail_reasons_v3_v2": top_fail_reasons_v3_v2,
         "benchmark_version": benchmark_version,
         "phaseB_baseline_regime_path": phaseb_baseline_path,
+        "phaseB_locked_variants_path": phaseb_lock_path,
+        "phaseB_locked_variants_present": bool(phaseb_locked_variants),
+        "phaseB_baseline_promoted_this_run": baseline_promoted_this_run,
         "compare_regime_iteration_csv": iteration_csv,
         "compare_regime_iteration_md": iteration_md,
     }
@@ -616,7 +644,9 @@ def main():
         f.write("- legacy v3/v2 fields are retained for backward compatibility.\n")
         f.write("- This is the current synthetic PhaseA provisional standard, not a universal threshold.\n")
         f.write(f"- Phase B baseline snapshot: `{os.path.basename(phaseb_baseline_path)}`\n")
+        f.write(f"- Phase B locked equal/gating: `{os.path.basename(phaseb_lock_path)}` present=`{bool(phaseb_locked_variants)}`\n")
         f.write(f"- Phase B iteration ledger: `{os.path.basename(iteration_csv)}` / `{os.path.basename(iteration_md)}`\n")
+        f.write(f"- Phase B baseline promoted this run: `{baseline_promoted_this_run}`\n")
         f.write("\n")
         f.write("### V2 Check Summary\n")
         f.write(f"- directional_align_pass: {'PASS' if directional_pass else 'FAIL'}\n")

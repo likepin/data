@@ -32,7 +32,9 @@
 - legacy v3/v2 fields are retained for backward compatibility.
 - This is the current synthetic PhaseA provisional standard, not a universal threshold.
 - Phase B baseline snapshot: `phaseB_baseline_regime.json`
+- Phase B locked equal/gating: `phaseB_locked_variants.json` present=`True`
 - Phase B iteration ledger: `compare_regime_iteration.csv` / `compare_regime_iteration.md`
+- Phase B baseline promoted this run: `False`
 
 ### V2 Check Summary
 - directional_align_pass: FAIL

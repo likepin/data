@@ -15,8 +15,9 @@
     "score": 7.4791846069363785,
     "source_csv": "synthetic_step3_v2\\exports_step4\\rescored_results_20260311_162910.csv",
     "selected_rank": 1,
-    "picked_reason": "top1 by score_equal; non-collapse (corr<= 0.99, mad>= 0.001)",
-    "collapse_with_existing": false
+    "picked_reason": "phaseB_locked_from_current_variant",
+    "collapse_with_existing": false,
+    "locked_phaseb": true
   },
   {
     "variant_name": "score_gating",
@@ -34,8 +35,9 @@
     "score": 0.7735530948540701,
     "source_csv": "synthetic_step3_v2\\exports_step4\\rescored_results_20260311_162910.csv",
     "selected_rank": 1,
-    "picked_reason": "top1 by score_gating; non-collapse (corr<= 0.99, mad>= 0.001)",
-    "collapse_with_existing": false
+    "picked_reason": "phaseB_locked_from_current_variant",
+    "collapse_with_existing": false,
+    "locked_phaseb": true
   },
   {
     "variant_name": "score_regime",
@@ -54,6 +56,7 @@
     "source_csv": "synthetic_step3_v2\\exports_step4\\rescored_results_20260311_162910.csv",
     "selected_rank": 1,
     "picked_reason": "top1 by score_regime; non-collapse (corr<= 0.99, mad>= 0.001)",
-    "collapse_with_existing": false
+    "collapse_with_existing": false,
+    "locked_phaseb": false
   }
 ]

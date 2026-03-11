@@ -5,6 +5,8 @@ import argparse
 import random
 import hashlib
 import itertools
+import shutil
+from datetime import datetime
 
 import numpy as np
 
@@ -16,9 +18,32 @@ def safe_mkdir(path):
     return path
 
 
+def read_json(path):
+    if not os.path.isfile(path):
+        return None
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f)
+
+
+def write_json(path, data):
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
+
+
 def save_lambda_variant(path_base, lambda_t, valid_mask):
     np.save(path_base + ".npy", lambda_t.astype(np.float64))
     np.savez(path_base + ".npz", lambda_t=lambda_t.astype(np.float64), valid_mask=valid_mask.astype(bool))
+
+
+def load_lambda_variant(path_npz):
+    data = np.load(path_npz)
+    try:
+        lambda_t = np.asarray(data["lambda_t"], dtype=np.float64)
+        valid_mask = np.asarray(data["valid_mask"], dtype=bool)
+    finally:
+        if hasattr(data, "close"):
+            data.close()
+    return lambda_t, valid_mask
 
 
 def lambda_hash_round6(lambda_t, valid_mask):
@@ -91,6 +116,104 @@ def is_collapse_pair(a, b, corr_thr=0.99, mad_thr=1e-3):
     }
 
 
+def phaseb_lock_path(exports_dir):
+    return os.path.join(exports_dir, "phaseB_locked_variants.json")
+
+
+def load_phaseb_locked_variants(exports_dir):
+    payload = read_json(phaseb_lock_path(exports_dir))
+    if not isinstance(payload, dict):
+        return {}
+    locked = payload.get("locked_variants", {})
+    return locked if isinstance(locked, dict) else {}
+
+
+def build_locked_candidate(short_name, lock_entry):
+    if not isinstance(lock_entry, dict):
+        raise RuntimeError(f"invalid Phase B lock entry for {short_name}")
+    npz_path = str(lock_entry.get("lambda_file_npz", "") or "")
+    if not npz_path or not os.path.isfile(npz_path):
+        raise FileNotFoundError(f"Phase B locked lambda missing for {short_name}: {npz_path}")
+    lambda_t, valid_mask = load_lambda_variant(npz_path)
+    window = lock_entry.get("window", "")
+    k = lock_entry.get("k", "")
+    score = lock_entry.get("score", np.nan)
+    try:
+        window = int(window)
+    except Exception:
+        window = ""
+    try:
+        k = int(k)
+    except Exception:
+        k = ""
+    try:
+        score = float(score)
+    except Exception:
+        score = np.nan
+    return {
+        "score_key": lock_entry.get("score_key", f"score_{short_name}"),
+        "short_name": short_name,
+        "rank": lock_entry.get("selected_rank", ""),
+        "window": window,
+        "k": k,
+        "score": score,
+        "source_csv": lock_entry.get("source_csv", ""),
+        "picked_row_raw": {},
+        "lambda_t": lambda_t,
+        "valid_mask": valid_mask,
+        "lambda_hash_round6": lock_entry.get("lambda_hash_round6", "") or lambda_hash_round6(lambda_t, valid_mask),
+        "locked_phaseb": True,
+        "lock_source": phaseb_lock_path(os.path.dirname(os.path.dirname(npz_path))),
+        "variant_name": f"score_{short_name}",
+        "picked_reason": str(lock_entry.get("lock_reason", "phaseB_locked_variant")),
+        "collapse_with_existing": False,
+        "collapse_with_existing_details": [],
+    }
+
+
+def freeze_phaseb_equal_gating(exports_dir):
+    configs_dir = os.path.join(exports_dir, "configs")
+    locked_dir = safe_mkdir(os.path.join(exports_dir, "phaseB_locked"))
+    locked_variants = {}
+    for short_name in ("equal", "gating"):
+        meta_path = os.path.join(configs_dir, f"lambda_variant_meta_score_{short_name}.json")
+        meta = read_json(meta_path)
+        if not isinstance(meta, dict) or not meta:
+            raise FileNotFoundError(f"current lambda meta not found for {short_name}: {meta_path}")
+        src_npy = str(meta.get("lambda_file_npy", "") or "")
+        src_npz = str(meta.get("lambda_file_npz", "") or "")
+        if not src_npy or not os.path.isfile(src_npy):
+            raise FileNotFoundError(f"current lambda npy missing for {short_name}: {src_npy}")
+        if not src_npz or not os.path.isfile(src_npz):
+            raise FileNotFoundError(f"current lambda npz missing for {short_name}: {src_npz}")
+        dst_base = os.path.join(locked_dir, f"lambda_{short_name}_locked")
+        shutil.copyfile(src_npy, dst_base + ".npy")
+        shutil.copyfile(src_npz, dst_base + ".npz")
+        picked_row = meta.get("picked_row", {}) if isinstance(meta.get("picked_row"), dict) else {}
+        locked_variants[short_name] = {
+            "variant_name": meta.get("variant_name", f"score_{short_name}"),
+            "lambda_file_npy": dst_base + ".npy",
+            "lambda_file_npz": dst_base + ".npz",
+            "lambda_hash_round6": meta.get("lambda_hash_round6", ""),
+            "window": picked_row.get("window", ""),
+            "k": picked_row.get("k", ""),
+            "score_key": picked_row.get("score_key", f"score_{short_name}"),
+            "score": picked_row.get("score", ""),
+            "source_csv": picked_row.get("source_csv", ""),
+            "selected_rank": picked_row.get("selected_rank", ""),
+            "lock_reason": "phaseB_locked_from_current_variant",
+            "locked_at": datetime.now().isoformat(timespec="seconds"),
+        }
+    payload = {
+        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "note": "Phase B locked equal/gating variants. Export keeps these fixed while regime continues to iterate.",
+        "locked_variants": locked_variants,
+    }
+    out_path = phaseb_lock_path(exports_dir)
+    write_json(out_path, payload)
+    return out_path
+
+
 def extract_metric_subset(raw_row, keep_norm):
     out = {}
     for k, v in dict(raw_row or {}).items():
@@ -144,6 +267,7 @@ def export_lambda_variants(data_dir, exports_dir, seed=2026, top_m=5, corr_thr=0
         ("score_gating", "gating"),
         ("score_regime", "regime"),
     ]
+    locked_variants = load_phaseb_locked_variants(exports_dir)
 
     candidate_map = {}
     for score_key, short_name in strategy_map:
@@ -172,6 +296,11 @@ def export_lambda_variants(data_dir, exports_dir, seed=2026, top_m=5, corr_thr=0
     chosen = {}
     chosen_list = []
     for score_key, short_name in strategy_map:
+        if short_name in locked_variants:
+            selected = build_locked_candidate(short_name, locked_variants[short_name])
+            chosen[short_name] = selected
+            chosen_list.append(selected)
+            continue
         cands = candidate_map[short_name]
         selected = None
         selected_reason = ""
@@ -221,7 +350,7 @@ def export_lambda_variants(data_dir, exports_dir, seed=2026, top_m=5, corr_thr=0
                 "lambda_strategy": f"score_{short_name}",
                 "lambda_file_npy": base + ".npy",
                 "lambda_file_npz": base + ".npz",
-                "source_type": "step4_rescored",
+                "source_type": "phaseB_locked" if c.get("locked_phaseb") else "step4_rescored",
                 "run_type": "main",
                 "control_family": "main",
                 "source_score_key": c.get("score_key", score_key),
@@ -260,6 +389,7 @@ def export_lambda_variants(data_dir, exports_dir, seed=2026, top_m=5, corr_thr=0
                 "selected_rank": c.get("rank"),
                 "picked_reason": c.get("picked_reason", ""),
                 "collapse_with_existing": bool(c.get("collapse_with_existing", False)),
+                "locked_phaseb": bool(c.get("locked_phaseb", False)),
             }
         )
 
@@ -283,6 +413,8 @@ def export_lambda_variants(data_dir, exports_dir, seed=2026, top_m=5, corr_thr=0
             "picked_reason": picked_reason,
             "collapse_with_existing": bool(c.get("collapse_with_existing", False)),
             "collapse_with_existing_details": c.get("collapse_with_existing_details", []),
+            "locked_phaseb": bool(c.get("locked_phaseb", False)),
+            "lock_source": c.get("lock_source", ""),
             "collapse_rule": {
                 "corr_thr": float(corr_thr),
                 "mad_thr": float(mad_thr),
@@ -482,10 +614,15 @@ def main():
     parser.add_argument("--top_m", type=int, default=5)
     parser.add_argument("--corr_thr", type=float, default=0.99)
     parser.add_argument("--mad_thr", type=float, default=1e-3)
+    parser.add_argument("--freeze_phaseb_equal_gating", action="store_true")
     args = parser.parse_args()
 
     exports_dir = args.exports_dir or os.path.join(args.data_dir, "exports_step5pp")
     safe_mkdir(exports_dir)
+    if args.freeze_phaseb_equal_gating:
+        out_path = freeze_phaseb_equal_gating(exports_dir)
+        print(f"[OK] {out_path}")
+        return
     export_lambda_variants(
         args.data_dir,
         exports_dir,
