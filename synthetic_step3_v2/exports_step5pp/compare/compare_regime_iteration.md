@@ -1,0 +1,5 @@
+## Regime Iteration Ledger
+
+| iteration_id | timestamp | iteration_role | benchmark_version | regime_lambda_hash_round6 | switch_band_correct_rate | delta_switch_band_vs_baseline | switch_margin_gap_signed | delta_switch_margin_gap_vs_baseline | peak_delay_min | delta_peak_delay_vs_baseline | delta_switch_vs_blockshuffle | delta_switch_vs_blockshuffle_vs_baseline | corr_gating_regime | delta_corr_vs_baseline | mean_abs_diff_gating_regime | delta_mad_vs_baseline | hash_same_gating_regime | strategy_collapse | negative_control_v3_v2_guardrail_pass | pass_core_checks_v3_v2 | iteration_accept | iteration_accept_reason |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 2026-03-10T18:08:15 | baseline | phaseA_v0.1_synth | 6db132725d81c7889924901173a9399221293406 | 0.83 | 0.0 | 0.10248515754938126 | 0.0 | 121.0 | 0.0 | 0.42613636363636354 | 0.0 | 0.8890241459041167 | 0.0 | 0.09984745326476023 | 0.0 | False | False | True | True | True | baseline_snapshot |

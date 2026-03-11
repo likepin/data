@@ -1,0 +1,30 @@
+{
+  "benchmark_version": "phaseA_v0.1_synth",
+  "created_at": "2026-03-10T18:08:15",
+  "snapshot": {
+    "lambda_strategy": "score_regime",
+    "config_name": "score_regime",
+    "lambda_hash_round6": "6db132725d81c7889924901173a9399221293406",
+    "window": "50",
+    "k": "2",
+    "selected_rank": "2",
+    "source_csv": "synthetic_step3_v2\\exports_step4\\rescored_results_20260306_142434.csv",
+    "switch_band_correct_rate": 0.83,
+    "switch_margin_gap_signed": 0.10248515754938126,
+    "peak_delay_min": 121.0,
+    "directional_align_overall": 0.5444463115442782,
+    "delta_align_vs_blockshuffle": 0.14043297435391894,
+    "delta_switch_vs_blockshuffle": 0.42613636363636354,
+    "delta_peakdelay_vs_blockshuffle": -11.0,
+    "pass_core_checks_v3_v2": true,
+    "top_fail_reason_v2": "",
+    "fail_reasons_v2": "",
+    "corr_gating_regime": 0.8890241459041167,
+    "mean_abs_diff_gating_regime": 0.09984745326476023,
+    "hash_same_gating_regime": false,
+    "strategy_collapse": false,
+    "negative_control_v3_v2_pass_count": 0,
+    "negative_control_v3_v2_guardrail_pass": true
+  },
+  "note": "Frozen Phase B baseline regime lambda under current synthetic benchmark."
+}

@@ -79,5 +79,9 @@
       "key": "window_flank_core_abs_pass_v2",
       "count": 1
     }
-  ]
+  ],
+  "benchmark_version": "phaseA_v0.1_synth",
+  "phaseB_baseline_regime_path": "synthetic_step3_v2\\exports_step5pp\\phaseB_baseline_regime.json",
+  "compare_regime_iteration_csv": "synthetic_step3_v2\\exports_step5pp\\compare\\compare_regime_iteration.csv",
+  "compare_regime_iteration_md": "synthetic_step3_v2\\exports_step5pp\\compare\\compare_regime_iteration.md"
 }

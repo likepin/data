@@ -1,5 +1,6 @@
 ## Phase A Summary (Switch-aware)
 
+- Benchmark version: `phaseA_v0.1_synth`
 - Best strategy by directional_align_overall: `score_gating`
 - Best strategy by auc_switch_rel: `score_gating`
 - Best strategy by retained_gap_switch: `score_equal`
@@ -30,6 +31,8 @@
 - peak_delay_min_rel_rule_v2: `value <= mapped_shift_q75`
 - legacy v3/v2 fields are retained for backward compatibility.
 - This is the current synthetic PhaseA provisional standard, not a universal threshold.
+- Phase B baseline snapshot: `phaseB_baseline_regime.json`
+- Phase B iteration ledger: `compare_regime_iteration.csv` / `compare_regime_iteration.md`
 
 ### V2 Check Summary
 - directional_align_pass: FAIL
