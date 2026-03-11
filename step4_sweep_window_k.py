@@ -5,7 +5,15 @@ import argparse
 from datetime import datetime
 
 import numpy as np
-import matplotlib.pyplot as plt
+
+try:
+    import matplotlib.pyplot as plt
+except Exception:
+    plt = None
+
+
+LEGACY_WINDOW_GRID = [20, 30, 50, 80, 120]
+REGIME_DENSE_WINDOW_GRID = [20, 30, 40, 50, 60, 80, 100, 120, 160]
 
 
 def find_x_npy(data_dir):
@@ -34,6 +42,15 @@ def parse_int_list(s):
     if s is None or str(s).strip() == "":
         return []
     return [int(x) for x in str(s).replace(" ", "").split(",") if x != ""]
+
+
+def default_windows_for_preset(name):
+    preset = str(name or "regime_dense").strip().lower()
+    if preset == "legacy":
+        return list(LEGACY_WINDOW_GRID)
+    if preset == "regime_dense":
+        return list(REGIME_DENSE_WINDOW_GRID)
+    raise ValueError(f"unknown window preset: {name}")
 
 
 def skewness(x, eps=1e-8):
@@ -306,7 +323,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_dir", type=str, default="synthetic_step3_v2")
     parser.add_argument("--out_dir", type=str, default=None)
-    parser.add_argument("--windows", type=str, default="20,30,50,80,120")
+    parser.add_argument("--windows", type=str, default=None)
+    parser.add_argument("--window_preset", type=str, default="regime_dense", choices=["legacy", "regime_dense"])
     parser.add_argument("--ks", type=str, default="2,3,5,8,10")
     parser.add_argument("--seed", type=int, default=123)
     parser.add_argument("--max_iter", type=int, default=100)
@@ -328,10 +346,13 @@ def main():
     if t_switch is None:
         raise RuntimeError("t_switch not found. Provide --t_switch or ensure meta.json exists.")
 
-    windows = parse_int_list(args.windows)
+    windows = parse_int_list(args.windows) if args.windows else default_windows_for_preset(args.window_preset)
     ks = parse_int_list(args.ks)
     if not windows or not ks:
         raise RuntimeError("windows/ks list is empty.")
+
+    print(f"[INFO] window candidates={windows}")
+    print(f"[INFO] k candidates={ks}")
 
     # Ridge baseline (once)
     X_in = X[:-1]
@@ -491,21 +512,24 @@ def main():
     np.save(best_lambda_path, lambda_t.astype(np.float32))
 
     fig_path = os.path.join(out_dir, "best_lambda_curve.png")
-    fig, axes = plt.subplots(2, 1, figsize=(10, 5), sharex=True)
-    raw_dist = np.full((T,), np.nan, dtype=np.float64)
-    raw_dist[idx] = dists
-    axes[0].plot(raw_dist, color="tab:gray", linewidth=1.0)
-    axes[0].set_title("Raw distance to nearest KMeans center")
-    axes[0].set_ylabel("distance")
-    axes[1].plot(lambda_t, color="tab:blue", linewidth=1.0)
-    axes[1].set_title("Lambda (p10/p90 normalized)")
-    axes[1].set_ylabel("lambda_t")
-    axes[1].set_xlabel("time t")
-    axes[0].axvline(t_switch, color="tab:red", linestyle="--", linewidth=1.0)
-    axes[1].axvline(t_switch, color="tab:red", linestyle="--", linewidth=1.0)
-    fig.tight_layout()
-    fig.savefig(fig_path, dpi=200)
-    plt.close(fig)
+    heatmap_path = os.path.join(out_dir, "heatmap_score.png")
+    pareto_path = os.path.join(out_dir, "pareto_scatter.png")
+    if plt is not None:
+        fig, axes = plt.subplots(2, 1, figsize=(10, 5), sharex=True)
+        raw_dist = np.full((T,), np.nan, dtype=np.float64)
+        raw_dist[idx] = dists
+        axes[0].plot(raw_dist, color="tab:gray", linewidth=1.0)
+        axes[0].set_title("Raw distance to nearest KMeans center")
+        axes[0].set_ylabel("distance")
+        axes[1].plot(lambda_t, color="tab:blue", linewidth=1.0)
+        axes[1].set_title("Lambda (p10/p90 normalized)")
+        axes[1].set_ylabel("lambda_t")
+        axes[1].set_xlabel("time t")
+        axes[0].axvline(t_switch, color="tab:red", linestyle="--", linewidth=1.0)
+        axes[1].axvline(t_switch, color="tab:red", linestyle="--", linewidth=1.0)
+        fig.tight_layout()
+        fig.savefig(fig_path, dpi=200)
+        plt.close(fig)
 
     lam_corr = lambda_t[:-1]
     mask_corr = valid_mask[:-1] & np.isfinite(lam_corr)
@@ -516,39 +540,36 @@ def main():
     best_bucket_csv = os.path.join(out_dir, "best_bucket_stats.csv")
     write_csv(bucket_rows, best_bucket_csv)
 
-    # heatmap score
-    heatmap_path = os.path.join(out_dir, "heatmap_score.png")
-    fig = plt.figure(figsize=(6, 4))
-    ax = fig.add_subplot(1, 1, 1)
-    im = ax.imshow(score_matrix, aspect="auto")
-    ax.set_xticks(np.arange(len(ks)))
-    ax.set_xticklabels([str(k) for k in ks])
-    ax.set_yticks(np.arange(len(windows)))
-    ax.set_yticklabels([str(w) for w in windows])
-    ax.set_xlabel("k")
-    ax.set_ylabel("window")
-    ax.set_title("Score heatmap")
-    fig.colorbar(im, ax=ax, shrink=0.85)
-    fig.tight_layout()
-    fig.savefig(heatmap_path, dpi=200)
-    plt.close(fig)
+    if plt is not None:
+        fig = plt.figure(figsize=(6, 4))
+        ax = fig.add_subplot(1, 1, 1)
+        im = ax.imshow(score_matrix, aspect="auto")
+        ax.set_xticks(np.arange(len(ks)))
+        ax.set_xticklabels([str(k) for k in ks])
+        ax.set_yticks(np.arange(len(windows)))
+        ax.set_yticklabels([str(w) for w in windows])
+        ax.set_xlabel("k")
+        ax.set_ylabel("window")
+        ax.set_title("Score heatmap")
+        fig.colorbar(im, ax=ax, shrink=0.85)
+        fig.tight_layout()
+        fig.savefig(heatmap_path, dpi=200)
+        plt.close(fig)
 
-    # pareto scatter: smooth_mean_abs_diff (x, lower is better) vs auc_regime (y, higher is better)
-    pareto_path = os.path.join(out_dir, "pareto_scatter.png")
-    fig = plt.figure(figsize=(6, 4))
-    ax = fig.add_subplot(1, 1, 1)
-    x = np.array([r["smooth_mean_abs_diff"] for r in results], dtype=float)
-    y = np.array([r["auc_regime"] for r in results], dtype=float)
-    c = np.array([r["score"] for r in results], dtype=float)
-    sc = ax.scatter(x, y, c=c, cmap="viridis", s=40, edgecolors="none")
-    ax.scatter([best["smooth_mean_abs_diff"]], [best["auc_regime"]], c="red", marker="*", s=120)
-    ax.set_xlabel("smooth_mean_abs_diff (lower is better)")
-    ax.set_ylabel("auc_regime (higher is better)")
-    ax.set_title("Pareto scatter (AUC vs Smoothness)")
-    fig.colorbar(sc, ax=ax, shrink=0.85, label="score")
-    fig.tight_layout()
-    fig.savefig(pareto_path, dpi=200)
-    plt.close(fig)
+        fig = plt.figure(figsize=(6, 4))
+        ax = fig.add_subplot(1, 1, 1)
+        x = np.array([r["smooth_mean_abs_diff"] for r in results], dtype=float)
+        y = np.array([r["auc_regime"] for r in results], dtype=float)
+        c = np.array([r["score"] for r in results], dtype=float)
+        sc = ax.scatter(x, y, c=c, cmap="viridis", s=40, edgecolors="none")
+        ax.scatter([best["smooth_mean_abs_diff"]], [best["auc_regime"]], c="red", marker="*", s=120)
+        ax.set_xlabel("smooth_mean_abs_diff (lower is better)")
+        ax.set_ylabel("auc_regime (higher is better)")
+        ax.set_title("Pareto scatter (AUC vs Smoothness)")
+        fig.colorbar(sc, ax=ax, shrink=0.85, label="score")
+        fig.tight_layout()
+        fig.savefig(pareto_path, dpi=200)
+        plt.close(fig)
 
     print("=== Step4: sweep window x k ===")
     print(f"X: {x_path} shape={X.shape}, t_switch={t_switch}")
@@ -557,10 +578,13 @@ def main():
     print(f"[OK] Saved: {ranked_csv}")
     print(f"[OK] Saved: {best_cfg_path}")
     print(f"[OK] Saved: {best_lambda_path}")
-    print(f"[OK] Saved: {fig_path}")
     print(f"[OK] Saved: {best_bucket_csv}")
-    print(f"[OK] Saved: {heatmap_path}")
-    print(f"[OK] Saved: {pareto_path}")
+    if plt is not None:
+        print(f"[OK] Saved: {fig_path}")
+        print(f"[OK] Saved: {heatmap_path}")
+        print(f"[OK] Saved: {pareto_path}")
+    else:
+        print("[WARN] matplotlib unavailable, skipped figure outputs.")
     print("Top-5 configs by score:")
     for i, r in enumerate(ranked[:5], start=1):
         print(f"{i:2d}. window={r['window']} k={r['k']} score={r['score']:.4f} "

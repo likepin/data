@@ -7,9 +7,9 @@
     "run_type": "main",
     "control_family": "main",
     "source_score_key": "score_equal",
-    "window": 50,
-    "k": 3,
-    "score": 7.28817907702216,
+    "window": 120,
+    "k": 2,
+    "score": 7.4791846069363785,
     "seed": 2026
   },
   {
@@ -20,9 +20,9 @@
     "run_type": "main",
     "control_family": "main",
     "source_score_key": "score_gating",
-    "window": 30,
+    "window": 40,
     "k": 2,
-    "score": 0.7728705409801073,
+    "score": 0.7735530948540701,
     "seed": 2026
   },
   {
@@ -35,7 +35,7 @@
     "source_score_key": "score_regime",
     "window": 80,
     "k": 2,
-    "score": 0.8648859719017999,
+    "score": 0.8963939027535305,
     "seed": 2026
   },
   {

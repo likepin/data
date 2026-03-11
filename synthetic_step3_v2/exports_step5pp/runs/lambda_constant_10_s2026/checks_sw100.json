@@ -8,7 +8,7 @@
   "post_correct_rate": 0.0,
   "directional_align_pre": 1.0,
   "directional_align_post": 0.0,
-  "directional_align_overall": 0.5980572768380505,
+  "directional_align_overall": 0.5973829894313035,
   "switch_window": 100,
   "switch_pre_correct_rate": 1.0,
   "switch_post_correct_rate": 0.0,
@@ -52,5 +52,5 @@
   "pass_core_checks_v3": false,
   "switch_nan_reasons": [],
   "regime_swapped": false,
-  "swap_reason": "pre_rel_mean: pre_rel_mean=-0.950936, post_rel_mean=-0.950936, pre_count=3571, post_count=2400"
+  "swap_reason": "pre_rel_mean: pre_rel_mean=-0.950936, post_rel_mean=-0.950936, pre_count=3561, post_count=2400"
 }

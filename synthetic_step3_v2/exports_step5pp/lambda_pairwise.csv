@@ -1,4 +1,4 @@
 corr,hash_same,mean_abs_diff,overlap_count,variant_a,variant_b
-0.7533583309209053,False,0.1681011943743533,5951,score_equal,score_gating
-0.7646467482110386,False,0.17036074765514492,5921,score_equal,score_regime
-0.7754657638419326,False,0.14948650018702644,5921,score_gating,score_regime
+0.7247116032379127,False,0.16634399737370312,5881,score_equal,score_gating
+0.8865507210696418,False,0.0947112804435814,5881,score_equal,score_regime
+0.8400148199482447,False,0.1201029624518832,5921,score_gating,score_regime

@@ -9,13 +9,13 @@ regime_support_mode=union_base_predchange
 eff_anchor=A0
 regime_ref_source=ground_truth
 regime_swapped=True
-swap_reason=pre_rel_mean: pre_rel_mean=0.153838, post_rel_mean=0.222643, pre_count=3571, post_count=2400
+swap_reason=pre_rel_mean: pre_rel_mean=0.179765, post_rel_mean=0.228438, pre_count=3561, post_count=2400
 topk_mode=match_true
 k_source=K_true_from_DeltaA
-lambda_stats_pre={'mean': 0.41911226005013225, 'min': 0.0, 'max': 1.0}
-lambda_stats_post={'mean': 0.38293477533993836, 'min': 0.0, 'max': 1.0}
-gate_stats_pre={'mean': 0.5808877399498676, 'min': 0.0, 'max': 1.0}
-gate_stats_post={'mean': 0.6170652246600616, 'min': 0.0, 'max': 1.0}
+lambda_stats_pre={'mean': 0.4054800896530004, 'min': 0.0, 'max': 1.0}
+lambda_stats_post={'mean': 0.3798878222555761, 'min': 0.0, 'max': 1.0}
+gate_stats_pre={'mean': 0.5945199103469996, 'min': 0.0, 'max': 1.0}
+gate_stats_post={'mean': 0.620112177744424, 'min': 0.0, 'max': 1.0}
 check_overall_pass=False
 pass_core_checks_v2=False
 pass_core_checks_v3_abs=False
@@ -26,16 +26,16 @@ A_base shape=(2, 10, 10) (sum over lags)
 A_base shape=(2, 10, 10) (sum over lags)
 A0/A1 loaded from GT (A_base + DeltaA)
 lambda loaded from --lambda_file: synthetic_step3_v2/exports_step5pp\configs\lambda_shift_100.npz
-lambda stats: min=0.0000 max=1.0000 mean=0.4046
-[15:43:05] DeltaA shape=(2, 10, 10)
-[15:43:05] K_true_from_DeltaA=6
-[15:43:05] violations=0
-A0/A1 auto-swapped. reason=pre_rel_mean: pre_rel_mean=0.153838, post_rel_mean=0.222643, pre_count=3571, post_count=2400
+lambda stats: min=0.0000 max=1.0000 mean=0.3952
+[16:30:37] DeltaA shape=(2, 10, 10)
+[16:30:37] K_true_from_DeltaA=6
+[16:30:37] violations=0
+A0/A1 auto-swapped. reason=pre_rel_mean: pre_rel_mean=0.179765, post_rel_mean=0.228438, pre_count=3561, post_count=2400
 A_base nnz=30
 A0 stats: min=-1.4634 max=1.1778 mean=0.0229 nnz=30
 A1 stats: min=-0.5853 max=0.5445 mean=0.0572 nnz=30
 regime_swapped=True
-swap_reason=pre_rel_mean: pre_rel_mean=0.153838, post_rel_mean=0.222643, pre_count=3571, post_count=2400
+swap_reason=pre_rel_mean: pre_rel_mean=0.179765, post_rel_mean=0.228438, pre_count=3561, post_count=2400
 delta_mask_nnz=20 dist_mask_nnz=6 tag=default
 A0_eff_nnz=30 A1_eff_nnz=30 tag=default
 WARN: matplotlib not available; skipping plots.

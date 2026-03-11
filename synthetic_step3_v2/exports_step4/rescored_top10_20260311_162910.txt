@@ -1,0 +1,29 @@
+Top configs by score_equal:
+ 1. window=120 k=2 score_equal=7.479185
+ 2. window=100 k=2 score_equal=7.379671
+ 3. window=80 k=2 score_equal=7.376593
+ 4. window=60 k=2 score_equal=7.298848
+ 5. window=50 k=2 score_equal=7.211073
+ 6. window=40 k=2 score_equal=7.122888
+ 7. window=80 k=3 score_equal=6.178133
+ 8. window=120 k=8 score_equal=5.220099
+
+Top configs by score_gating:
+ 1. window=40 k=2 score_gating=0.773553
+ 2. window=50 k=2 score_gating=0.759593
+ 3. window=60 k=2 score_gating=0.751820
+ 4. window=120 k=2 score_gating=0.743575
+ 5. window=80 k=2 score_gating=0.741823
+ 6. window=100 k=2 score_gating=0.733762
+ 7. window=80 k=3 score_gating=0.686391
+ 8. window=120 k=8 score_gating=0.600511
+
+Top configs by score_regime:
+ 1. window=80 k=2 score_regime=0.896394
+ 2. window=60 k=2 score_regime=0.892529
+ 3. window=50 k=2 score_regime=0.889581
+ 4. window=120 k=2 score_regime=0.883690
+ 5. window=100 k=2 score_regime=0.883179
+ 6. window=40 k=2 score_regime=0.877007
+ 7. window=80 k=3 score_regime=0.639041
+ 8. window=120 k=8 score_regime=0.595502

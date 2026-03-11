@@ -9,7 +9,7 @@ regime_support_mode=union_base_predchange
 eff_anchor=A0
 regime_ref_source=ground_truth
 regime_swapped=False
-swap_reason=pre_rel_mean: pre_rel_mean=-0.950936, post_rel_mean=-0.950936, pre_count=3571, post_count=2400
+swap_reason=pre_rel_mean: pre_rel_mean=-0.950936, post_rel_mean=-0.950936, pre_count=3561, post_count=2400
 topk_mode=match_true
 k_source=K_true_from_DeltaA
 lambda_stats_pre={'mean': 1.0, 'min': 1.0, 'max': 1.0}
@@ -27,15 +27,15 @@ A_base shape=(2, 10, 10) (sum over lags)
 A0/A1 loaded from GT (A_base + DeltaA)
 lambda loaded from --lambda_file: synthetic_step3_v2/exports_step5pp\configs\lambda_constant_10.npz
 lambda stats: min=1.0000 max=1.0000 mean=1.0000
-[15:43:25] DeltaA shape=(2, 10, 10)
-[15:43:25] K_true_from_DeltaA=6
-[15:43:25] violations=0
-A0/A1 kept. reason=pre_rel_mean: pre_rel_mean=-0.950936, post_rel_mean=-0.950936, pre_count=3571, post_count=2400
+[16:30:58] DeltaA shape=(2, 10, 10)
+[16:30:58] K_true_from_DeltaA=6
+[16:30:58] violations=0
+A0/A1 kept. reason=pre_rel_mean: pre_rel_mean=-0.950936, post_rel_mean=-0.950936, pre_count=3561, post_count=2400
 A_base nnz=30
 A0 stats: min=-0.5853 max=0.5445 mean=0.0572 nnz=30
 A1 stats: min=-1.4634 max=1.1778 mean=0.0229 nnz=30
 regime_swapped=False
-swap_reason=pre_rel_mean: pre_rel_mean=-0.950936, post_rel_mean=-0.950936, pre_count=3571, post_count=2400
+swap_reason=pre_rel_mean: pre_rel_mean=-0.950936, post_rel_mean=-0.950936, pre_count=3561, post_count=2400
 WARN: non-saturated set empty; fallback to high on full valid.
 delta_mask_nnz=20 dist_mask_nnz=6 tag=default
 A0_eff_nnz=30 A1_eff_nnz=30 tag=default

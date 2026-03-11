@@ -2,24 +2,24 @@
   {
     "variant_a": "score_equal",
     "variant_b": "score_gating",
-    "corr": 0.7533583309209053,
-    "mean_abs_diff": 0.1681011943743533,
-    "overlap_count": 5951,
+    "corr": 0.7247116032379127,
+    "mean_abs_diff": 0.16634399737370312,
+    "overlap_count": 5881,
     "hash_same": false
   },
   {
     "variant_a": "score_equal",
     "variant_b": "score_regime",
-    "corr": 0.7646467482110386,
-    "mean_abs_diff": 0.17036074765514492,
-    "overlap_count": 5921,
+    "corr": 0.8865507210696418,
+    "mean_abs_diff": 0.0947112804435814,
+    "overlap_count": 5881,
     "hash_same": false
   },
   {
     "variant_a": "score_gating",
     "variant_b": "score_regime",
-    "corr": 0.7754657638419326,
-    "mean_abs_diff": 0.14948650018702644,
+    "corr": 0.8400148199482447,
+    "mean_abs_diff": 0.1201029624518832,
     "overlap_count": 5921,
     "hash_same": false
   }
