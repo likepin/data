@@ -14,6 +14,8 @@ except Exception:
 
 LEGACY_WINDOW_GRID = [20, 30, 50, 80, 120]
 REGIME_DENSE_WINDOW_GRID = [20, 30, 40, 50, 60, 80, 100, 120, 160]
+LEGACY_K_GRID = [2, 3, 5, 8, 10]
+REGIME_DENSE_K_GRID = [2, 3, 4, 5, 6, 8, 10, 12]
 
 
 def find_x_npy(data_dir):
@@ -51,6 +53,15 @@ def default_windows_for_preset(name):
     if preset == "regime_dense":
         return list(REGIME_DENSE_WINDOW_GRID)
     raise ValueError(f"unknown window preset: {name}")
+
+
+def default_ks_for_preset(name):
+    preset = str(name or "regime_dense").strip().lower()
+    if preset == "legacy":
+        return list(LEGACY_K_GRID)
+    if preset == "regime_dense":
+        return list(REGIME_DENSE_K_GRID)
+    raise ValueError(f"unknown k preset: {name}")
 
 
 def skewness(x, eps=1e-8):
@@ -325,7 +336,8 @@ def main():
     parser.add_argument("--out_dir", type=str, default=None)
     parser.add_argument("--windows", type=str, default=None)
     parser.add_argument("--window_preset", type=str, default="regime_dense", choices=["legacy", "regime_dense"])
-    parser.add_argument("--ks", type=str, default="2,3,5,8,10")
+    parser.add_argument("--ks", type=str, default=None)
+    parser.add_argument("--k_preset", type=str, default="regime_dense", choices=["legacy", "regime_dense"])
     parser.add_argument("--seed", type=int, default=123)
     parser.add_argument("--max_iter", type=int, default=100)
     parser.add_argument("--t_switch", type=int, default=None)
@@ -347,7 +359,7 @@ def main():
         raise RuntimeError("t_switch not found. Provide --t_switch or ensure meta.json exists.")
 
     windows = parse_int_list(args.windows) if args.windows else default_windows_for_preset(args.window_preset)
-    ks = parse_int_list(args.ks)
+    ks = parse_int_list(args.ks) if args.ks else default_ks_for_preset(args.k_preset)
     if not windows or not ks:
         raise RuntimeError("windows/ks list is empty.")
 
