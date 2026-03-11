@@ -13,7 +13,7 @@
     200,
     400
   ],
-  "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shuffle_global.npz",
+  "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shuffle_global.npz",
   "lambda_tag": "lambda_shuffle_global",
   "config_name": "lambda_shuffle_global_s2029",
   "run_type": "negative_control",

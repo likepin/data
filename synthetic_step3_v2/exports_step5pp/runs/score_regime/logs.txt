@@ -1,6 +1,6 @@
 === Sanity Header ===
 data_dir=synthetic_step3_v2
-config_path=synthetic_step3_v2\exports_step5pp\configs\cfg_lambda_regime.json
+config_path=synthetic_step3_v2/exports_step5pp\configs\cfg_lambda_regime.json
 gate_fn=soft: g=1-lambda
 rel = dist_reg0 - dist_reg1; rel>0 => closer to A1
 delta_mask_mode=union_base_predchange
@@ -9,33 +9,33 @@ regime_support_mode=union_base_predchange
 eff_anchor=A0
 regime_ref_source=ground_truth
 regime_swapped=True
-swap_reason=pre_rel_mean: pre_rel_mean=0.150664, post_rel_mean=0.275878, pre_count=3551, post_count=2400
+swap_reason=pre_rel_mean: pre_rel_mean=0.144524, post_rel_mean=0.290672, pre_count=3521, post_count=2400
 topk_mode=match_true
 k_source=K_true_from_DeltaA
-lambda_stats_pre={'mean': 0.4207811831551105, 'min': 0.0, 'max': 1.0}
-lambda_stats_post={'mean': 0.3549442062753937, 'min': 0.02009361316573392, 'max': 1.0}
-gate_stats_pre={'mean': 0.5792188168448896, 'min': 0.0, 'max': 1.0}
-gate_stats_post={'mean': 0.6450557937246063, 'min': 0.0, 'max': 0.9799063868342661}
+lambda_stats_pre={'mean': 0.4240096224114482, 'min': 0.0, 'max': 1.0}
+lambda_stats_post={'mean': 0.3471655146926969, 'min': 0.036813277595488234, 'max': 0.9570447168961905}
+gate_stats_pre={'mean': 0.5759903775885518, 'min': 0.0, 'max': 1.0}
+gate_stats_post={'mean': 0.6528344853073031, 'min': 0.04295528310380947, 'max': 0.9631867224045118}
 check_overall_pass=False
 pass_core_checks_v2=False
-pass_core_checks_v3_abs=False
-pass_core_checks_v3=False
+pass_core_checks_v3_abs=True
+pass_core_checks_v3=True
 switch_window=200
 config: delta_mask_mode=union_base_predchange, dist_mask_mode=true_change_only, auto_swap_regimes=True
 A_base shape=(2, 10, 10) (sum over lags)
 A_base shape=(2, 10, 10) (sum over lags)
 A0/A1 loaded from GT (A_base + DeltaA)
-lambda loaded from --lambda_file: synthetic_step3_v2\exports_step5pp\configs\lambda_regime.npz
-lambda stats: min=0.0000 max=1.0000 mean=0.3942
-[14:27:46] DeltaA shape=(2, 10, 10)
-[14:27:46] K_true_from_DeltaA=6
-[14:27:46] violations=0
-A0/A1 auto-swapped. reason=pre_rel_mean: pre_rel_mean=0.150664, post_rel_mean=0.275878, pre_count=3551, post_count=2400
+lambda loaded from --lambda_file: synthetic_step3_v2/exports_step5pp\configs\lambda_regime.npz
+lambda stats: min=0.0000 max=1.0000 mean=0.3929
+[15:42:52] DeltaA shape=(2, 10, 10)
+[15:42:52] K_true_from_DeltaA=6
+[15:42:52] violations=0
+A0/A1 auto-swapped. reason=pre_rel_mean: pre_rel_mean=0.144524, post_rel_mean=0.290672, pre_count=3521, post_count=2400
 A_base nnz=30
 A0 stats: min=-1.4634 max=1.1778 mean=0.0229 nnz=30
 A1 stats: min=-0.5853 max=0.5445 mean=0.0572 nnz=30
 regime_swapped=True
-swap_reason=pre_rel_mean: pre_rel_mean=0.150664, post_rel_mean=0.275878, pre_count=3551, post_count=2400
+swap_reason=pre_rel_mean: pre_rel_mean=0.144524, post_rel_mean=0.290672, pre_count=3521, post_count=2400
 delta_mask_nnz=20 dist_mask_nnz=6 tag=default
 A0_eff_nnz=30 A1_eff_nnz=30 tag=default
 WARN: matplotlib not available; skipping plots.

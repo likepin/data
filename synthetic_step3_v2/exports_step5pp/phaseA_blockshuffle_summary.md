@@ -10,4 +10,4 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | score_equal | score_equal | 0.057757793712010064 | 0.031136363636363573 | -11.0 | False | False |
 | score_gating | score_gating | 0.1417913856366378 | 0.44613636363636355 | 56.0 | False | True |
-| score_regime | score_regime | 0.14043297435391894 | 0.42613636363636354 | -11.0 | False | True |
+| score_regime | score_regime | 0.19183195921227542 | 0.4011363636363636 | 62.0 | True | True |

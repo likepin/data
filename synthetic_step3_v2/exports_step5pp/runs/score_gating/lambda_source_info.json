@@ -1,10 +1,10 @@
 {
   "lambda_strategy": "score_gating",
   "lambda_tag": "score_gating",
-  "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_gating.npz",
+  "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_gating.npz",
   "run_type": "main",
   "control_family": "main",
   "seed": 2026,
   "main_seed": 2026,
-  "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_gating.json"
+  "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_gating.json"
 }

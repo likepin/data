@@ -425,25 +425,47 @@ def main():
     iteration_csv = os.path.join(compare_dir, "compare_regime_iteration.csv")
     iteration_md = os.path.join(compare_dir, "compare_regime_iteration.md")
     iteration_rows = read_csv(iteration_csv)
-    existing_keys = set(str(r.get("iteration_key", "")) for r in iteration_rows if r.get("iteration_key"))
+    existing_by_key = {
+        str(r.get("iteration_key", "")): idx
+        for idx, r in enumerate(iteration_rows)
+        if r.get("iteration_key")
+    }
     baseline_row = build_iteration_row(baseline_snapshot, baseline_snapshot, role="baseline")
-    if baseline_row["iteration_key"] not in existing_keys:
+    if baseline_row["iteration_key"] not in existing_by_key:
         baseline_row["iteration_id"] = len(iteration_rows)
         iteration_rows.append(baseline_row)
-        existing_keys.add(baseline_row["iteration_key"])
+        existing_by_key[baseline_row["iteration_key"]] = len(iteration_rows) - 1
+    else:
+        keep_id = iteration_rows[existing_by_key[baseline_row["iteration_key"]]].get("iteration_id")
+        baseline_row["iteration_id"] = keep_id
+        iteration_rows[existing_by_key[baseline_row["iteration_key"]]] = baseline_row
     current_role = "baseline" if str(regime_snapshot.get("lambda_hash_round6", "")) == str(baseline_snapshot.get("lambda_hash_round6", "")) else "candidate"
     current_iteration_row = build_iteration_row(regime_snapshot, baseline_snapshot, role=current_role)
-    if current_iteration_row["iteration_key"] not in existing_keys:
+    if current_iteration_row["iteration_key"] not in existing_by_key:
         current_iteration_row["iteration_id"] = len(iteration_rows)
         iteration_rows.append(current_iteration_row)
-        existing_keys.add(current_iteration_row["iteration_key"])
+        existing_by_key[current_iteration_row["iteration_key"]] = len(iteration_rows) - 1
     else:
-        for row in iteration_rows:
-            if row.get("iteration_key") == current_iteration_row["iteration_key"]:
-                if "iteration_id" not in row or row.get("iteration_id") in ("", None):
-                    row["iteration_id"] = iteration_rows.index(row)
-                current_iteration_row = row
-                break
+        keep_idx = existing_by_key[current_iteration_row["iteration_key"]]
+        keep_id = iteration_rows[keep_idx].get("iteration_id")
+        current_iteration_row["iteration_id"] = keep_id
+        iteration_rows[keep_idx] = current_iteration_row
+
+    dedup_rows = []
+    seen_signatures = {}
+    for row in iteration_rows:
+        sig = "|".join([
+            str(row.get("benchmark_version", "")),
+            str(row.get("iteration_role", "")),
+            str(row.get("regime_lambda_hash_round6", "")),
+            str(row.get("gating_lambda_hash_round6", "")),
+        ])
+        if sig in seen_signatures:
+            dedup_rows[seen_signatures[sig]] = row
+        else:
+            seen_signatures[sig] = len(dedup_rows)
+            dedup_rows.append(row)
+    iteration_rows = dedup_rows
 
     for idx, row in enumerate(iteration_rows):
         row["iteration_id"] = idx

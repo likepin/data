@@ -1,10 +1,10 @@
 {
   "data_dir": "synthetic_step3_v2",
-  "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_constant_05_s2026.json",
+  "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_constant_05_s2026.json",
   "config_name": "lambda_constant_05",
-  "lambda_source": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_constant_05.npz",
+  "lambda_source": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_05.npz",
   "lambda_tag": "lambda_constant_05",
-  "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_constant_05.npz",
+  "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_05.npz",
   "base_path": "synthetic_step3_v2\\A_base.npy",
   "delta_path": "synthetic_step3_v2\\DeltaA.npy",
   "pred_prefix": "cmiknn",

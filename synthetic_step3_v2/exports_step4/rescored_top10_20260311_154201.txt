@@ -1,0 +1,23 @@
+Top configs by score_equal:
+ 1. window=50 k=3 score_equal=7.288179
+ 2. window=80 k=2 score_equal=7.222625
+ 3. window=120 k=2 score_equal=7.205489
+ 4. window=50 k=2 score_equal=7.068294
+ 5. window=30 k=2 score_equal=6.858040
+ 6. window=80 k=3 score_equal=5.895961
+
+Top configs by score_gating:
+ 1. window=50 k=3 score_gating=0.875919
+ 2. window=30 k=2 score_gating=0.772871
+ 3. window=50 k=2 score_gating=0.735217
+ 4. window=80 k=3 score_gating=0.730814
+ 5. window=80 k=2 score_gating=0.716802
+ 6. window=120 k=2 score_gating=0.710855
+
+Top configs by score_regime:
+ 1. window=80 k=2 score_regime=0.864886
+ 2. window=50 k=2 score_regime=0.856073
+ 3. window=120 k=2 score_regime=0.839694
+ 4. window=50 k=3 score_regime=0.838000
+ 5. window=30 k=2 score_regime=0.827501
+ 6. window=80 k=3 score_regime=0.539778

@@ -1,7 +1,7 @@
 {
   "variant_name": "score_equal",
-  "lambda_file_npy": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_equal.npy",
-  "lambda_file_npz": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_equal.npz",
+  "lambda_file_npy": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_equal.npy",
+  "lambda_file_npz": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_equal.npz",
   "lambda_hash_round6": "b3e988c3913e80e1eadf8b277f30d07f230ea8c6",
   "lambda_stats": {
     "lambda_mean": 0.39634187296394024,
@@ -16,13 +16,14 @@
     "k": 3,
     "score_key": "score_equal",
     "score": 7.28817907702216,
-    "source_csv": "synthetic_step3_v2\\exports_step4\\rescored_results_20260306_142434.csv",
+    "source_csv": "synthetic_step3_v2\\exports_step4\\rescored_results_20260311_154201.csv",
     "selected_rank": 1
   },
   "picked_metrics_raw": {
     "auc_regime": "0.6005531892424669",
     "corr_mae": "0.1151114162607701",
     "corr_mse": "0.09861920100268254",
+    "corr_mse_soft_exception": "False",
     "k": "3",
     "lambda_hash_round6": "b3e988c3913e80e1eadf8b277f30d07f230ea8c6",
     "lambda_oriented_swapped": "True",
@@ -33,7 +34,7 @@
     "score": "4.62402277842256",
     "score_equal": "7.28817907702216",
     "score_gating": "0.8759187862425065",
-    "score_regime": "0.8692097240463396",
+    "score_regime": "0.8380003697344972",
     "sep_mean": "0.019723584777259218",
     "sep_median": "0.09606716582918981",
     "smooth_mask_count": "5548",

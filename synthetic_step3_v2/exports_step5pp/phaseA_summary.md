@@ -1,14 +1,14 @@
 ## Phase A Summary (Switch-aware)
 
 - Benchmark version: `phaseA_v0.1_synth`
-- Best strategy by directional_align_overall: `score_gating`
+- Best strategy by directional_align_overall: `score_regime`
 - Best strategy by auc_switch_rel: `score_gating`
 - Best strategy by retained_gap_switch: `score_equal`
 - Main runs pass rate (legacy core checks): `1.000`
 - Main runs pass rate (v2 core checks): `0.000`
-- Main runs pass rate (v3 core checks): `0.000`
-- Main runs pass rate (v3 before guardrail): `0.000`
-- Main runs pass rate (v3 abs-only): `0.000`
+- Main runs pass rate (v3 core checks): `0.333`
+- Main runs pass rate (v3 before guardrail): `0.333`
+- Main runs pass rate (v3 abs-only): `0.333`
 - Main runs pass rate (v3_v2 core checks): `0.667`
 - Main runs pass rate (v3_v2 before guardrail): `0.667`
 - Main runs pass rate (v3_v2 abs-only): `0.667`
@@ -16,11 +16,11 @@
 - Negative-control v3 pass count: `0` / max `1` (PASS)
 - Negative-control pass rate (v3_v2): `0.000`
 - Negative-control v3_v2 pass count: `0` / max `1` (PASS)
-- corr(score_gating, score_regime): `0.889024`
-- mean_abs_diff(score_gating, score_regime): `9.984745e-02`
+- corr(score_gating, score_regime): `0.775466`
+- mean_abs_diff(score_gating, score_regime): `1.494865e-01`
 - strategy_collapse: `False`
-- Negative-control drop (directional_align_overall): `0.113327`
-- peak_delay_min mean (main): `98.666667`
+- Negative-control drop (directional_align_overall): `0.130460`
+- peak_delay_min mean (main): `74.333333`
 - peak_delay_min mean (shift): `88.750000`
 - peak_delay_min mean (block_shuffle): `72.750000`
 

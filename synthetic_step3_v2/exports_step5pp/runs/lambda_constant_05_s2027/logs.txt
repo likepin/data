@@ -1,6 +1,6 @@
 === Sanity Header ===
 data_dir=synthetic_step3_v2
-config_path=synthetic_step3_v2\exports_step5pp\configs\cfg_lambda_constant_05_s2027.json
+config_path=synthetic_step3_v2/exports_step5pp\configs\cfg_lambda_constant_05_s2027.json
 gate_fn=soft: g=1-lambda
 rel = dist_reg0 - dist_reg1; rel>0 => closer to A1
 delta_mask_mode=union_base_predchange
@@ -25,11 +25,11 @@ config: delta_mask_mode=union_base_predchange, dist_mask_mode=true_change_only, 
 A_base shape=(2, 10, 10) (sum over lags)
 A_base shape=(2, 10, 10) (sum over lags)
 A0/A1 loaded from GT (A_base + DeltaA)
-lambda loaded from --lambda_file: synthetic_step3_v2\exports_step5pp\configs\lambda_constant_05.npz
+lambda loaded from --lambda_file: synthetic_step3_v2/exports_step5pp\configs\lambda_constant_05.npz
 lambda stats: min=0.5000 max=0.5000 mean=0.5000
-[14:28:01] DeltaA shape=(2, 10, 10)
-[14:28:01] K_true_from_DeltaA=6
-[14:28:01] violations=0
+[15:43:08] DeltaA shape=(2, 10, 10)
+[15:43:08] K_true_from_DeltaA=6
+[15:43:08] violations=0
 A0/A1 auto-swapped. reason=pre_rel_mean: pre_rel_mean=0.000000, post_rel_mean=0.000000, pre_count=3571, post_count=2400
 A_base nnz=30
 A0 stats: min=-1.4634 max=1.1778 mean=0.0229 nnz=30

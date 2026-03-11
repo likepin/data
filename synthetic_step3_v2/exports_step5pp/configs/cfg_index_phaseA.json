@@ -5,8 +5,8 @@
       "run_type": "main",
       "control_family": "main",
       "lambda_tag": "score_equal",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_equal.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_equal.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_equal.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_equal.json",
       "control_seed": 2026
     },
     {
@@ -14,8 +14,8 @@
       "run_type": "main",
       "control_family": "main",
       "lambda_tag": "score_gating",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_gating.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_gating.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_gating.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_gating.json",
       "control_seed": 2026
     },
     {
@@ -23,8 +23,8 @@
       "run_type": "main",
       "control_family": "main",
       "lambda_tag": "score_regime",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_regime.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_regime.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_regime.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_regime.json",
       "control_seed": 2026
     },
     {
@@ -32,8 +32,8 @@
       "run_type": "negative_control",
       "control_family": "shuffle_global",
       "lambda_tag": "lambda_shuffle_global",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shuffle_global.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shuffle_global_s2026.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shuffle_global.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shuffle_global_s2026.json",
       "control_seed": 2026
     },
     {
@@ -41,8 +41,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_50",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_50.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_50_s2026.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_50.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_50_s2026.json",
       "control_seed": 2026
     },
     {
@@ -50,8 +50,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_100",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_100.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_100_s2026.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_100.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_100_s2026.json",
       "control_seed": 2026
     },
     {
@@ -59,8 +59,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_200",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_200.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_200_s2026.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_200.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_200_s2026.json",
       "control_seed": 2026
     },
     {
@@ -68,8 +68,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_500",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_500.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_500_s2026.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_500.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_500_s2026.json",
       "control_seed": 2026
     },
     {
@@ -77,8 +77,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_100",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_100.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_100_s2026.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_100.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_100_s2026.json",
       "control_seed": 2026
     },
     {
@@ -86,8 +86,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_300",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_300.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_300_s2026.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_300.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_300_s2026.json",
       "control_seed": 2026
     },
     {
@@ -95,8 +95,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_600",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_600.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_600_s2026.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_600.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_600_s2026.json",
       "control_seed": 2026
     },
     {
@@ -104,8 +104,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_1000",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_1000.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_1000_s2026.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_1000.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_1000_s2026.json",
       "control_seed": 2026
     },
     {
@@ -113,8 +113,8 @@
       "run_type": "negative_control",
       "control_family": "constant",
       "lambda_tag": "lambda_constant_05",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_constant_05.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_constant_05_s2026.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_05.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_constant_05_s2026.json",
       "control_seed": 2026
     },
     {
@@ -122,8 +122,8 @@
       "run_type": "negative_control",
       "control_family": "constant",
       "lambda_tag": "lambda_constant_10",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_constant_10.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_constant_10_s2026.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_10.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_constant_10_s2026.json",
       "control_seed": 2026
     },
     {
@@ -131,8 +131,8 @@
       "run_type": "negative_control",
       "control_family": "shuffle_global",
       "lambda_tag": "lambda_shuffle_global",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shuffle_global.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shuffle_global_s2027.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shuffle_global.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shuffle_global_s2027.json",
       "control_seed": 2027
     },
     {
@@ -140,8 +140,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_50",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_50.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_50_s2027.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_50.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_50_s2027.json",
       "control_seed": 2027
     },
     {
@@ -149,8 +149,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_100",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_100.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_100_s2027.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_100.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_100_s2027.json",
       "control_seed": 2027
     },
     {
@@ -158,8 +158,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_200",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_200.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_200_s2027.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_200.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_200_s2027.json",
       "control_seed": 2027
     },
     {
@@ -167,8 +167,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_500",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_500.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_500_s2027.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_500.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_500_s2027.json",
       "control_seed": 2027
     },
     {
@@ -176,8 +176,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_100",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_100.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_100_s2027.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_100.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_100_s2027.json",
       "control_seed": 2027
     },
     {
@@ -185,8 +185,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_300",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_300.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_300_s2027.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_300.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_300_s2027.json",
       "control_seed": 2027
     },
     {
@@ -194,8 +194,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_600",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_600.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_600_s2027.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_600.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_600_s2027.json",
       "control_seed": 2027
     },
     {
@@ -203,8 +203,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_1000",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_1000.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_1000_s2027.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_1000.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_1000_s2027.json",
       "control_seed": 2027
     },
     {
@@ -212,8 +212,8 @@
       "run_type": "negative_control",
       "control_family": "constant",
       "lambda_tag": "lambda_constant_05",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_constant_05.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_constant_05_s2027.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_05.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_constant_05_s2027.json",
       "control_seed": 2027
     },
     {
@@ -221,8 +221,8 @@
       "run_type": "negative_control",
       "control_family": "constant",
       "lambda_tag": "lambda_constant_10",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_constant_10.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_constant_10_s2027.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_10.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_constant_10_s2027.json",
       "control_seed": 2027
     },
     {
@@ -230,8 +230,8 @@
       "run_type": "negative_control",
       "control_family": "shuffle_global",
       "lambda_tag": "lambda_shuffle_global",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shuffle_global.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shuffle_global_s2028.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shuffle_global.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shuffle_global_s2028.json",
       "control_seed": 2028
     },
     {
@@ -239,8 +239,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_50",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_50.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_50_s2028.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_50.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_50_s2028.json",
       "control_seed": 2028
     },
     {
@@ -248,8 +248,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_100",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_100.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_100_s2028.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_100.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_100_s2028.json",
       "control_seed": 2028
     },
     {
@@ -257,8 +257,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_200",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_200.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_200_s2028.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_200.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_200_s2028.json",
       "control_seed": 2028
     },
     {
@@ -266,8 +266,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_500",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_500.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_500_s2028.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_500.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_500_s2028.json",
       "control_seed": 2028
     },
     {
@@ -275,8 +275,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_100",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_100.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_100_s2028.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_100.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_100_s2028.json",
       "control_seed": 2028
     },
     {
@@ -284,8 +284,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_300",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_300.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_300_s2028.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_300.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_300_s2028.json",
       "control_seed": 2028
     },
     {
@@ -293,8 +293,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_600",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_600.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_600_s2028.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_600.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_600_s2028.json",
       "control_seed": 2028
     },
     {
@@ -302,8 +302,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_1000",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_1000.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_1000_s2028.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_1000.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_1000_s2028.json",
       "control_seed": 2028
     },
     {
@@ -311,8 +311,8 @@
       "run_type": "negative_control",
       "control_family": "constant",
       "lambda_tag": "lambda_constant_05",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_constant_05.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_constant_05_s2028.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_05.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_constant_05_s2028.json",
       "control_seed": 2028
     },
     {
@@ -320,8 +320,8 @@
       "run_type": "negative_control",
       "control_family": "constant",
       "lambda_tag": "lambda_constant_10",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_constant_10.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_constant_10_s2028.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_10.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_constant_10_s2028.json",
       "control_seed": 2028
     },
     {
@@ -329,8 +329,8 @@
       "run_type": "negative_control",
       "control_family": "shuffle_global",
       "lambda_tag": "lambda_shuffle_global",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shuffle_global.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shuffle_global_s2029.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shuffle_global.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shuffle_global_s2029.json",
       "control_seed": 2029
     },
     {
@@ -338,8 +338,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_50",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_50.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_50_s2029.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_50.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_50_s2029.json",
       "control_seed": 2029
     },
     {
@@ -347,8 +347,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_100",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_100.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_100_s2029.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_100.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_100_s2029.json",
       "control_seed": 2029
     },
     {
@@ -356,8 +356,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_200",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_200.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_200_s2029.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_200.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_200_s2029.json",
       "control_seed": 2029
     },
     {
@@ -365,8 +365,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_500",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_500.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_500_s2029.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_500.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_500_s2029.json",
       "control_seed": 2029
     },
     {
@@ -374,8 +374,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_100",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_100.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_100_s2029.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_100.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_100_s2029.json",
       "control_seed": 2029
     },
     {
@@ -383,8 +383,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_300",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_300.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_300_s2029.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_300.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_300_s2029.json",
       "control_seed": 2029
     },
     {
@@ -392,8 +392,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_600",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_600.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_600_s2029.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_600.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_600_s2029.json",
       "control_seed": 2029
     },
     {
@@ -401,8 +401,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_1000",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_1000.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_1000_s2029.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_1000.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_1000_s2029.json",
       "control_seed": 2029
     },
     {
@@ -410,8 +410,8 @@
       "run_type": "negative_control",
       "control_family": "constant",
       "lambda_tag": "lambda_constant_05",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_constant_05.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_constant_05_s2029.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_05.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_constant_05_s2029.json",
       "control_seed": 2029
     },
     {
@@ -419,8 +419,8 @@
       "run_type": "negative_control",
       "control_family": "constant",
       "lambda_tag": "lambda_constant_10",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_constant_10.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_constant_10_s2029.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_10.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_constant_10_s2029.json",
       "control_seed": 2029
     },
     {
@@ -428,8 +428,8 @@
       "run_type": "negative_control",
       "control_family": "shuffle_global",
       "lambda_tag": "lambda_shuffle_global",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shuffle_global.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shuffle_global_s2030.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shuffle_global.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shuffle_global_s2030.json",
       "control_seed": 2030
     },
     {
@@ -437,8 +437,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_50",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_50.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_50_s2030.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_50.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_50_s2030.json",
       "control_seed": 2030
     },
     {
@@ -446,8 +446,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_100",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_100.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_100_s2030.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_100.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_100_s2030.json",
       "control_seed": 2030
     },
     {
@@ -455,8 +455,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_200",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_200.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_200_s2030.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_200.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_200_s2030.json",
       "control_seed": 2030
     },
     {
@@ -464,8 +464,8 @@
       "run_type": "negative_control",
       "control_family": "block_shuffle",
       "lambda_tag": "lambda_block_shuffle_500",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_block_shuffle_500.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_block_shuffle_500_s2030.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_block_shuffle_500.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_block_shuffle_500_s2030.json",
       "control_seed": 2030
     },
     {
@@ -473,8 +473,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_100",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_100.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_100_s2030.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_100.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_100_s2030.json",
       "control_seed": 2030
     },
     {
@@ -482,8 +482,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_300",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_300.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_300_s2030.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_300.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_300_s2030.json",
       "control_seed": 2030
     },
     {
@@ -491,8 +491,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_600",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_600.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_600_s2030.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_600.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_600_s2030.json",
       "control_seed": 2030
     },
     {
@@ -500,8 +500,8 @@
       "run_type": "negative_control",
       "control_family": "shift",
       "lambda_tag": "lambda_shift_1000",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_1000.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_1000_s2030.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_1000.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_1000_s2030.json",
       "control_seed": 2030
     },
     {
@@ -509,8 +509,8 @@
       "run_type": "negative_control",
       "control_family": "constant",
       "lambda_tag": "lambda_constant_05",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_constant_05.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_constant_05_s2030.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_05.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_constant_05_s2030.json",
       "control_seed": 2030
     },
     {
@@ -518,14 +518,14 @@
       "run_type": "negative_control",
       "control_family": "constant",
       "lambda_tag": "lambda_constant_10",
-      "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_constant_10.npz",
-      "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_constant_10_s2030.json",
+      "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_constant_10.npz",
+      "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_constant_10_s2030.json",
       "control_seed": 2030
     }
   ],
   "cfg_paths": {
-    "cfg_phaseA_base": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_phaseA_base.json",
-    "cfg_phaseA_truechange_eval": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_phaseA_truechange_eval.json"
+    "cfg_phaseA_base": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_phaseA_base.json",
+    "cfg_phaseA_truechange_eval": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_phaseA_truechange_eval.json"
   },
   "main_seed": 2026,
   "control_seeds": [

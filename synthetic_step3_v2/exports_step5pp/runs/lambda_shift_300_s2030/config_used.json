@@ -1,10 +1,10 @@
 {
   "data_dir": "synthetic_step3_v2",
-  "config_path": "synthetic_step3_v2\\exports_step5pp\\configs\\cfg_lambda_shift_300_s2030.json",
+  "config_path": "synthetic_step3_v2/exports_step5pp\\configs\\cfg_lambda_shift_300_s2030.json",
   "config_name": "lambda_shift_300",
-  "lambda_source": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_300.npz",
+  "lambda_source": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_300.npz",
   "lambda_tag": "lambda_shift_300",
-  "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_shift_300.npz",
+  "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_shift_300.npz",
   "base_path": "synthetic_step3_v2\\A_base.npy",
   "delta_path": "synthetic_step3_v2\\DeltaA.npy",
   "pred_prefix": "cmiknn",

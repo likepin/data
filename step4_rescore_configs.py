@@ -482,18 +482,38 @@ def main():
         else:
             smooth_std_thr = float(np.quantile(smooth_std_vals[np.isfinite(smooth_std_vals)], args.smooth_std_q))
 
+        corr_exception_min = -0.01
+        switch_band_exception_min = 0.80
+        switch_margin_exception_min = 0.20
+
         for r in rows:
             reasons = []
             sm = r["smooth_mean_abs_diff_used"]
             ss = r["smooth_std_diff_used"]
             cm = r["corr_mse"]
             vr = r.get("valid_ratio", np.nan)
+            sb = r.get("switch_band_correct_rate", np.nan)
+            smg = r.get("switch_margin_gap_signed", np.nan)
+
+            corr_soft_exception = bool(
+                np.isfinite(cm) and
+                np.isfinite(sb) and
+                np.isfinite(smg) and
+                np.isfinite(sm) and
+                np.isfinite(ss) and
+                (cm >= corr_exception_min) and
+                (sb >= switch_band_exception_min) and
+                (smg >= switch_margin_exception_min) and
+                (sm <= smooth_mean_thr) and
+                (ss <= smooth_std_thr)
+            )
+            r["corr_mse_soft_exception"] = corr_soft_exception
 
             if not np.isfinite(sm) or sm > smooth_mean_thr:
                 reasons.append("smooth_mean_abs_diff")
             if not np.isfinite(ss) or ss > smooth_std_thr:
                 reasons.append("smooth_std_diff")
-            if not np.isfinite(cm) or cm < 0:
+            if (not np.isfinite(cm) or cm < 0) and (not corr_soft_exception):
                 reasons.append("corr_mse")
             if np.isfinite(vr) and vr < 0.95:
                 reasons.append("valid_ratio")
@@ -508,6 +528,22 @@ def main():
                 kept.append(r)
 
     # scoring
+    # Phase B / iteration 1:
+    # Keep the candidate space fixed and only bias regime scoring toward
+    # switch-local alignment. The goal is not to maximize global correlation,
+    # but to prefer regime lambdas that are sharper around t_switch while
+    # still keeping a weak far-region smoothness regularizer.
+    regime_score_weights = {
+        "auc": 0.22,
+        "corr": 0.10,
+        "sep": 0.08,
+        "top10": 0.05,
+        "smooth_mean": 0.04,
+        "smooth_std": 0.03,
+        "switch_band": 0.27,
+        "switch_margin": 0.17,
+        "peak_delay": 0.04,
+    }
     for r in rows:
         n_auc_v = r["n_auc"]
         n_corr_v = r["n_corr"]
@@ -534,15 +570,15 @@ def main():
             0.05 * n_peak_delay_v
         )
         r["score_regime"] = float(
-            0.30 * n_auc_v +
-            0.14 * n_sep_v +
-            0.14 * n_corr_v +
-            0.08 * n_top10_v +
-            0.05 * (1 - n_sm) +
-            0.04 * (1 - n_ss) +
-            0.15 * n_switch_band_v +
-            0.07 * n_switch_margin_v +
-            0.03 * n_peak_delay_v
+            regime_score_weights["auc"] * n_auc_v +
+            regime_score_weights["sep"] * n_sep_v +
+            regime_score_weights["corr"] * n_corr_v +
+            regime_score_weights["top10"] * n_top10_v +
+            regime_score_weights["smooth_mean"] * (1 - n_sm) +
+            regime_score_weights["smooth_std"] * (1 - n_ss) +
+            regime_score_weights["switch_band"] * n_switch_band_v +
+            regime_score_weights["switch_margin"] * n_switch_margin_v +
+            regime_score_weights["peak_delay"] * n_peak_delay_v
         )
 
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")

@@ -13,7 +13,7 @@
     200,
     400
   ],
-  "lambda_file": "synthetic_step3_v2\\exports_step5pp\\configs\\lambda_gating.npz",
+  "lambda_file": "synthetic_step3_v2/exports_step5pp\\configs\\lambda_gating.npz",
   "lambda_tag": "score_gating",
   "config_name": "score_gating",
   "run_type": "main",
