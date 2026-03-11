@@ -53,7 +53,7 @@
     "k": 2,
     "score_key": "score_regime",
     "score": 0.8825064479230728,
-    "source_csv": "synthetic_step3_v2\\exports_step4\\rescored_results_20260311_231945.csv",
+    "source_csv": "synthetic_step3_v2\\exports_step4\\rescored_results_20260312_000817.csv",
     "selected_rank": 1,
     "picked_reason": "top1 by score_regime; non-collapse (corr<= 0.99, mad>= 0.001)",
     "collapse_with_existing": false,

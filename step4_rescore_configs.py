@@ -485,6 +485,10 @@ def main():
         corr_exception_min = -0.01
         switch_band_exception_min = 0.80
         switch_margin_exception_min = 0.20
+        regime_corr_exception_min = -0.06
+        regime_switch_band_exception_min = 0.85
+        regime_switch_margin_exception_min = 0.20
+        regime_peak_delay_exception_max = 171.0
 
         for r in rows:
             reasons = []
@@ -494,8 +498,9 @@ def main():
             vr = r.get("valid_ratio", np.nan)
             sb = r.get("switch_band_correct_rate", np.nan)
             smg = r.get("switch_margin_gap_signed", np.nan)
+            pd = r.get("peak_delay_lambda", np.nan)
 
-            corr_soft_exception = bool(
+            corr_soft_exception_base = bool(
                 np.isfinite(cm) and
                 np.isfinite(sb) and
                 np.isfinite(smg) and
@@ -507,7 +512,28 @@ def main():
                 (sm <= smooth_mean_thr) and
                 (ss <= smooth_std_thr)
             )
+            corr_soft_exception_regime = bool(
+                np.isfinite(cm) and
+                np.isfinite(sb) and
+                np.isfinite(smg) and
+                np.isfinite(pd) and
+                np.isfinite(sm) and
+                np.isfinite(ss) and
+                (cm >= regime_corr_exception_min) and
+                (sb >= regime_switch_band_exception_min) and
+                (smg >= regime_switch_margin_exception_min) and
+                (pd <= regime_peak_delay_exception_max) and
+                (sm <= smooth_mean_thr) and
+                (ss <= smooth_std_thr)
+            )
+            corr_soft_exception = bool(corr_soft_exception_base or corr_soft_exception_regime)
+            exception_type = ""
+            if corr_soft_exception_base:
+                exception_type = "base"
+            elif corr_soft_exception_regime:
+                exception_type = "regime_v2"
             r["corr_mse_soft_exception"] = corr_soft_exception
+            r["corr_mse_soft_exception_type"] = exception_type
 
             if not np.isfinite(sm) or sm > smooth_mean_thr:
                 reasons.append("smooth_mean_abs_diff")

@@ -16,7 +16,7 @@
     "k": 2,
     "score_key": "score_regime",
     "score": 0.8825064479230728,
-    "source_csv": "synthetic_step3_v2\\exports_step4\\rescored_results_20260311_231945.csv",
+    "source_csv": "synthetic_step3_v2\\exports_step4\\rescored_results_20260312_000817.csv",
     "selected_rank": 1
   },
   "picked_metrics_raw": {
@@ -24,6 +24,7 @@
     "corr_mae": "0.01154918156688775",
     "corr_mse": "-0.0009691594345137219",
     "corr_mse_soft_exception": "True",
+    "corr_mse_soft_exception_type": "base",
     "k": "2",
     "lambda_hash_round6": "73241258368a8ccc4e0b4cde1708f5b312ba2fe1",
     "lambda_oriented_swapped": "True",
