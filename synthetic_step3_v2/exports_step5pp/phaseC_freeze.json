@@ -1,0 +1,188 @@
+{
+  "frozen_timestamp": "2026-03-18T20:54:14.5719628+08:00",
+  "purpose": "Frozen Phase C round-1 signal inputs and protocol. This freeze is based on synthetic Phase A/Phase B outputs only and does not modify model-side code.",
+  "benchmark_version": "phaseA_v0.1_synth",
+  "dataset": "synthetic",
+  "canonical_artifacts_root": "C:/Users/cyl/Desktop/phaseC_artifacts",
+  "artifacts_manifest": {
+    "readme": "README.md",
+    "input_spec": "phaseC_input_spec.md",
+    "split_artifact": "phaseC_round1_split.json",
+    "training_config": "phaseC_round1_train_config.json",
+    "gating_lambda_npy": "lambda_gating_locked.npy",
+    "gating_lambda_npz": "lambda_gating_locked.npz",
+    "regime_lambda_npy": "lambda_regime_baseline.npy",
+    "regime_lambda_npz": "lambda_regime_baseline.npz"
+  },
+  "source_files": [
+    "synthetic_step3_v2/exports_step5pp/phaseA_summary.md",
+    "synthetic_step3_v2/exports_step5pp/phaseA_rulebook.md",
+    "synthetic_step3_v2/exports_step5pp/phaseB_locked_variants.json",
+    "synthetic_step3_v2/exports_step5pp/phaseB_baseline_regime.json",
+    "synthetic_step3_v2/exports_step5pp/compare/compare_regime_iteration.csv",
+    "synthetic_step3_v2/exports_step5pp/phaseC_round1_split.json",
+    "synthetic_step3_v2/exports_step5pp/phaseC_round1_train_config.json",
+    "synthetic_step3_v2/exports_step5pp/phaseC_staging/lambda_regime_baseline.json",
+    "C:/Users/cyl/Desktop/iTransformer-main/run.py",
+    "C:/Users/cyl/Desktop/iTransformer-main/experiments/exp_long_term_forecasting.py",
+    "C:/Users/cyl/Desktop/iTransformer-main/data_provider/data_factory.py",
+    "C:/Users/cyl/Desktop/iTransformer-main/data_provider/data_loader.py"
+  ],
+  "split_artifact": "phaseC_round1_split.json",
+  "training_config_artifact": "phaseC_round1_train_config.json",
+  "input_spec_artifact": "phaseC_input_spec.md",
+  "gating_lambda_artifact": {
+    "npy": "lambda_gating_locked.npy",
+    "npz": "lambda_gating_locked.npz"
+  },
+  "regime_lambda_artifact": {
+    "npy": "lambda_regime_baseline.npy",
+    "npz": "lambda_regime_baseline.npz"
+  },
+  "locked_gating_variant": {
+    "name": "score_gating",
+    "window": 40,
+    "k": 2,
+    "lambda_hash_round6": "f4bc9d33f862bbd93db5af7ae20b4edb995cae98",
+    "source_csv": "synthetic_step3_v2/exports_step4/rescored_results_20260311_162910.csv",
+    "selected_rank": 1,
+    "lock_reason": "phaseB_locked_from_current_variant",
+    "locked_at": "2026-03-11T16:56:45"
+  },
+  "accepted_regime_baseline": {
+    "name": "score_regime",
+    "window": 50,
+    "k": 2,
+    "lambda_hash_round6": "6db132725d81c7889924901173a9399221293406",
+    "source_csv": "synthetic_step3_v2/exports_step4/rescored_results_20260306_142434.csv",
+    "selected_rank": 2,
+    "artifact_source": {
+      "type": "reconstructed_from_historical_code",
+      "source_commit": "6bcfe93",
+      "source_file": "step5pp_utils.py",
+      "local_staging_meta": "synthetic_step3_v2/exports_step5pp/phaseC_staging/lambda_regime_baseline.json"
+    },
+    "switch_band_correct_rate": 0.83,
+    "switch_margin_gap_signed": 0.10248515754938126,
+    "peak_delay_min": 121.0,
+    "directional_align_overall": 0.5444463115442782,
+    "delta_align_vs_blockshuffle": 0.14043297435391894,
+    "delta_switch_vs_blockshuffle": 0.42613636363636354,
+    "delta_peakdelay_vs_blockshuffle": -11.0,
+    "corr_gating_regime": 0.8890241459041167,
+    "mean_abs_diff_gating_regime": 0.09984745326476023,
+    "hash_same_gating_regime": false,
+    "strategy_collapse": false,
+    "pass_core_checks_v3_v2": true,
+    "negative_control_v3_v2_guardrail_pass": true
+  },
+  "rejected_notable_candidates": [
+    {
+      "status": "rejected_candidate",
+      "name": "score_regime",
+      "window": 80,
+      "k": 2,
+      "lambda_hash_round6": "73241258368a8ccc4e0b4cde1708f5b312ba2fe1",
+      "source_csv": "synthetic_step3_v2/exports_step4/rescored_results_20260312_000817.csv",
+      "selected_rank": 1,
+      "switch_band_correct_rate": 0.805,
+      "switch_margin_gap_signed": 0.06962361931800842,
+      "peak_delay_min": 48.0,
+      "corr_gating_regime": 0.8400148199482447,
+      "mean_abs_diff_gating_regime": 0.1201029624518832,
+      "pass_core_checks_v3_v2": true,
+      "mechanism_progress": false,
+      "iteration_accept": false,
+      "iteration_accept_reason": "mechanism_progress_lt_2of3",
+      "reason": "Faster and more separable than the accepted baseline, but weaker on switch_band and switch_margin_gap."
+    },
+    {
+      "status": "rejected_candidate",
+      "name": "score_regime",
+      "window": 120,
+      "k": 8,
+      "lambda_hash_round6": "2744524df2a729d5d052b7ff28f9facb4c47261b",
+      "source_csv": "synthetic_step3_v2/exports_step4/rescored_results_20260312_005909.csv",
+      "selected_rank": 1,
+      "switch_band_correct_rate": 0.3725,
+      "switch_margin_gap_signed": -0.34310153126716614,
+      "peak_delay_min": 20.0,
+      "corr_gating_regime": 0.5690423137387092,
+      "mean_abs_diff_gating_regime": 0.2183536215326071,
+      "pass_core_checks_v3_v2": false,
+      "mechanism_progress": false,
+      "iteration_accept": false,
+      "iteration_accept_reason": "pass_core_checks_v3_v2_false;mechanism_progress_lt_2of3",
+      "reason": "Much faster and more separable, but switch_band and switch_margin_gap collapse below acceptable regime quality."
+    }
+  ],
+  "phase_c_round1_protocol": {
+    "dataset": "synthetic",
+    "training_reproducibility": {
+      "seed": 2026,
+      "num_seeds": 1,
+      "seed_policy": "Use one fixed seed for all four arms in round 1. Do not reseed per arm."
+    },
+    "data_split_protocol": {
+      "policy": "single fixed split shared by all four arms",
+      "dataset_length": 6000,
+      "t_switch": 3600,
+      "requirements": [
+        "The split must be created once and reused unchanged across baseline, gating-only, regime-only, and gating+regime.",
+        "Evaluation slices must preserve both pre and post regions.",
+        "The switch-window evaluation slice must include t_switch with enough local context for the fixed switch-window metrics.",
+        "Do not re-split after the first baseline run."
+      ],
+      "implementation_note": "Freeze one split artifact before model-side implementation. This freeze records the constraints, not yet a model-side split file."
+    },
+    "training_budget_protocol": {
+      "policy": "single fixed budget shared by all four arms",
+      "hyperparameter_tuning": "disabled in round 1",
+      "requirements": [
+        "Use the same optimizer family across all four arms.",
+        "Use the same epoch budget across all four arms.",
+        "Use the same early-stop rule across all four arms.",
+        "Use the same batch size across all four arms.",
+        "Use the same learning-rate setting across all four arms."
+      ],
+      "implementation_note": "Exact numeric optimizer defaults should be taken from the first runnable iTransformer training script and then frozen unchanged across arms."
+    },
+    "arms": [
+      "baseline",
+      "gating-only",
+      "regime-only",
+      "gating+regime"
+    ],
+    "integration": {
+      "baseline": "No lambda input.",
+      "gating-only": "Minimal integration only: loss weighting or sample/timestep weighting. Do not directly control a complex structural module in round 1.",
+      "regime-only": "Minimal integration only: extra time feature or light auxiliary input channel. Do not directly control large-scale structural switching in round 1.",
+      "gating+regime": "Run only after the single-signal arms are established under the same protocol."
+    },
+    "evaluation_metrics": [
+      "global",
+      "switch-window",
+      "pre/post",
+      "high/low-lambda-subset"
+    ],
+    "success_criteria": [
+      "gating-only beats baseline on global metrics: gating signal has model-side value.",
+      "regime-only beats baseline on switch-window metrics: regime signal has model-side value.",
+      "gating+regime is best overall or shows complementary gains without harming the switch-window metrics: the two signals are complementary."
+    ],
+    "notes": [
+      "Do not change the lambda versions during round 1.",
+      "Do not revise the evaluation metric definitions after training starts.",
+      "This freeze now fixes the round-1 seed and the protocol-level constraints for split and training budget.",
+      "Before model coding starts, generate one concrete split artifact and one concrete training-config artifact that obey these constraints."
+    ]
+  },
+  "model_side_freeze": {
+    "model_repo_root": "C:/Users/cyl/Desktop/iTransformer-main",
+    "training_entrypoint": "run.py",
+    "experiment_class": "experiments.exp_long_term_forecasting.Exp_Long_Term_Forecast",
+    "data_provider": "data_provider.data_factory.data_provider",
+    "training_config_status": "frozen_against_real_code",
+    "synthetic_dataset_adapter_status": "required_before_round1_training"
+  }
+}

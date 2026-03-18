@@ -1,0 +1,10 @@
+{
+  "window": 50,
+  "k": 2,
+  "seed": 2026,
+  "source_commit": "6bcfe93",
+  "source_file": "step5pp_utils.py",
+  "lambda_hash_round6": "6db132725d81c7889924901173a9399221293406",
+  "valid_count": 5951,
+  "valid_ratio": 0.9918333333333333
+}

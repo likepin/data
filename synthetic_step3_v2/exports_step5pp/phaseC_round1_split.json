@@ -1,0 +1,74 @@
+{
+  "artifact_name": "phaseC_round1_split",
+  "created_at": "2026-03-18T20:54:14.5719628+08:00",
+  "dataset": "synthetic",
+  "indexing": {
+    "base": "zero_based",
+    "interval_type": "half_open",
+    "interval_semantics": "[start, end)",
+    "length": 6000
+  },
+  "global_boundaries": {
+    "t_switch": 3600,
+    "pre_region": [0, 3600],
+    "post_region": [3600, 6000]
+  },
+  "switch_window": {
+    "half_width": 200,
+    "full_window": [3400, 3800],
+    "pre_slice": [3400, 3600],
+    "post_slice": [3600, 3800],
+    "purpose": "Fixed round-1 local evaluation slice around t_switch."
+  },
+  "splits": {
+    "train": {
+      "intervals": [
+        [0, 2400],
+        [3800, 5000]
+      ],
+      "count": 3600
+    },
+    "val": {
+      "intervals": [
+        [2400, 2900],
+        [5000, 5500]
+      ],
+      "count": 1000
+    },
+    "test": {
+      "intervals": [
+        [2900, 3400],
+        [5500, 6000]
+      ],
+      "count": 1000
+    }
+  },
+  "evaluation_slices": {
+    "global_eval_source": "test",
+    "pre_eval": {
+      "intervals": [
+        [2900, 3400]
+      ],
+      "count": 500
+    },
+    "post_eval": {
+      "intervals": [
+        [5500, 6000]
+      ],
+      "count": 500
+    },
+    "switch_window_eval": {
+      "intervals": [
+        [3400, 3800]
+      ],
+      "count": 400,
+      "note": "Shared fixed slice for switch-window metrics across all four Phase C round-1 arms."
+    }
+  },
+  "design_rationale": [
+    "All four Phase C round-1 arms must share one identical split artifact.",
+    "Validation and test both preserve pre and post regions instead of becoming post-only.",
+    "The switch-window around t_switch is kept as a dedicated local evaluation slice, not mixed into train.",
+    "This artifact is model-agnostic and can be consumed later by iTransformer-side dataset code."
+  ]
+}

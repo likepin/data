@@ -1,0 +1,150 @@
+{
+  "artifact_name": "phaseC_round1_train_config",
+  "created_at": "2026-03-18T22:10:00+08:00",
+  "status": "code_backed_protocol_freeze_not_yet_runnable",
+  "purpose": "Freeze the Phase C round-1 model-side training protocol against the real iTransformer codebase before any integration edits.",
+  "model_repo_root": "C:/Users/cyl/Desktop/iTransformer-main",
+  "code_references": {
+    "entrypoint_script": "run.py",
+    "experiment_class": "experiments.exp_long_term_forecasting.Exp_Long_Term_Forecast",
+    "data_provider": "data_provider.data_factory.data_provider",
+    "custom_dataset_class": "data_provider.data_loader.Dataset_Custom",
+    "reference_shell_scripts": [
+      "scripts/multivariate_forecasting/Weather/iTransformer.sh",
+      "scripts/multivariate_forecasting/ETT/iTransformer_ETTh1.sh"
+    ]
+  },
+  "round1_binding": {
+    "dataset": "synthetic",
+    "seed": 2026,
+    "num_seeds": 1,
+    "split_artifact": "phaseC_round1_split.json",
+    "arms": [
+      "baseline",
+      "gating-only",
+      "regime-only",
+      "gating+regime"
+    ],
+    "per_arm_hparam_tuning": false,
+    "evaluation_metric_families": [
+      "global",
+      "switch-window",
+      "pre/post",
+      "high/low-lambda-subset"
+    ]
+  },
+  "upstream_defaults_from_code": {
+    "seed_in_run_py": 2023,
+    "model": "iTransformer",
+    "exp_name": "MTSF",
+    "optimizer_family": "Adam",
+    "loss": "MSE",
+    "learning_rate": 0.0001,
+    "lradj": "type1",
+    "train_epochs": 10,
+    "batch_size": 32,
+    "patience": 3,
+    "itr": 1,
+    "num_workers": 10,
+    "use_amp": false,
+    "use_multi_gpu": false,
+    "gpu": 0,
+    "use_norm": true,
+    "seq_len": 96,
+    "label_len": 48,
+    "pred_len": 96,
+    "d_model": 512,
+    "n_heads": 8,
+    "e_layers": 2,
+    "d_layers": 1,
+    "d_ff": 2048,
+    "dropout": 0.1,
+    "embed": "timeF",
+    "activation": "gelu",
+    "class_strategy": "projection"
+  },
+  "frozen_round1_training_config": {
+    "model": "iTransformer",
+    "exp_name": "MTSF",
+    "optimizer_family": "Adam",
+    "loss": "MSE",
+    "learning_rate": 0.0001,
+    "lradj": "type1",
+    "train_epochs": 10,
+    "batch_size": 32,
+    "patience": 3,
+    "itr": 1,
+    "num_workers": 0,
+    "use_amp": false,
+    "use_multi_gpu": false,
+    "gpu": 0,
+    "use_norm": true,
+    "seq_len": 96,
+    "label_len": 48,
+    "pred_len": 96,
+    "d_model": 512,
+    "n_heads": 8,
+    "e_layers": 2,
+    "d_layers": 1,
+    "d_ff": 2048,
+    "dropout": 0.1,
+    "embed": "timeF",
+    "activation": "gelu",
+    "class_strategy": "projection",
+    "features": "M",
+    "enc_in": 10,
+    "dec_in": 10,
+    "c_out": 10,
+    "freq": "h",
+    "des": "PhaseC_round1_synth",
+    "notes": [
+      "num_workers is frozen to 0 for round 1 because the official shell scripts already override to 0 and this is safer on Windows.",
+      "enc_in/dec_in/c_out are frozen from synthetic_step3_v2/X.npy shape = (6000, 10)."
+    ]
+  },
+  "synthetic_dataset_adapter": {
+    "status": "required_before_round1_training",
+    "current_upstream_incompatibilities": [
+      "run.py hardcodes fix_seed = 2023 and does not expose a seed argument, while Phase C round 1 is frozen to seed 2026.",
+      "Dataset_Custom hardcodes a 70/10/20 split and ignores the frozen split artifact.",
+      "Dataset_Custom expects a CSV with a date column, while the current synthetic source is X.npy with shape (6000, 10)."
+    ],
+    "required_model_side_changes": [
+      "Add a split-aware synthetic dataset adapter that reads phaseC_round1_split.json.",
+      "Add a model-side seed override so round-1 runs actually use seed 2026 instead of the run.py hardcoded seed 2023.",
+      "Define one synthetic data interface contract for x, y, and time marks that all four arms share unchanged."
+    ],
+    "planned_contract": {
+      "source_array": "synthetic_step3_v2/X.npy",
+      "source_shape": [
+        6000,
+        10
+      ],
+      "split_artifact": "phaseC_round1_split.json",
+      "lambda_inputs": [
+        "lambda_gating_locked.npy",
+        "lambda_regime_baseline.npy"
+      ],
+      "suggested_data_arg_name": "phasec_synth_split",
+      "suggested_time_mark_policy": "Generate a monotonic synthetic timestamp index compatible with timeF embedding and keep it identical across all four arms."
+    }
+  },
+  "minimal_integration_order": [
+    {
+      "arm": "baseline",
+      "integration": "No lambda input."
+    },
+    {
+      "arm": "gating-only",
+      "integration": "Loss weighting, sample weighting, or timestep weighting only."
+    },
+    {
+      "arm": "regime-only",
+      "integration": "Extra time feature or light auxiliary input only."
+    },
+    {
+      "arm": "gating+regime",
+      "integration": "Only after the single-signal arms run under the same frozen split and training budget."
+    }
+  ]
+}
