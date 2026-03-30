@@ -1,0 +1,84 @@
+{
+  "artifact_name": "phaseD_train_time_graph_interface",
+  "created_at": "2026-03-30T11:34:02.680801+00:00",
+  "backend": "synthetic_gt_graph",
+  "orientation": "tgt_src",
+  "data_dir": "C:\\Users\\cyl\\Desktop\\data\\synthetic_step3_v2",
+  "exports_dir": "C:\\Users\\cyl\\Desktop\\data\\synthetic_step3_v2\\exports_step5pp\\phaseD_interface",
+  "phasec_artifacts_dir": "C:\\Users\\cyl\\Desktop\\phaseC_artifacts",
+  "source_paths": {
+    "split": "C:\\Users\\cyl\\Desktop\\phaseC_artifacts\\phaseC_round1_split.json",
+    "train_config": "C:\\Users\\cyl\\Desktop\\phaseC_artifacts\\phaseC_round1_train_config.json",
+    "lambda_t": "C:\\Users\\cyl\\Desktop\\phaseC_artifacts\\lambda_gating_locked.npz",
+    "a_base_lag": "C:\\Users\\cyl\\Desktop\\data\\synthetic_step3_v2\\A_base.npy",
+    "support": "C:\\Users\\cyl\\Desktop\\data\\synthetic_step3_v2\\adj_base.npy",
+    "delta_lag": "C:\\Users\\cyl\\Desktop\\data\\synthetic_step3_v2\\DeltaA.npy"
+  },
+  "source_hashes": {
+    "split": "e76bb3ea67fd4726cfc12a3c2a00cecf2a20a1af60f3f0267f8bd6ce42274e52",
+    "train_config": "9113e9a939434973a012b5330efd21616d0b17ef0d42badb5527f95724763739",
+    "lambda_t": "df1f7313ad36430ef2449911bf91abe09f3b6cb0da4d87fc8e6b7d56bbb82a08",
+    "a_base_lag": "46a3735f58031c40db726f45a1af47c1c59f8bddccdb5008ac6f882b8d847573",
+    "support": "8ef4762235336158c5467a5abf1456e1cf5a6bd52c0fe00c32bebb0092bae851",
+    "delta_lag": "bf1f58d729de0084af8c3b3d50cc5f94395f6928c08b026e2258623fd509f2fd"
+  },
+  "window_geometry": {
+    "seq_len": 96,
+    "label_len": 48,
+    "pred_len": 96,
+    "num_train_windows": 3218,
+    "train_intervals": [
+      [
+        0,
+        2400
+      ],
+      [
+        3800,
+        5000
+      ]
+    ]
+  },
+  "sample_order_hash": "422ba24d050a08802dc8c6125d195f76678c53055dcee5186d9cb9a12f986a70",
+  "lambda_contract": {
+    "timeline_source": "lambda_gating_locked",
+    "sanitization": "linear_interp_with_edge_value_extrapolation",
+    "aggregation": "encoder_history_mean",
+    "aggregation_interval": "[s_begin, s_end)"
+  },
+  "graph_contract": {
+    "a_base_export": "sum_over_lags",
+    "delta_export": "support_masked_signed_sum_over_lags",
+    "support_source": "adj_base.npy",
+    "window_assignment": "gt_regime_zero_or_post_delta"
+  },
+  "output_shapes": {
+    "phaseD_a_base_agg": [
+      10,
+      10
+    ],
+    "phaseD_support": [
+      10,
+      10
+    ],
+    "phaseD_lambda_train": [
+      3218
+    ],
+    "phaseD_deltaA_train": [
+      3218,
+      10,
+      10
+    ],
+    "phaseD_window_index_train_count": 3218
+  },
+  "output_hashes": {
+    "phaseD_a_base_agg": "c362936cbbcd185547710762959456abafc29d6948966730723fc0fa8f5da2fc",
+    "phaseD_support": "6ba66ed800c491ba3ab2cce4ebb4fbb372eb990fe118b207c53ca6d9c39102b0",
+    "phaseD_lambda_train": "81749f18946d74c87a319054b00032fe3b4875bf2627b2475cb1f62d039d4074",
+    "phaseD_deltaA_train": "ab552d59d1bfb054b8e2f86afd2f6aa41640cf8d165aec5947c37e927d605c7b",
+    "phaseD_window_index_train": "6e4aaff9f8b35365f2b47fbd811e52d5609ccbfab99ef80d2ac3e39ebd020461"
+  },
+  "counts": {
+    "pre_regime_windows": 2209,
+    "post_regime_windows": 1009
+  }
+}

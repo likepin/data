@@ -190,6 +190,14 @@ These do not exist yet and should be derived next:
     - lag aggregation rule
     - signed/unsigned export semantics
 
+Current Stage 2 export location:
+- `synthetic_step3_v2/exports_step5pp/phaseD_interface/phaseD_a_base_agg.npy`
+- `synthetic_step3_v2/exports_step5pp/phaseD_interface/phaseD_support.npy`
+- `synthetic_step3_v2/exports_step5pp/phaseD_interface/phaseD_window_index_train.json`
+- `synthetic_step3_v2/exports_step5pp/phaseD_interface/phaseD_lambda_train.npy`
+- `synthetic_step3_v2/exports_step5pp/phaseD_interface/phaseD_deltaA_train.npy`
+- `synthetic_step3_v2/exports_step5pp/phaseD_interface/phaseD_interface_manifest.json`
+
 ## Current Stage 1 Decisions
 
 Frozen now:
@@ -214,6 +222,22 @@ Before any model edit:
 2. export `A_local^(w)` by running windowed ridge regression on the fixed `PCMCI` parents/support
 3. derive `DeltaA^(w)` from the exported local window graphs
 4. export the new window artifacts in one stable manifest-backed bundle
+
+## Stage 2 Status
+
+Completed for the synthetic GT backend:
+- lag aggregation is fixed to `sum_over_lags`
+- exported graph orientation is fixed to `tgt_src`
+- `phaseD_a_base_agg.npy` has shape `(10, 10)`
+- `phaseD_support.npy` has shape `(10, 10)`
+- `phaseD_lambda_train.npy` has shape `(3218,)`
+- `phaseD_deltaA_train.npy` has shape `(3218, 10, 10)`
+- `phaseD_window_index_train.json` contains `3218` dataloader-aligned train-window records
+- `phaseD_interface_manifest.json` records source hashes, sample-order hash, lambda sanitization, lambda aggregation, and graph export semantics
+
+Observed train-window regime counts:
+- pre windows: `2209`
+- post windows: `1009`
 
 ## Mainline Semantics
 
