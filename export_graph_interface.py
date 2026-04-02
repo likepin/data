@@ -391,7 +391,7 @@ def run_pcmci(
     pc_alpha: float,
     cond_ind_test,
     pcmci_verbosity: int,
-) -> tuple[np.ndarray, np.ndarray, list[list[tuple[int, int]]]]:
+) -> tuple[np.ndarray, list[list[tuple[int, int]]]]:
     pcmci = PCMCI(
         dataframe=DataFrame(train_z.astype(np.float64)),
         cond_ind_test=cond_ind_test,
@@ -399,19 +399,16 @@ def run_pcmci(
     )
     results = pcmci.run_pcmci(tau_max=tau_max, pc_alpha=pc_alpha)
     p_matrix = results["p_matrix"]
-    val_matrix = results["val_matrix"]
     n_vars = train_z.shape[1]
-    a_base_lag = np.zeros((tau_max, n_vars, n_vars), dtype=np.float32)
     support_lag = np.zeros((tau_max, n_vars, n_vars), dtype=np.uint8)
     parents_by_target: list[list[tuple[int, int]]] = [[] for _ in range(n_vars)]
     for src in range(n_vars):
         for tgt in range(n_vars):
             for lag in range(1, tau_max + 1):
                 if p_matrix[src, tgt, lag] <= pc_alpha:
-                    a_base_lag[lag - 1, tgt, src] = float(val_matrix[src, tgt, lag])
                     support_lag[lag - 1, tgt, src] = 1
                     parents_by_target[tgt].append((src, lag))
-    return a_base_lag, support_lag, parents_by_target
+    return support_lag, parents_by_target
 
 
 def build_global_design(train_z: np.ndarray, tau_max: int) -> tuple[np.ndarray, np.ndarray]:
@@ -422,6 +419,33 @@ def build_global_design(train_z: np.ndarray, tau_max: int) -> tuple[np.ndarray, 
         design_all[:, (lag - 1) * n_vars: lag * n_vars] = train_z[tau_max - lag: total_steps - lag]
     targets_all = train_z[tau_max:].astype(np.float32)
     return design_all, targets_all
+
+
+def fit_aggregated_ridge_graph(
+    design_all: np.ndarray,
+    targets_all: np.ndarray,
+    parents_by_target: list[list[tuple[int, int]]],
+    n_vars: int,
+    ridge_alpha: float,
+    row_start: int,
+    row_end: int,
+) -> np.ndarray:
+    if row_start < 0 or row_end > design_all.shape[0] or row_end < row_start:
+        raise ValueError(
+            f"Invalid ridge row bounds: row_start={row_start}, row_end={row_end}, design_rows={design_all.shape[0]}"
+        )
+    agg = np.zeros((n_vars, n_vars), dtype=np.float32)
+    for tgt in range(n_vars):
+        parents = parents_by_target[tgt]
+        if not parents:
+            continue
+        parent_cols = [((lag - 1) * n_vars + src) for src, lag in parents]
+        x_view = design_all[row_start:row_end, parent_cols]
+        y_view = targets_all[row_start:row_end, tgt]
+        coef = fit_ridge_with_intercept(x_view, y_view, alpha=ridge_alpha)
+        for weight, (src, _lag) in zip(coef, parents):
+            agg[tgt, src] += weight
+    return agg
 
 
 def export_real_estimated(args) -> None:
@@ -502,7 +526,7 @@ def export_real_estimated(args) -> None:
         f"pc_alpha={pc_alpha}"
     )
     stage_start = time.time()
-    a_base_lag, support_lag, parents_by_target = run_pcmci(
+    support_lag, parents_by_target = run_pcmci(
         train_z,
         tau_max=tau_max,
         pc_alpha=pc_alpha,
@@ -511,11 +535,33 @@ def export_real_estimated(args) -> None:
     )
     print(f"[Done] pcmci | elapsed={(time.time() - stage_start)/60:.2f} min")
     support = (support_lag.sum(axis=0) > 0).astype(np.uint8)
-    a_base_agg = aggregate_lag_graph(a_base_lag)
-    np.save(exports_dir / "a_base_agg.partial.npy", a_base_agg.astype(np.float32))
     np.save(exports_dir / "support.partial.npy", support.astype(np.uint8))
 
     design_all, targets_all = build_global_design(train_z, tau_max=tau_max)
+    write_progress(
+        exports_dir,
+        {
+            "status": "running",
+            "stage": "global_ridge",
+            "updated_at": datetime.now(timezone.utc).isoformat(),
+            "ridge_alpha": ridge_alpha,
+            "train_design_rows": int(design_all.shape[0]),
+        },
+    )
+    print(f"[Stage] global_ridge | ridge_alpha={ridge_alpha}")
+    stage_start = time.time()
+    a_base_agg = fit_aggregated_ridge_graph(
+        design_all=design_all,
+        targets_all=targets_all,
+        parents_by_target=parents_by_target,
+        n_vars=n_vars,
+        ridge_alpha=ridge_alpha,
+        row_start=0,
+        row_end=design_all.shape[0],
+    )
+    a_base_agg = (a_base_agg * support.astype(np.float32)).astype(np.float32)
+    print(f"[Done] global_ridge | elapsed={(time.time() - stage_start)/60:.2f} min")
+    np.save(exports_dir / "a_base_agg.partial.npy", a_base_agg.astype(np.float32))
 
     num_windows = train_length - seq_len - pred_len + 1
     if num_windows <= 0:
@@ -525,11 +571,6 @@ def export_real_estimated(args) -> None:
     delta_train = np.zeros((num_windows, n_vars, n_vars), dtype=np.float32)
     window_index = []
     window_starts = np.arange(num_windows, dtype=np.int64)
-
-    parent_cols_by_target = []
-    for tgt in range(n_vars):
-        cols = [((lag - 1) * n_vars + src) for src, lag in parents_by_target[tgt]]
-        parent_cols_by_target.append(cols)
 
     write_progress(
         exports_dir,
@@ -552,17 +593,15 @@ def export_real_estimated(args) -> None:
         lambda_train[sample_id] = float(lambda_clean[s_begin:s_end].mean())
         row_start = s_begin
         row_end = s_end - tau_max
-        local_agg = np.zeros((n_vars, n_vars), dtype=np.float32)
-
-        for tgt in range(n_vars):
-            parent_cols = parent_cols_by_target[tgt]
-            if not parent_cols:
-                continue
-            x_win = design_all[row_start:row_end, parent_cols]
-            y_win = targets_all[row_start:row_end, tgt]
-            coef = fit_ridge_with_intercept(x_win, y_win, alpha=ridge_alpha)
-            for weight, (src, lag) in zip(coef, parents_by_target[tgt]):
-                local_agg[tgt, src] += weight
+        local_agg = fit_aggregated_ridge_graph(
+            design_all=design_all,
+            targets_all=targets_all,
+            parents_by_target=parents_by_target,
+            n_vars=n_vars,
+            ridge_alpha=ridge_alpha,
+            row_start=row_start,
+            row_end=row_end,
+        )
 
         delta_train[sample_id] = (local_agg - a_base_agg) * support.astype(np.float32)
         window_index.append(
@@ -639,14 +678,16 @@ def export_real_estimated(args) -> None:
             "aggregation_interval": "[s_begin, s_end)",
         },
         "graph_contract": {
-            "static_source": "pcmci_train_full",
+            "support_source": "pcmci_train_full",
+            "static_source": "full_train_ridge_on_pcmci_support",
             "tau_max": tau_max,
             "pc_alpha": pc_alpha,
-            "a_base_export": "significant_signed_sum_over_lags",
+            "a_base_export": "full_train_ridge_coeff_sum_over_lags_on_fixed_support",
             "support_export": "collapsed_significant_support_over_lags",
             "local_estimator": "windowed_ridge_on_fixed_pcmci_support",
             "ridge_alpha": ridge_alpha,
-            "delta_export": "support_masked_signed_sum_over_lags",
+            "delta_export": "support_masked_signed_windowed_ridge_minus_global_ridge",
+            "delta_definition": "local_ridge_minus_global_ridge",
             "cond_test": cond_test_meta,
         },
     }
