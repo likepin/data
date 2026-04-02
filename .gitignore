@@ -201,6 +201,22 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# Local vendored dependencies
+.vendor/
+vendor_tigramite_only/
+
+# Experiment outputs and logs
+checkpoints/
+results/
+test_results/
+result_long_term_forecast.txt
+
+# Exported graph/interface bundles
+interfaces/
+synthetic_step3_v2/exports_step5pp/graph_interface/
+synthetic_step3_v2/exports_step5pp/phaseD_interface/
+synthetic_step3_v2/exports_step5pp/*_graph_interface/
+
 # Marimo
 marimo/_static/
 marimo/_lsp/

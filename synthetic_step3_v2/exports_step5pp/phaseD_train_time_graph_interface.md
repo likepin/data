@@ -152,7 +152,7 @@ The new mainline should read the following four artifact groups:
 
 These do not exist yet and should be derived next:
 
-- `phaseD_window_index_train.json`
+- `window_index_train.json`
   - maps each training window id to the exact dataloader-aligned source interval
   - required fields:
     - `sample_id`
@@ -165,19 +165,19 @@ These do not exist yet and should be derived next:
     - `r_end`
     - `lambda_start`
     - `lambda_end`
-- `phaseD_deltaA_train.npy`
+- `deltaA_train.npy`
   - shape proposal: `(num_train_windows, 10, 10)`
   - model-facing semantic contract:
     - support-masked
     - lag-aggregated from the local lag-wise ridge coefficients
     - signed drift matrix, not absolute-value-only
     - no extra model-side normalization baked in beyond the fixed export rule
-- `phaseD_lambda_train.npy`
+- `lambda_train.npy`
   - shape proposal: `(num_train_windows,)`
   - produced by:
     1. sanitizing `lambda_gating_locked` by linear interpolation with edge-value extrapolation
     2. averaging the sanitized timeline signal over the encoder-history interval `[s_begin, s_end)` of each train window
-- `phaseD_interface_manifest.json`
+- `interface_manifest.json`
   - records source paths, hashes, shape contract, and derivation settings
   - must also record:
     - split hash
@@ -190,13 +190,26 @@ These do not exist yet and should be derived next:
     - lag aggregation rule
     - signed/unsigned export semantics
 
-Current Stage 2 export location:
-- `synthetic_step3_v2/exports_step5pp/phaseD_interface/phaseD_a_base_agg.npy`
-- `synthetic_step3_v2/exports_step5pp/phaseD_interface/phaseD_support.npy`
-- `synthetic_step3_v2/exports_step5pp/phaseD_interface/phaseD_window_index_train.json`
-- `synthetic_step3_v2/exports_step5pp/phaseD_interface/phaseD_lambda_train.npy`
-- `synthetic_step3_v2/exports_step5pp/phaseD_interface/phaseD_deltaA_train.npy`
-- `synthetic_step3_v2/exports_step5pp/phaseD_interface/phaseD_interface_manifest.json`
+Canonical generic export locations:
+- synthetic GT backend:
+  - `synthetic_step3_v2/exports_step5pp/graph_interface/a_base_agg.npy`
+  - `synthetic_step3_v2/exports_step5pp/graph_interface/support.npy`
+  - `synthetic_step3_v2/exports_step5pp/graph_interface/window_index_train.json`
+  - `synthetic_step3_v2/exports_step5pp/graph_interface/lambda_train.npy`
+  - `synthetic_step3_v2/exports_step5pp/graph_interface/deltaA_train.npy`
+  - `synthetic_step3_v2/exports_step5pp/graph_interface/interface_manifest.json`
+- ETTh1 estimated backend:
+  - `interfaces/ETTh1_graph_interface/a_base_agg.npy`
+  - `interfaces/ETTh1_graph_interface/support.npy`
+  - `interfaces/ETTh1_graph_interface/window_index_train.json`
+  - `interfaces/ETTh1_graph_interface/lambda_train.npy`
+  - `interfaces/ETTh1_graph_interface/deltaA_train.npy`
+  - `interfaces/ETTh1_graph_interface/interface_manifest.json`
+
+Legacy note:
+- the older `phaseD_*` filenames under `synthetic_step3_v2/exports_step5pp/phaseD_interface/`
+  are kept only for backward compatibility with the already-implemented Stage 3 synthetic sanity path
+- all new interface exports should use the generic names above
 
 ## Current Stage 1 Decisions
 
@@ -228,16 +241,47 @@ Before any model edit:
 Completed for the synthetic GT backend:
 - lag aggregation is fixed to `sum_over_lags`
 - exported graph orientation is fixed to `tgt_src`
-- `phaseD_a_base_agg.npy` has shape `(10, 10)`
-- `phaseD_support.npy` has shape `(10, 10)`
-- `phaseD_lambda_train.npy` has shape `(3218,)`
-- `phaseD_deltaA_train.npy` has shape `(3218, 10, 10)`
-- `phaseD_window_index_train.json` contains `3218` dataloader-aligned train-window records
-- `phaseD_interface_manifest.json` records source hashes, sample-order hash, lambda sanitization, lambda aggregation, and graph export semantics
+- `a_base_agg.npy` has shape `(10, 10)`
+- `support.npy` has shape `(10, 10)`
+- `lambda_train.npy` has shape `(3218,)`
+- `deltaA_train.npy` has shape `(3218, 10, 10)`
+- `window_index_train.json` contains `3218` dataloader-aligned train-window records
+- `interface_manifest.json` records source hashes, sample-order hash, lambda sanitization, lambda aggregation, and graph export semantics
 
 Observed train-window regime counts:
 - pre windows: `2209`
 - post windows: `1009`
+
+Completed for the ETTh1 estimated backend:
+- export directory: `interfaces/ETTh1_graph_interface/`
+- `a_base_agg.npy` has shape `(7, 7)`
+- `support.npy` has shape `(7, 7)`
+- `lambda_train.npy` has shape `(8449,)`
+- `deltaA_train.npy` has shape `(8449, 7, 7)`
+- `window_index_train.json` contains `8449` dataloader-aligned train-window records
+- `interface_manifest.json` records `PCMCI + ParCorr` settings, ridge alpha, lambda derivation settings, and sample-order hash
+- this `ParCorr` bundle is retained as a cheap smoke/debug backend, not as the formal real-data mainline
+
+Canonical exporter:
+- `export_graph_interface.py`
+  - `synthetic_gt` subcommand: synthetic GT backend with generic naming
+  - `real_estimated` subcommand: generic real-data backend with generic naming
+  - `etth1_estimated` subcommand: ETTh1 convenience alias for the generic real-data backend
+
+Formal real-data mainline:
+- static graph discovery should use nonlinear `PCMCI + CMIknn`
+- `ParCorr` remains available only for cheap plumbing checks
+- `windowed ridge on fixed support` remains the local `DeltaA^(w)` estimator
+- `2026-03-31`: `CMIknn` support was added to the generic exporter and dependencies were resolved
+- `2026-04-01`: a full `ETTh1` nonlinear export completed successfully to `interfaces/ETTh1_graph_interface_cmiknn`
+- observed runtime for the formal `ETTh1` export was about `590` minutes (`~9.83` hours) with:
+  - `cond_test = CMIknn`
+  - `tau_max = 2`
+  - `pc_alpha = 0.01`
+  - `knn = 20`
+  - `shuffle_neighbors = 10`
+  - `sig_samples = 200`
+- the exporter now writes stage logs, `interface_progress.json`, and partial artifacts so future long runs are visible and restart-safe enough for inspection
 
 ## Mainline Semantics
 
