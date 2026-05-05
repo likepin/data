@@ -79,6 +79,30 @@ def parse_bool(value) -> bool:
     return str(value).strip().lower() in {"1", "true", "yes", "y"}
 
 
+def _row_value(row: dict, names: tuple[str, ...], default):
+    for name in names:
+        if name not in row:
+            continue
+        value = row.get(name)
+        if value is None:
+            continue
+        try:
+            if pd.isna(value):
+                continue
+        except TypeError:
+            pass
+        return value
+    return default
+
+
+def _finite_float(value, default: float) -> float:
+    try:
+        out = float(value)
+    except (TypeError, ValueError):
+        return float(default)
+    return out if np.isfinite(out) else float(default)
+
+
 def selected_lambda_config(profile: dict) -> dict:
     prefix = str(profile["lambda_prefix"])
     path = Path(profile["lambda_dir"]) / f"{prefix}_lambda_feature_sweep_validation_fold_stability.csv"
@@ -103,6 +127,13 @@ def lambda_config_from_row(row: dict, source_file: Path | str) -> dict:
         "mode": str(row["mode"]),
         "window": int(row["window"]),
         "k": int(row["k"]),
+        "lambda_scale": str(_row_value(row, ("lambda_scale", "val_lambda_scale"), "legacy_clipped")),
+        "tail_target_width": _finite_float(
+            _row_value(row, ("tail_target_width", "val_tail_target_width"), 0.10),
+            0.10,
+        ),
+        "tail_alpha_min": _finite_float(_row_value(row, ("tail_alpha_min", "val_tail_alpha_min"), 0.02), 0.02),
+        "tail_alpha_max": _finite_float(_row_value(row, ("tail_alpha_max", "val_tail_alpha_max"), 0.20), 0.20),
         "stable_candidate": parse_bool(row.get("stable_candidate", row.get("_stable", False))),
         "stability_score": float(row.get("stability_score", np.nan)),
         "fold_spearman_mean": float(row.get("fold_spearman_mean", np.nan)),
@@ -181,6 +212,13 @@ def configure_lambda_profile(profile: dict, seq_len: int, pred_len: int, train_r
     )
 
 
+def configure_lambda_scale(lambda_cfg: dict) -> None:
+    lambda_sweep.LAMBDA_SCALE = str(lambda_cfg.get("lambda_scale", "legacy_clipped"))
+    lambda_sweep.TAIL_TARGET_WIDTH = _finite_float(lambda_cfg.get("tail_target_width"), 0.10)
+    lambda_sweep.TAIL_ALPHA_MIN = _finite_float(lambda_cfg.get("tail_alpha_min"), 0.02)
+    lambda_sweep.TAIL_ALPHA_MAX = _finite_float(lambda_cfg.get("tail_alpha_max"), 0.20)
+
+
 def compute_selected_lambda_splits(
     profile: dict,
     lambda_cfg: dict,
@@ -189,6 +227,7 @@ def compute_selected_lambda_splits(
     train_ratio: float,
 ) -> dict[str, np.ndarray]:
     configure_lambda_profile(profile, seq_len=seq_len, pred_len=pred_len, train_ratio=train_ratio)
+    configure_lambda_scale(lambda_cfg)
     full_z = lambda_sweep.load_full_z()
     lambda_t = lambda_sweep.compute_lambda_timeline(
         full_z,

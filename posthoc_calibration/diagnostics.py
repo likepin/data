@@ -178,6 +178,30 @@ def static_sample_errors(
     return mse / scale, mae / scale
 
 
+def _active_fold_distribution(counts: np.ndarray) -> dict[str, float]:
+    counts = np.asarray(counts, dtype=np.float64)
+    total = float(counts.sum())
+    n_folds = int(counts.size)
+    if total <= 0.0 or n_folds <= 0:
+        return {
+            "active_fold_coverage": 0.0,
+            "active_fold_entropy": 0.0,
+            "active_fold_entropy_norm": 0.0,
+            "active_effective_folds": 0.0,
+            "active_fold_concentration": 0.0,
+        }
+    p = counts / total
+    nz = p[p > 0.0]
+    entropy = float(-np.sum(nz * np.log(nz)))
+    return {
+        "active_fold_coverage": float(np.mean(counts > 0.0)),
+        "active_fold_entropy": entropy,
+        "active_fold_entropy_norm": float(entropy / np.log(n_folds)) if n_folds > 1 else 0.0,
+        "active_effective_folds": float(np.exp(entropy)),
+        "active_fold_concentration": float(np.max(p)),
+    }
+
+
 def active_ratio_fold_consistency(
     lambda_values: np.ndarray,
     mse: np.ndarray,
@@ -235,12 +259,15 @@ def active_ratio_fold_consistency(
     summary_rows = []
     for ratio, sub in detail.groupby("active_ratio_target", sort=True):
         valid_lift = sub["active_mse_lift_pct"].dropna().to_numpy(dtype=np.float64)
+        active_counts = sub["active_count"].to_numpy(dtype=np.float64)
+        fold_distribution = _active_fold_distribution(active_counts)
         summary_rows.append(
             {
                 "active_ratio_target": float(ratio),
                 "folds": int(sub.shape[0]),
                 "active_count_total": int(sub["active_count"].sum()),
                 "active_ratio_actual_mean": float(sub["active_ratio_actual"].mean()),
+                **fold_distribution,
                 "fold_spearman_mse_mean": float(sub["fold_spearman_mse"].mean()),
                 "fold_spearman_mse_min": float(sub["fold_spearman_mse"].min()),
                 "fold_spearman_mae_mean": float(sub["fold_spearman_mae"].mean()),
@@ -248,7 +275,7 @@ def active_ratio_fold_consistency(
                 "active_mse_lift_mean": float(np.nanmean(valid_lift)) if valid_lift.size else float("nan"),
                 "active_mse_lift_min": float(np.nanmin(valid_lift)) if valid_lift.size else float("nan"),
                 "positive_lift_fraction": float(np.mean(valid_lift > 0.0)) if valid_lift.size else 0.0,
-                "nonempty_fold_fraction": float(np.mean(sub["active_count"].to_numpy(dtype=np.int64) > 0)),
+                "nonempty_fold_fraction": fold_distribution["active_fold_coverage"],
             }
         )
     return pd.DataFrame(summary_rows), detail

@@ -133,6 +133,14 @@ def main() -> None:
     )
     parser.add_argument("--top-test-configs", type=int, default=20)
     parser.add_argument("--validation-folds", type=int, default=4)
+    parser.add_argument(
+        "--lambda-scale",
+        choices=["legacy_clipped", "unclipped_linear", "log_tail_adaptive"],
+        default="legacy_clipped",
+    )
+    parser.add_argument("--tail-target-width", type=float, default=0.10)
+    parser.add_argument("--tail-alpha-min", type=float, default=0.02)
+    parser.add_argument("--tail-alpha-max", type=float, default=0.20)
     args = parser.parse_args()
 
     profile = PROFILES[args.profile]
@@ -160,6 +168,10 @@ def main() -> None:
     sweep.MODES = parse_str_list(args.modes)
     sweep.TOP_TEST_CONFIGS = int(args.top_test_configs)
     sweep.VALIDATION_FOLDS = int(args.validation_folds)
+    sweep.LAMBDA_SCALE = str(args.lambda_scale)
+    sweep.TAIL_TARGET_WIDTH = float(args.tail_target_width)
+    sweep.TAIL_ALPHA_MIN = float(args.tail_alpha_min)
+    sweep.TAIL_ALPHA_MAX = float(args.tail_alpha_max)
     configure_split(
         split=str(profile["split"]),
         total_rows=total_rows,
@@ -173,7 +185,8 @@ def main() -> None:
         f"date_col={date_col} header_mode={header_mode} sep={sep} "
         f"pattern={result_pattern} train_end={sweep.TRAIN_END} "
         f"val_end={sweep.VAL_END} test_end={sweep.TEST_END} "
-        f"windows={sweep.WINDOWS} ks={sweep.KS} modes={sweep.MODES}",
+        f"windows={sweep.WINDOWS} ks={sweep.KS} modes={sweep.MODES} "
+        f"lambda_scale={sweep.LAMBDA_SCALE} tail_target_width={sweep.TAIL_TARGET_WIDTH}",
         flush=True,
     )
     sweep.main()

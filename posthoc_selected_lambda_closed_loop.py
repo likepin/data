@@ -117,6 +117,7 @@ def select_lambda_with_quality_guard(
     diag_ratios = active_ratios or parse_float_list(args.quality_active_ratios)
     for candidate_idx, row in candidates.iterrows():
         cfg = lambda_config_from_row(row.to_dict(), source_file=row.get("_source_file", ""))
+        cfg = apply_lambda_scale_args(cfg, args)
         raw_splits = compute_selected_lambda_splits(
             profile,
             lambda_cfg=cfg,
@@ -157,6 +158,10 @@ def select_lambda_with_quality_guard(
             "mode": cfg["mode"],
             "window": cfg["window"],
             "k": cfg["k"],
+            "lambda_scale": cfg.get("lambda_scale", "legacy_clipped"),
+            "tail_target_width": cfg.get("tail_target_width", np.nan),
+            "tail_alpha_min": cfg.get("tail_alpha_min", np.nan),
+            "tail_alpha_max": cfg.get("tail_alpha_max", np.nan),
             "stable_candidate": cfg["stable_candidate"],
             "stability_score": cfg["stability_score"],
             "fold_spearman_mean": cfg["fold_spearman_mean"],
@@ -187,6 +192,7 @@ def select_lambda_with_quality_guard(
         selected_cfg["quality_score"] = float(quality_df.loc[mask, "quality_score"].iloc[0])
     else:
         selected_cfg = selected_lambda_config(profile)
+        selected_cfg = apply_lambda_scale_args(selected_cfg, args)
         selected_cfg["quality_guard_reason"] = "fallback_default_no_quality_candidate"
         selected_raw_splits = compute_selected_lambda_splits(
             profile,
@@ -259,8 +265,30 @@ def _float_value(value, default: float = 0.0) -> float:
     return out if np.isfinite(out) else float(default)
 
 
+def apply_lambda_scale_args(cfg: dict, args: argparse.Namespace) -> dict:
+    if args.lambda_scale is not None:
+        cfg["lambda_scale"] = args.lambda_scale
+    else:
+        cfg.setdefault("lambda_scale", "legacy_clipped")
+    if args.tail_target_width is not None:
+        cfg["tail_target_width"] = float(args.tail_target_width)
+    else:
+        cfg.setdefault("tail_target_width", 0.10)
+    if args.tail_alpha_min is not None:
+        cfg["tail_alpha_min"] = float(args.tail_alpha_min)
+    else:
+        cfg.setdefault("tail_alpha_min", 0.02)
+    if args.tail_alpha_max is not None:
+        cfg["tail_alpha_max"] = float(args.tail_alpha_max)
+    else:
+        cfg.setdefault("tail_alpha_max", 0.20)
+    return cfg
+
+
 def run_profile(args: argparse.Namespace) -> None:
-    profile = PROFILES[args.profile]
+    profile = dict(PROFILES[args.profile])
+    if args.lambda_dir:
+        profile["lambda_dir"] = Path(args.lambda_dir)
     out_dir = Path(args.out_dir) if args.out_dir else Path(profile["out_dir"])
     out_dir.mkdir(parents=True, exist_ok=True)
     run_prefix = f"{args.profile}_{args.tag}" if args.tag else args.profile
@@ -295,6 +323,7 @@ def run_profile(args: argparse.Namespace) -> None:
         )
     else:
         lambda_cfg = selected_lambda_config(profile)
+        lambda_cfg = apply_lambda_scale_args(lambda_cfg, args)
         raw_lambda_splits = compute_selected_lambda_splits(
             profile,
             lambda_cfg=lambda_cfg,
@@ -309,6 +338,7 @@ def run_profile(args: argparse.Namespace) -> None:
         f"profile={args.profile} mode={lambda_cfg['mode']} "
         f"window={lambda_cfg['window']} k={lambda_cfg['k']} "
         f"stability={lambda_cfg['stability_score']:.6f} "
+        f"scale={lambda_cfg.get('lambda_scale', 'legacy_clipped')} "
         f"transform={args.lambda_transform} "
         f"quality={lambda_cfg.get('quality_guard_reason', 'default_selection')}",
         flush=True,
@@ -439,6 +469,7 @@ def run_profile(args: argparse.Namespace) -> None:
             "lambda_mode": lambda_cfg["mode"],
             "lambda_window": lambda_cfg["window"],
             "lambda_k": lambda_cfg["k"],
+            "lambda_scale": lambda_cfg.get("lambda_scale", "legacy_clipped"),
             "lambda_transform": lambda_cfg.get("lambda_transform", "raw"),
             **schedule,
             "gamma_mean": 0.0,
@@ -588,6 +619,15 @@ def main() -> None:
     parser.add_argument("--grid-progress-stride", type=int, default=10)
     parser.add_argument("--progress-every", type=int, default=1000)
     parser.add_argument("--lambda-transform", choices=["raw", "rank"], default="raw")
+    parser.add_argument("--lambda-dir", default="")
+    parser.add_argument(
+        "--lambda-scale",
+        choices=["legacy_clipped", "unclipped_linear", "log_tail_adaptive"],
+        default=None,
+    )
+    parser.add_argument("--tail-target-width", type=float, default=None)
+    parser.add_argument("--tail-alpha-min", type=float, default=None)
+    parser.add_argument("--tail-alpha-max", type=float, default=None)
     parser.add_argument("--active-ratios", default="")
     parser.add_argument("--validation-folds", type=int, default=4)
     parser.add_argument("--lambda-quality-guard", action="store_true")

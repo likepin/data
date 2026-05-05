@@ -27,6 +27,11 @@ KS = [2, 3, 5, 8]
 TOP_TEST_CONFIGS = 20
 CALIBRATION_FRACTION = 0.5
 VALIDATION_FOLDS = 4
+LAMBDA_SCALE = "legacy_clipped"
+TAIL_TARGET_WIDTH = 0.10
+TAIL_ALPHA_MIN = 0.02
+TAIL_ALPHA_MAX = 0.20
+LAST_LAMBDA_SCALE_INFO: dict[str, float | str | bool] = {}
 MODES = [
     "current",
     "change_half",
@@ -150,16 +155,98 @@ def nearest_center_distance(F: np.ndarray, centers: np.ndarray) -> np.ndarray:
     return np.sqrt(d2.min(axis=1))
 
 
-def normalize_by_train_quantiles(values: np.ndarray, train_values: np.ndarray, eps: float = 1e-12) -> np.ndarray:
+def _safe_quantile(values: np.ndarray, q: float) -> float:
+    finite = np.asarray(values, dtype=np.float64)
+    finite = finite[np.isfinite(finite)]
+    if finite.size == 0:
+        return float("nan")
+    return float(np.quantile(finite, q))
+
+
+def _distance_scale_info(scale: str, **kwargs) -> dict[str, float | str | bool]:
+    info: dict[str, float | str | bool] = {
+        "lambda_scale": scale,
+        "tail_target_width": float(TAIL_TARGET_WIDTH),
+        "tail_alpha_min": float(TAIL_ALPHA_MIN),
+        "tail_alpha_max": float(TAIL_ALPHA_MAX),
+    }
+    info.update(kwargs)
+    return info
+
+
+def scale_by_train_distances(
+    values: np.ndarray,
+    train_values: np.ndarray,
+    scale: str | None = None,
+    eps: float = 1e-12,
+) -> tuple[np.ndarray, dict[str, float | str | bool]]:
+    scale = scale or LAMBDA_SCALE
+    if scale not in {"legacy_clipped", "unclipped_linear", "log_tail_adaptive"}:
+        raise ValueError(f"Unknown lambda scale: {scale}")
+
     q10 = np.quantile(train_values, 0.10)
     q90 = np.quantile(train_values, 0.90)
     if not np.isfinite(q10) or not np.isfinite(q90) or q90 <= q10 + eps:
         vmin = float(train_values.min())
         vmax = float(train_values.max())
+        info = _distance_scale_info(
+            scale,
+            train_q10=float(q10),
+            train_q90=float(q90),
+            train_q99=_safe_quantile(train_values, 0.99),
+            train_vmin=vmin,
+            train_vmax=vmax,
+            tail_alpha=0.0,
+            tail_width=float("nan"),
+            used_minmax_fallback=True,
+        )
         if vmax <= vmin + eps:
-            return np.zeros_like(values)
-        return np.clip((values - vmin) / (vmax - vmin), 0.0, 1.0)
-    return np.clip((values - q10) / (q90 - q10), 0.0, 1.0)
+            return np.zeros_like(values), info
+        return np.clip((values - vmin) / (vmax - vmin), 0.0, 1.0), info
+
+    base_raw = (values - q10) / (q90 - q10)
+    base = np.clip(base_raw, 0.0, 1.0)
+    q99 = _safe_quantile(train_values, 0.99)
+    info = _distance_scale_info(
+        scale,
+        train_q10=float(q10),
+        train_q90=float(q90),
+        train_q99=float(q99),
+        tail_alpha=0.0,
+        tail_width=float("nan"),
+        used_minmax_fallback=False,
+    )
+    if scale == "legacy_clipped":
+        return base, info
+    if scale == "unclipped_linear":
+        return np.maximum(base_raw, 0.0), info
+
+    tail_denom = q99 - q90
+    if not np.isfinite(tail_denom) or tail_denom <= eps:
+        tail_denom = max(float(np.max(train_values) - q90), float(q90 - q10), eps)
+    train_tail = np.log1p(np.maximum(0.0, (train_values - q90) / tail_denom))
+    tail = np.log1p(np.maximum(0.0, (values - q90) / tail_denom))
+    tail_width = _safe_quantile(train_tail, 0.95) - _safe_quantile(train_tail, 0.50)
+    if np.isfinite(tail_width) and tail_width > eps:
+        raw_alpha = float(TAIL_TARGET_WIDTH) / float(tail_width)
+        tail_alpha = float(np.clip(raw_alpha, TAIL_ALPHA_MIN, TAIL_ALPHA_MAX))
+    else:
+        raw_alpha = float("nan")
+        tail_alpha = float(TAIL_ALPHA_MIN)
+    info.update(
+        {
+            "tail_denom": float(tail_denom),
+            "tail_width": float(tail_width),
+            "tail_alpha_raw": float(raw_alpha),
+            "tail_alpha": float(tail_alpha),
+        }
+    )
+    return base + tail_alpha * tail, info
+
+
+def normalize_by_train_quantiles(values: np.ndarray, train_values: np.ndarray, eps: float = 1e-12) -> np.ndarray:
+    scaled, _info = scale_by_train_distances(values, train_values, scale="legacy_clipped", eps=eps)
+    return scaled
 
 
 def sanitize_lambda(lambda_t: np.ndarray) -> np.ndarray:
@@ -175,6 +262,7 @@ def sanitize_lambda(lambda_t: np.ndarray) -> np.ndarray:
 
 
 def compute_lambda_timeline(full_z: np.ndarray, window: int, k: int, mode: str) -> np.ndarray:
+    global LAST_LAMBDA_SCALE_INFO
     train_z = full_z[:TRAIN_END]
     train_feats, _ = build_window_features(train_z, window=window, mode=mode)
     full_feats, full_idx = build_window_features(full_z, window=window, mode=mode)
@@ -192,7 +280,7 @@ def compute_lambda_timeline(full_z: np.ndarray, window: int, k: int, mode: str) 
         _, centers = km
     train_dist = nearest_center_distance(train_std, centers)
     full_dist = nearest_center_distance(full_std, centers)
-    lambda_valid = normalize_by_train_quantiles(full_dist, train_dist)
+    lambda_valid, LAST_LAMBDA_SCALE_INFO = scale_by_train_distances(full_dist, train_dist, scale=LAMBDA_SCALE)
     lambda_t = np.full((full_z.shape[0],), np.nan, dtype=np.float64)
     lambda_t[full_idx] = lambda_valid
     return sanitize_lambda(lambda_t)
@@ -289,10 +377,12 @@ def evaluate_config(full_z: np.ndarray, val_mse: np.ndarray, val_mae: np.ndarray
     lambda_t = compute_lambda_timeline(full_z, window=window, k=k, mode=mode)
     lambda_val = lambda_for_split(lambda_t, "val")
     bucket_df, bucket_metrics = bucket_summary(lambda_val, val_mse, val_mae)
+    scale_info = dict(LAST_LAMBDA_SCALE_INFO)
     row = {
         "mode": mode,
         "window": window,
         "k": k,
+        **scale_info,
         "lambda_mean": float(lambda_val.mean()),
         "lambda_std": float(lambda_val.std()),
         "lambda_iqr": float(np.quantile(lambda_val, 0.75) - np.quantile(lambda_val, 0.25)),
@@ -305,6 +395,7 @@ def evaluate_config(full_z: np.ndarray, val_mse: np.ndarray, val_mae: np.ndarray
     bucket_df.insert(0, "k", k)
     bucket_df.insert(0, "window", window)
     bucket_df.insert(0, "mode", mode)
+    bucket_df.insert(0, "lambda_scale", scale_info.get("lambda_scale", LAMBDA_SCALE))
     return row, bucket_df, lambda_t
 
 
@@ -340,7 +431,13 @@ def add_selection_columns(df: pd.DataFrame) -> pd.DataFrame:
 
 def build_fold_stability(fold_df: pd.DataFrame) -> pd.DataFrame:
     rows = []
-    for (mode, window, k), sub in fold_df.groupby(["mode", "window", "k"], sort=False):
+    group_cols = ["mode", "window", "k"]
+    if "lambda_scale" in fold_df.columns:
+        group_cols = ["lambda_scale", *group_cols]
+    for key_values, sub in fold_df.groupby(group_cols, sort=False):
+        if not isinstance(key_values, tuple):
+            key_values = (key_values,)
+        key = dict(zip(group_cols, key_values))
         spearman_values = sub["spearman_mse"].to_numpy(dtype=np.float64)
         bucket5_values = sub["bucket5_mse_lift_pct"].to_numpy(dtype=np.float64)
         trend_values = sub["bucket_mse_spearman"].to_numpy(dtype=np.float64)
@@ -361,9 +458,10 @@ def build_fold_stability(fold_df: pd.DataFrame) -> pd.DataFrame:
         )
         rows.append(
             {
-                "mode": mode,
-                "window": int(window),
-                "k": int(k),
+                **({"lambda_scale": key["lambda_scale"]} if "lambda_scale" in key else {}),
+                "mode": key["mode"],
+                "window": int(key["window"]),
+                "k": int(key["k"]),
                 "fold_spearman_mean": float(spearman_values.mean()),
                 "fold_spearman_std": float(spearman_values.std()),
                 "fold_spearman_min": float(spearman_values.min()),
@@ -414,6 +512,7 @@ def main() -> None:
     rows = []
     bucket_frames = []
     lambda_cache: dict[tuple[str, int, int], np.ndarray] = {}
+    lambda_info_cache: dict[tuple[str, int, int], dict[str, float | str | bool]] = {}
     for mode in MODES:
         for window in WINDOWS:
             for k in KS:
@@ -421,8 +520,10 @@ def main() -> None:
                 rows.append(row)
                 bucket_frames.append(bucket_df)
                 lambda_cache[(mode, window, k)] = lambda_t
+                lambda_info_cache[(mode, window, k)] = dict(LAST_LAMBDA_SCALE_INFO)
                 print(
                     f"[Val] mode={mode} window={window} k={k} "
+                    f"scale={row.get('lambda_scale', LAMBDA_SCALE)} "
                     f"rho_mse={row['spearman_mse']:.4f} "
                     f"bucket5_lift={row['bucket5_mse_lift_pct']:.2f}%",
                     flush=True,
@@ -444,7 +545,9 @@ def main() -> None:
     for (mode, window, k), lambda_t in lambda_cache.items():
         lambda_val = lambda_for_split(lambda_t, "val")
         cal_metrics, _ = summarize_lambda_errors(lambda_val[:cal_n], val_mse[:cal_n], val_mae[:cal_n])
-        calibration_rows.append({"mode": mode, "window": window, "k": k, **cal_metrics})
+        calibration_rows.append(
+            {"mode": mode, "window": window, "k": k, **lambda_info_cache[(mode, window, k)], **cal_metrics}
+        )
 
     calibration_df = add_selection_columns(pd.DataFrame(calibration_rows))
     calibration_df = calibration_df.sort_values(
@@ -467,6 +570,7 @@ def main() -> None:
                 "mode": cfg_key[0],
                 "window": cfg_key[1],
                 "k": cfg_key[2],
+                **lambda_info_cache[cfg_key],
                 "calibration_selection_score": float(cfg["selection_score"]),
                 "calibration_spearman_mse": float(cfg["spearman_mse"]),
                 "calibration_bucket5_mse_lift_pct": float(cfg["bucket5_mse_lift_pct"]),
@@ -496,6 +600,7 @@ def main() -> None:
         "mode": holdout_key[0],
         "window": holdout_key[1],
         "k": holdout_key[2],
+        **lambda_info_cache[holdout_key],
         "calibration_selection_score": float(holdout_best["calibration_selection_score"]),
         "calibration_spearman_mse": float(holdout_best["calibration_spearman_mse"]),
         "calibration_bucket5_mse_lift_pct": float(holdout_best["calibration_bucket5_mse_lift_pct"]),
@@ -520,6 +625,7 @@ def main() -> None:
                     "mode": mode,
                     "window": window,
                     "k": k,
+                    **lambda_info_cache[(mode, window, k)],
                     "fold": fold_id,
                     "fold_start": int(idx[0]),
                     "fold_end": int(idx[-1]),
@@ -542,6 +648,7 @@ def main() -> None:
         "mode": stable_key[0],
         "window": stable_key[1],
         "k": stable_key[2],
+        **lambda_info_cache[stable_key],
         "stable_candidate": bool(stable_best["stable_candidate"]),
         "stability_score": float(stable_best["stability_score"]),
         "fold_spearman_mean": float(stable_best["fold_spearman_mean"]),
@@ -564,6 +671,7 @@ def main() -> None:
         "mode": key[0],
         "window": key[1],
         "k": key[2],
+        **lambda_info_cache[key],
         "lambda_mean": float(lambda_test.mean()),
         "lambda_std": float(lambda_test.std()),
         "lambda_iqr": float(np.quantile(lambda_test, 0.75) - np.quantile(lambda_test, 0.25)),
@@ -588,6 +696,7 @@ def main() -> None:
             "mode": cfg_key[0],
             "window": cfg_key[1],
             "k": cfg_key[2],
+            **lambda_info_cache[cfg_key],
             "val_selection_score": float(cfg["selection_score"]),
             "val_spearman_mse": float(cfg["spearman_mse"]),
             "val_bucket5_mse_lift_pct": float(cfg["bucket5_mse_lift_pct"]),
