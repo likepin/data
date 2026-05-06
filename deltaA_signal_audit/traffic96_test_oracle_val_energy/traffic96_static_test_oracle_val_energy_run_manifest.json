@@ -1,0 +1,51 @@
+{
+  "profile": "traffic96_static",
+  "lambda_cfg": {
+    "mode": "change_slope_no_range",
+    "window": 40,
+    "k": 2,
+    "lambda_scale": "log_tail_adaptive",
+    "tail_target_width": 0.1,
+    "tail_alpha_min": 0.02,
+    "tail_alpha_max": 0.2,
+    "source_file": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_closed_loop_log_tail_quality_guard\\traffic96_static_log_tail_quality_guard_closed_loop_lambda_selected.csv",
+    "lambda_transform": "rank"
+  },
+  "target_sources": [
+    "deltaA_energy",
+    "deltaA_energy_1hop"
+  ],
+  "target_fracs": [
+    0.01,
+    0.02,
+    0.05
+  ],
+  "max_target_fracs": [
+    0.05,
+    0.1
+  ],
+  "active_ratios": [
+    0.01,
+    0.02,
+    0.05,
+    0.1
+  ],
+  "gamma_mins": [
+    0.01
+  ],
+  "gamma_maxs": [
+    0.06,
+    0.1,
+    0.15,
+    0.2
+  ],
+  "risk_multipliers": [
+    1.0,
+    1.5,
+    2.0
+  ],
+  "gamma_cap": 0.6,
+  "energy_split": "val",
+  "oracle_split": "test",
+  "total_configs": 240
+}

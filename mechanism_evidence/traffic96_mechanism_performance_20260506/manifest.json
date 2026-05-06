@@ -1,0 +1,134 @@
+{
+  "package_name": "traffic96_mechanism_performance_20260506",
+  "generated_at": "2026-05-06",
+  "purpose": "Curated lightweight evidence package combining Traffic-96 CACI mechanism evidence, post-hoc oracle upper-bound diagnostics, and existing-prediction ensemble performance evidence.",
+  "repo": {
+    "path": "C:\\Users\\cyl\\Desktop\\data",
+    "branch": "caci-posthoc-quality-guard",
+    "base_commit": "3b366ea5c71c1a28cf0ee32f3fd0db76885b637c",
+    "remote": "git@github.com:likepin/data.git",
+    "note": "traffic_aggressive_target_sweep.py and traffic_existing_prediction_ensemble.py are local uncommitted scripts at package generation time."
+  },
+  "source_dirs": {
+    "mechanism_package_20260505": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\traffic96_log_tail_quality_guard_20260505",
+    "posthoc_closed_loop": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_closed_loop_log_tail_quality_guard",
+    "test_oracle_val_energy": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_test_oracle_val_energy",
+    "test_oracle_test_energy": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_test_oracle_test_energy",
+    "existing_prediction_ensemble": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_existing_prediction_ensemble",
+    "traffic_interface": "C:\\Users\\cyl\\Desktop\\data\\interfaces\\Traffic_graph_interface_parcorr",
+    "traffic_prediction_results": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results"
+  },
+  "claims": {
+    "mechanism": {
+      "status": "supported",
+      "claim": "Traffic-96 supports a guarded CACI non-stationary risk-localization mechanism after log_tail_adaptive lambda scaling.",
+      "mode_status": "Selective",
+      "mode_reason": "selective_activation",
+      "val_mse_gain_pct": 0.054923271001241745,
+      "val_mae_gain_pct": 0.14625177026536154,
+      "test_mse_gain_pct": -0.0023760047035975332,
+      "test_mae_gain_pct": 0.1255488380432158
+    },
+    "posthoc_oracle_upper_bound": {
+      "status": "diagnostic_only",
+      "claim": "Existing post-hoc Traffic DeltaA assets have only a thin positive test-side upper bound under target/gamma oracle selection.",
+      "val_energy_best_mse_gain_pct": 0.01512238797997284,
+      "val_energy_best_mse_mae_guard_mse_gain_pct": 0.013162701561841662,
+      "val_energy_best_mse_mae_guard_mae_gain_pct": 0.00026993607979913944,
+      "test_energy_best_mse_gain_pct": 0.017160476930321217,
+      "test_energy_best_mse_mae_guard_mse_gain_pct": 0.014891321339612002,
+      "test_energy_best_mse_mae_guard_mae_gain_pct": 0.0012553011582500644
+    },
+    "existing_prediction_ensemble": {
+      "status": "performance_branch",
+      "claim": "Existing baseline/static-causal Traffic predictors have complementary errors; a validation-selected blend improves Traffic test performance.",
+      "selected_ensemble": "blend_baseline_static_alpha_0.60",
+      "selection_reason": "best_val_mse_with_mae_guard",
+      "reference_best_single": "static_p1",
+      "val_mse": 0.3514781967010766,
+      "val_mae": 0.23958760617011374,
+      "val_mse_gain_vs_best_single_pct": 1.7187551481855257,
+      "val_mae_gain_vs_best_single_pct": 3.5362798572212935,
+      "test_mse": 0.38388220677436785,
+      "test_mae": 0.2597081326081775,
+      "test_mse_gain_vs_best_single_pct": 2.1202648513410254,
+      "test_mae_gain_vs_best_single_pct": 3.2125883622251235
+    }
+  },
+  "layout": {
+    "mechanism_tables": "mechanism\\tables",
+    "mechanism_figures": "mechanism\\figures",
+    "mechanism_raw_refs": "mechanism\\raw_refs",
+    "ensemble_performance": "performance\\ensemble",
+    "oracle_val_energy": "performance\\test_oracle_val_energy",
+    "oracle_test_energy": "performance\\test_oracle_test_energy"
+  },
+  "copied_file_groups": {
+    "mechanism_tables": [
+      "traffic96_static_log_tail_quality_guard_closed_loop_lambda_selected.csv",
+      "traffic96_static_log_tail_quality_guard_closed_loop_schedule_selected.csv",
+      "traffic96_static_log_tail_quality_guard_closed_loop_val_selected_summary.csv",
+      "traffic96_static_log_tail_quality_guard_closed_loop_test_selected_summary.csv",
+      "traffic96_static_log_tail_quality_guard_active_ratio_fold_consistency.csv",
+      "traffic96_static_log_tail_quality_guard_rolling_local_activation_summary.csv",
+      "traffic96_static_log_tail_quality_guard_graph_structure_cross_summary.csv",
+      "traffic96_static_log_tail_quality_guard_graph_structure_cross_topedge_jaccard.csv",
+      "traffic96_static_log_tail_quality_guard_graph_structure_cross_top_targets.csv"
+    ],
+    "mechanism_figures": [
+      "traffic96_static_log_tail_quality_guard_residual_complexity_alignment.png",
+      "traffic96_static_log_tail_quality_guard_active_p10_overlay.png"
+    ],
+    "ensemble": [
+      "traffic96_static_existing_ensemble_manifest.json",
+      "traffic96_static_existing_ensemble_candidate_val.csv",
+      "traffic96_static_existing_ensemble_val_grid.csv",
+      "traffic96_static_existing_ensemble_weights_all.csv",
+      "traffic96_static_existing_ensemble_selected_weights.csv",
+      "traffic96_static_existing_ensemble_selected_test_summary.csv"
+    ],
+    "test_oracle": [
+      "test_oracle_best_mse.csv",
+      "test_oracle_best_mse_mae_guard.csv",
+      "test_oracle_best_mae.csv",
+      "test_oracle_grid.csv",
+      "test_oracle_top_exact.csv",
+      "target_energy_top200.csv",
+      "target_masks.csv",
+      "run_manifest.json"
+    ]
+  },
+  "large_artifacts_not_copied": [
+    {
+      "path": "C:\\Users\\cyl\\Desktop\\data\\interfaces\\Traffic_graph_interface_parcorr\\deltaA_train.npy",
+      "reason": "large recomputation array"
+    },
+    {
+      "path": "C:\\Users\\cyl\\Desktop\\data\\interfaces\\Traffic_graph_interface_parcorr\\deltaA_val.npy",
+      "reason": "large recomputation array"
+    },
+    {
+      "path": "C:\\Users\\cyl\\Desktop\\data\\interfaces\\Traffic_graph_interface_parcorr\\deltaA_test.npy",
+      "reason": "large recomputation array"
+    },
+    {
+      "path": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_*\\*.npy",
+      "reason": "large prediction arrays; ensemble evidence only needs metrics and weights"
+    }
+  ],
+  "reproduction_entrypoints": [
+    "posthoc_selected_lambda_closed_loop.py",
+    "diagnose_rolling_local_activation.py",
+    "diagnose_graph_structure_evolution.py",
+    "traffic_aggressive_target_sweep.py",
+    "traffic_existing_prediction_ensemble.py"
+  ],
+  "reporting_guidance": {
+    "main_protocol": "Use guarded post-hoc Traffic as Selective / weak-or-neutral dynamic effect with mechanism diagnostics.",
+    "performance_branch": "Use existing-prediction ensemble as separate Traffic performance evidence if needed.",
+    "do_not_claim": [
+      "Do not report test-oracle outputs as a valid model-selection result.",
+      "Do not report ensemble gains as post-hoc dynamic CACI calibration gains."
+    ]
+  }
+}
