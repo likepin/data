@@ -138,7 +138,9 @@
         "traffic96_static_adaptive_alpha_top_alpha_targets.csv",
         "traffic96_static_adaptive_alpha_shuffled_negative_control.csv",
         "traffic96_static_adaptive_alpha_shuffled_negative_control_summary.json",
-        "traffic96_static_adaptive_alpha_alignment_summary.csv"
+        "traffic96_static_adaptive_alpha_alignment_summary.csv",
+        "traffic96_static_adaptive_alpha_stage15_frozen_table.csv",
+        "traffic96_static_adaptive_alpha_stage15_frozen_table.md"
       ],
       "figures": [
         "traffic96_static_adaptive_alpha_alpha_distribution.png",

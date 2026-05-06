@@ -1,0 +1,243 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+from posthoc_calibration.evaluation import pct_gain
+from traffic_existing_prediction_ensemble import (
+    evaluate_group_alpha,
+    evaluate_weighted,
+    group_blend_weights,
+    group_indices,
+)
+
+
+DATA_ROOT = Path(r"C:\Users\cyl\Desktop\data")
+ADAPTIVE_DIR = DATA_ROOT / "deltaA_signal_audit" / "traffic96_existing_prediction_ensemble"
+PACKAGE_DIR = DATA_ROOT / "mechanism_evidence" / "traffic96_mechanism_performance_20260506"
+TABLE_DIR = PACKAGE_DIR / "performance" / "adaptive_alpha_ensemble" / "tables"
+PREFIX = "traffic96_static_adaptive_alpha"
+
+
+def read_json(path: Path) -> dict:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def onehot(n: int, idx: int) -> np.ndarray:
+    weights = np.zeros(n, dtype=np.float64)
+    weights[idx] = 1.0
+    return weights
+
+
+def mean_weights(n: int, idx: np.ndarray) -> np.ndarray:
+    weights = np.zeros(n, dtype=np.float64)
+    weights[idx] = 1.0 / float(idx.size)
+    return weights
+
+
+def fmt_float(value, digits: int = 6) -> str:
+    if value is None or pd.isna(value):
+        return ""
+    return f"{float(value):.{digits}f}"
+
+
+def fmt_pct(value, digits: int = 4) -> str:
+    if value is None or pd.isna(value):
+        return ""
+    return f"{float(value):+.{digits}f}%"
+
+
+def markdown_table(df: pd.DataFrame) -> str:
+    cols = [
+        "label",
+        "kind",
+        "alpha_summary",
+        "val_mse",
+        "val_mae",
+        "val_mse_gain_vs_static_p1_pct",
+        "val_mae_gain_vs_static_p1_pct",
+        "test_mse",
+        "test_mae",
+        "test_mse_gain_vs_static_p1_pct",
+        "test_mae_gain_vs_static_p1_pct",
+    ]
+    headers = [
+        "setting",
+        "kind",
+        "alpha",
+        "val MSE",
+        "val MAE",
+        "val MSE gain",
+        "val MAE gain",
+        "test MSE",
+        "test MAE",
+        "test MSE gain",
+        "test MAE gain",
+    ]
+    lines = [
+        "| " + " | ".join(headers) + " |",
+        "| " + " | ".join(["---", "---", "---", "---:", "---:", "---:", "---:", "---:", "---:", "---:", "---:"]) + " |",
+    ]
+    for _, row in df[cols].iterrows():
+        lines.append(
+            "| "
+            + " | ".join(
+                [
+                    str(row["label"]),
+                    str(row["kind"]),
+                    str(row["alpha_summary"]),
+                    fmt_float(row["val_mse"]),
+                    fmt_float(row["val_mae"]),
+                    fmt_pct(row["val_mse_gain_vs_static_p1_pct"]),
+                    fmt_pct(row["val_mae_gain_vs_static_p1_pct"]),
+                    fmt_float(row["test_mse"]),
+                    fmt_float(row["test_mae"]),
+                    fmt_pct(row["test_mse_gain_vs_static_p1_pct"]),
+                    fmt_pct(row["test_mae_gain_vs_static_p1_pct"]),
+                ]
+            )
+            + " |"
+        )
+    return "\n".join(lines)
+
+
+def main() -> None:
+    TABLE_DIR.mkdir(parents=True, exist_ok=True)
+    manifest = read_json(ADAPTIVE_DIR / f"{PREFIX}_manifest.json")
+    adaptive_summary = read_json(ADAPTIVE_DIR / f"{PREFIX}_adaptive_alpha_summary.json")
+    shuffle_summary = read_json(TABLE_DIR / f"{PREFIX}_shuffled_negative_control_summary.json")
+    variable_alpha = pd.read_csv(ADAPTIVE_DIR / f"{PREFIX}_variable_alpha.csv")["alpha_shrunk"].to_numpy(dtype=np.float64)
+
+    candidates = manifest["candidates"]
+    n = len(candidates)
+    baseline_idx, static_idx = group_indices(candidates)
+    candidate_names = [candidate["candidate"] for candidate in candidates]
+    static_p1_idx = candidate_names.index("static_p1")
+    alpha_global = float(adaptive_summary["alpha_global_clipped"])
+
+    specs = [
+        {
+            "label": "best single static_p1",
+            "kind": "single_reference",
+            "alpha_summary": "",
+            "weights": onehot(n, static_p1_idx),
+            "selection_role": "reference_best_single",
+        },
+        {
+            "label": "baseline mean",
+            "kind": "group_mean",
+            "alpha_summary": "0.00 static",
+            "weights": mean_weights(n, baseline_idx),
+            "selection_role": "ablation",
+        },
+        {
+            "label": "staticcausal mean",
+            "kind": "group_mean",
+            "alpha_summary": "1.00 static",
+            "weights": mean_weights(n, static_idx),
+            "selection_role": "ablation",
+        },
+        {
+            "label": "alpha=0.50 equal blend",
+            "kind": "global_blend",
+            "alpha_summary": "0.50",
+            "weights": group_blend_weights(candidates, 0.50),
+            "selection_role": "blind_equal_blend",
+        },
+        {
+            "label": "alpha=0.60 grid selected",
+            "kind": "global_blend",
+            "alpha_summary": "0.60",
+            "weights": group_blend_weights(candidates, 0.60),
+            "selection_role": "stage1_grid_selected",
+        },
+        {
+            "label": "global closed-form alpha",
+            "kind": "adaptive_global_alpha",
+            "alpha_summary": f"{alpha_global:.6f}",
+            "weights": group_blend_weights(candidates, alpha_global),
+            "selection_role": "stage15_global_adaptive",
+        },
+        {
+            "label": "per-variable shrinkage alpha",
+            "kind": "adaptive_variable_alpha",
+            "alpha_summary": (
+                f"mean={adaptive_summary['var_alpha_mean']:.6f}; "
+                f"std={adaptive_summary['var_alpha_std']:.6f}"
+            ),
+            "alpha_vector": variable_alpha,
+            "selection_role": "stage15_selected",
+        },
+    ]
+
+    rows = []
+    for spec in specs:
+        if "alpha_vector" in spec:
+            val_metrics = evaluate_group_alpha(candidates, spec["alpha_vector"], "val", chunk_size=64)
+            test_metrics = evaluate_group_alpha(candidates, spec["alpha_vector"], "test", chunk_size=64)
+        else:
+            val_metrics = evaluate_weighted(candidates, spec["weights"], "val", chunk_size=64)
+            test_metrics = evaluate_weighted(candidates, spec["weights"], "test", chunk_size=64)
+        rows.append(
+            {
+                "label": spec["label"],
+                "kind": spec["kind"],
+                "selection_role": spec["selection_role"],
+                "alpha_summary": spec["alpha_summary"],
+                "val_mse": val_metrics["mse"],
+                "val_mae": val_metrics["mae"],
+                "test_mse": test_metrics["mse"],
+                "test_mae": test_metrics["mae"],
+            }
+        )
+
+    df = pd.DataFrame(rows)
+    reference = df[df["selection_role"] == "reference_best_single"].iloc[0]
+    for split in ["val", "test"]:
+        df[f"{split}_mse_gain_vs_static_p1_pct"] = [
+            pct_gain(float(reference[f"{split}_mse"]), float(value)) for value in df[f"{split}_mse"]
+        ]
+        df[f"{split}_mae_gain_vs_static_p1_pct"] = [
+            pct_gain(float(reference[f"{split}_mae"]), float(value)) for value in df[f"{split}_mae"]
+        ]
+
+    shuffle_row = {
+        "label": "shuffled alpha median",
+        "kind": "negative_control",
+        "selection_role": "shuffled_target_identity",
+        "alpha_summary": f"{shuffle_summary['shuffle_count']} shuffles",
+        "val_mse": float(shuffle_summary["shuffle_val_mse_median"]),
+        "val_mae": np.nan,
+        "test_mse": float(shuffle_summary["shuffle_test_mse_median"]),
+        "test_mae": np.nan,
+        "val_mse_gain_vs_static_p1_pct": pct_gain(
+            float(reference["val_mse"]), float(shuffle_summary["shuffle_val_mse_median"])
+        ),
+        "val_mae_gain_vs_static_p1_pct": np.nan,
+        "test_mse_gain_vs_static_p1_pct": pct_gain(
+            float(reference["test_mse"]), float(shuffle_summary["shuffle_test_mse_median"])
+        ),
+        "test_mae_gain_vs_static_p1_pct": np.nan,
+    }
+    df = pd.concat([df, pd.DataFrame([shuffle_row])], ignore_index=True)
+
+    csv_path = TABLE_DIR / f"{PREFIX}_stage15_frozen_table.csv"
+    md_path = TABLE_DIR / f"{PREFIX}_stage15_frozen_table.md"
+    df.to_csv(csv_path, index=False)
+    md_path.write_text(
+        "# Traffic96 Stage1.5 Frozen Performance Table\n\n"
+        "All deterministic settings are evaluated on validation and test from existing prediction arrays. "
+        "The shuffled-alpha row is a target-identity negative control and reports median MSE across shuffles.\n\n"
+        + markdown_table(df)
+        + "\n",
+        encoding="utf-8",
+    )
+    print(f"[Done] wrote {csv_path}")
+    print(f"[Done] wrote {md_path}")
+
+
+if __name__ == "__main__":
+    main()

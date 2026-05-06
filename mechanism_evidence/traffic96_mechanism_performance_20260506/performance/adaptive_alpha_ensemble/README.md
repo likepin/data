@@ -33,6 +33,8 @@ The shuffled-alpha negative control randomly permutes the same 862 alpha values 
 - `tables/traffic96_static_adaptive_alpha_top_alpha_targets.csv`: highest-alpha targets for mechanism inspection.
 - `tables/traffic96_static_adaptive_alpha_alignment_summary.csv`: Spearman/Pearson alignment diagnostics.
 - `tables/traffic96_static_adaptive_alpha_shuffled_negative_control.csv`: shuffled-alpha MSE diagnostics.
+- `tables/traffic96_static_adaptive_alpha_stage15_frozen_table.csv`: frozen Stage1.5 val/test comparison table.
+- `tables/traffic96_static_adaptive_alpha_stage15_frozen_table.md`: Markdown copy of the frozen Stage1.5 table.
 - `figures/traffic96_static_adaptive_alpha_alpha_distribution.png`: alpha distribution.
 - `figures/traffic96_static_adaptive_alpha_alpha_gain_scatter.png`: alpha vs validation gain.
 - `figures/traffic96_static_adaptive_alpha_alpha_graph_scatter.png`: alpha vs PCMCI parent strength.

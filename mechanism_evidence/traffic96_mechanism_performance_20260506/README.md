@@ -188,6 +188,11 @@ Negative control:
 - Observed test MSE gain vs shuffled median: `+0.2875%`
 - Observed lower-is-better test rank fraction among shuffles: `0.0000`
 
+Frozen comparison table:
+
+- `performance/adaptive_alpha_ensemble/tables/traffic96_static_adaptive_alpha_stage15_frozen_table.csv`
+- `performance/adaptive_alpha_ensemble/tables/traffic96_static_adaptive_alpha_stage15_frozen_table.md`
+
 Interpretation:
 
 This is still a prediction-level Traffic performance branch, not post-hoc dynamic CACI calibration. The adaptive alpha diagnostics make the ensemble less arbitrary by showing how static-causal weight varies by target and by adding a shuffled-target negative control.
