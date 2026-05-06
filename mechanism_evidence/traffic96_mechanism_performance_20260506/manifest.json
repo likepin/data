@@ -16,7 +16,8 @@
     "test_oracle_test_energy": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_test_oracle_test_energy",
     "existing_prediction_ensemble": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_existing_prediction_ensemble",
     "traffic_interface": "C:\\Users\\cyl\\Desktop\\data\\interfaces\\Traffic_graph_interface_parcorr",
-    "traffic_prediction_results": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results"
+    "traffic_prediction_results": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results",
+    "adaptive_alpha_ensemble": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_existing_prediction_ensemble"
   },
   "claims": {
     "mechanism": {
@@ -53,6 +54,28 @@
       "test_mae": 0.2597081326081775,
       "test_mse_gain_vs_best_single_pct": 2.1202648513410254,
       "test_mae_gain_vs_best_single_pct": 3.2125883622251235
+    },
+    "adaptive_alpha_ensemble": {
+      "status": "performance_branch",
+      "claim": "Validation-estimated global and per-variable adaptive alpha improves the Traffic prediction-level ensemble while preserving validation-only selection.",
+      "selected_ensemble": "blend_baseline_static_alpha_variable_shrink",
+      "selection_reason": "best_val_mse_with_mae_guard",
+      "reference_best_single": "static_p1",
+      "alpha_global_closed_form": 0.6241191630421579,
+      "alpha_variable_mean": 0.66806024459568,
+      "alpha_variable_std": 0.14848122575936895,
+      "val_mse": 0.3502660192204884,
+      "val_mae": 0.2394803984602779,
+      "val_mse_gain_vs_best_single_pct": 2.057707358853835,
+      "val_mae_gain_vs_best_single_pct": 3.579444254095014,
+      "test_mse": 0.3829394988923393,
+      "test_mae": 0.259666001960563,
+      "test_mse_gain_vs_best_single_pct": 2.360630245170639,
+      "test_mae_gain_vs_best_single_pct": 3.228289512174773,
+      "shuffle_count": 256,
+      "observed_test_mse_gain_vs_shuffle_median_pct": 0.2874568589218722,
+      "observed_test_rank_fraction_lower_is_better": 0.0,
+      "repo_head_at_packaging": "68ffd7847d7c0eebf9aeb6cebfbd3c7ee777d8ba"
     }
   },
   "layout": {
@@ -61,7 +84,8 @@
     "mechanism_raw_refs": "mechanism\\raw_refs",
     "ensemble_performance": "performance\\ensemble",
     "oracle_val_energy": "performance\\test_oracle_val_energy",
-    "oracle_test_energy": "performance\\test_oracle_test_energy"
+    "oracle_test_energy": "performance\\test_oracle_test_energy",
+    "adaptive_alpha_ensemble": "performance\\adaptive_alpha_ensemble"
   },
   "copied_file_groups": {
     "mechanism_tables": [
@@ -96,7 +120,35 @@
       "target_energy_top200.csv",
       "target_masks.csv",
       "run_manifest.json"
-    ]
+    ],
+    "adaptive_alpha_ensemble": {
+      "raw_outputs": [
+        "traffic96_static_adaptive_alpha_adaptive_alpha_summary.csv",
+        "traffic96_static_adaptive_alpha_adaptive_alpha_summary.json",
+        "traffic96_static_adaptive_alpha_candidate_val.csv",
+        "traffic96_static_adaptive_alpha_manifest.json",
+        "traffic96_static_adaptive_alpha_selected_test_summary.csv",
+        "traffic96_static_adaptive_alpha_selected_weights.csv",
+        "traffic96_static_adaptive_alpha_val_grid.csv",
+        "traffic96_static_adaptive_alpha_variable_alpha.csv",
+        "traffic96_static_adaptive_alpha_weights_all.csv"
+      ],
+      "tables": [
+        "traffic96_static_adaptive_alpha_target_diagnostics.csv",
+        "traffic96_static_adaptive_alpha_top_alpha_targets.csv",
+        "traffic96_static_adaptive_alpha_shuffled_negative_control.csv",
+        "traffic96_static_adaptive_alpha_shuffled_negative_control_summary.json",
+        "traffic96_static_adaptive_alpha_alignment_summary.csv"
+      ],
+      "figures": [
+        "traffic96_static_adaptive_alpha_alpha_distribution.png",
+        "traffic96_static_adaptive_alpha_alpha_gain_scatter.png",
+        "traffic96_static_adaptive_alpha_alpha_graph_scatter.png"
+      ],
+      "readme": [
+        "README.md"
+      ]
+    }
   },
   "large_artifacts_not_copied": [
     {
@@ -121,7 +173,8 @@
     "diagnose_rolling_local_activation.py",
     "diagnose_graph_structure_evolution.py",
     "traffic_aggressive_target_sweep.py",
-    "traffic_existing_prediction_ensemble.py"
+    "traffic_existing_prediction_ensemble.py",
+    "traffic_adaptive_alpha_evidence_pack.py"
   ],
   "reporting_guidance": {
     "main_protocol": "Use guarded post-hoc Traffic as Selective / weak-or-neutral dynamic effect with mechanism diagnostics.",

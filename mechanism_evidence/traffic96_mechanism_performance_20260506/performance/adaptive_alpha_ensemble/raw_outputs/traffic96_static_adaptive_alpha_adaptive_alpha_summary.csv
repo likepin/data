@@ -1,0 +1,2 @@
+split,alpha_global_raw,alpha_global_clipped,denominator_global,var_alpha_shrink_prior_strength,var_alpha_prior_denom,var_alpha_mean,var_alpha_std,var_alpha_min,var_alpha_max,var_alpha_q05,var_alpha_q50,var_alpha_q95,valid_variable_count,variable_count
+val,0.6241191630421579,0.6241191630421579,1031930.7094068817,1.0,792.229192874503,0.66806024459568,0.14848122575936895,0.018559478762842252,0.9516204947686148,0.39967444050549233,0.679847058604935,0.8542914338395282,862,862

@@ -1,0 +1,18 @@
+{
+  "shuffle_count": 256,
+  "shuffle_seed": 20260506,
+  "observed_val_mse": 0.3502660192139816,
+  "observed_test_mse": 0.3829394988815511,
+  "shuffle_val_mse_mean": 0.3516658909646891,
+  "shuffle_val_mse_median": 0.3516555074143126,
+  "shuffle_val_mse_q05": 0.35141563092608563,
+  "shuffle_val_mse_q95": 0.3519490663769872,
+  "shuffle_test_mse_mean": 0.3840898474681447,
+  "shuffle_test_mse_median": 0.38404345814322455,
+  "shuffle_test_mse_q05": 0.3835807937349324,
+  "shuffle_test_mse_q95": 0.38456705811058733,
+  "observed_val_mse_gain_vs_shuffle_median_pct": 0.39512766643349057,
+  "observed_test_mse_gain_vs_shuffle_median_pct": 0.2874568589218722,
+  "observed_val_rank_fraction_lower_is_better": 0.0,
+  "observed_test_rank_fraction_lower_is_better": 0.0
+}

@@ -1,0 +1,83 @@
+{
+  "profile": "traffic96_static",
+  "candidate_count": 6,
+  "alphas": [
+    0.0,
+    0.05,
+    0.1,
+    0.15,
+    0.2,
+    0.25,
+    0.3,
+    0.35,
+    0.4,
+    0.45,
+    0.5,
+    0.55,
+    0.6,
+    0.65,
+    0.7,
+    0.75,
+    0.8,
+    0.85,
+    0.9,
+    0.95,
+    1.0
+  ],
+  "top_ks": [
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "chunk_size": 64,
+  "select_mae_min_gain": 0.0,
+  "adaptive_alpha_enabled": true,
+  "var_alpha_shrink_prior_strength": 1.0,
+  "adaptive_alpha_min_denom": 1e-12,
+  "candidates": [
+    {
+      "candidate": "baseline_p0",
+      "group": "baseline",
+      "projection": 0,
+      "val_dir": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_baseline_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_0",
+      "test_dir": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_baseline_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_0"
+    },
+    {
+      "candidate": "baseline_p1",
+      "group": "baseline",
+      "projection": 1,
+      "val_dir": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_baseline_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_1",
+      "test_dir": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_baseline_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_1"
+    },
+    {
+      "candidate": "baseline_p2",
+      "group": "baseline",
+      "projection": 2,
+      "val_dir": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_baseline_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_2",
+      "test_dir": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_baseline_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_2"
+    },
+    {
+      "candidate": "static_p0",
+      "group": "static",
+      "projection": 0,
+      "val_dir": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_staticcausal_softmax_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_0",
+      "test_dir": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_staticcausal_softmax_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_0"
+    },
+    {
+      "candidate": "static_p1",
+      "group": "static",
+      "projection": 1,
+      "val_dir": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_staticcausal_softmax_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_1",
+      "test_dir": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_staticcausal_softmax_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_1"
+    },
+    {
+      "candidate": "static_p2",
+      "group": "static",
+      "projection": 2,
+      "val_dir": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_staticcausal_softmax_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_2",
+      "test_dir": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_staticcausal_softmax_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_2"
+    }
+  ]
+}

@@ -154,3 +154,43 @@ The package excludes all large `.npy` arrays, including:
 - Traffic prediction arrays under `C:\Users\cyl\Desktop\iTransformer-phasec-clean\results`
 
 These files are required for recomputation but not for curated evidence review.
+
+
+<!-- ADAPTIVE_ALPHA_SECTION_START -->
+
+### 4. Adaptive-Alpha Existing-Prediction Ensemble
+
+Location:
+
+`performance/adaptive_alpha_ensemble/`
+
+Claim:
+
+Validation-estimated adaptive blending strengthens the Traffic prediction-level performance branch while keeping selection on validation only.
+
+Selected ensemble:
+
+- `blend_baseline_static_alpha_variable_shrink`
+- Global closed-form `alpha* = 0.624119`
+- Per-variable shrunk alpha mean/std: `0.668060 / 0.148481`
+- Per-variable alpha 5/50/95 percentiles: `0.399674 / 0.679847 / 0.854291`
+
+Selected result:
+
+- Validation `MSE / MAE = 0.350266 / 0.239480`
+- Validation gain vs best single: `MSE +2.0577%`, `MAE +3.5794%`
+- Test `MSE / MAE = 0.382939 / 0.259666`
+- Test gain vs best single: `MSE +2.3606%`, `MAE +3.2283%`
+
+Negative control:
+
+- Shuffled alpha median test MSE: `0.384043`
+- Observed test MSE gain vs shuffled median: `+0.2875%`
+- Observed lower-is-better test rank fraction among shuffles: `0.0000`
+
+Interpretation:
+
+This is still a prediction-level Traffic performance branch, not post-hoc dynamic CACI calibration. The adaptive alpha diagnostics make the ensemble less arbitrary by showing how static-causal weight varies by target and by adding a shuffled-target negative control.
+
+<!-- ADAPTIVE_ALPHA_SECTION_END -->
+
