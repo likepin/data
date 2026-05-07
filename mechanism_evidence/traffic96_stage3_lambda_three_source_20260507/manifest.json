@@ -1,0 +1,35 @@
+{
+  "package": "traffic96_stage3_lambda_three_source_20260507",
+  "status": "weak_positive_stage3_pilot",
+  "default_selected": {
+    "label": "Stage3 lambda three-source, static_p0 dynamic",
+    "test_mse": 0.382431851067294,
+    "test_mae": 0.259176242679475,
+    "test_mse_gain_vs_stage2_anchor_pct": 0.054367072122638804,
+    "test_mae_gain_vs_stage2_anchor_pct": 0.09378482422978354,
+    "test_mse_gain_vs_static_p1_pct": 2.490066915553835,
+    "test_mae_gain_vs_static_p1_pct": 3.4108118408598305
+  },
+  "interpretation": "Stage3 lambda-gated dynamic increment adds a small positive gain over the Stage2 adaptive-alpha anchor, but the test shuffled-gamma negative control is thin; treat as weak positive increment, not a strong dynamic-branch success.",
+  "source_outputs": {
+    "default_static_p0_dynamic": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_stage3_lambda_three_source_pilot",
+    "audit_static_mean_dynamic": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_stage3_lambda_three_source_pilot_staticmean",
+    "stage2_frozen_table": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\traffic96_stage2_light_seed2026_20260507\\performance\\adaptive_alpha_ensemble\\tables\\traffic96_static_stage2_light_seed2026_frozen_table.csv"
+  },
+  "copied_files": [
+    "performance\\stage3_lambda_three_source\\raw_outputs\\default_static_p0_dynamic\\traffic96_static_stage3_pilot_manifest.json",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\default_static_p0_dynamic\\traffic96_static_stage3_pilot_selected_val_summary.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\default_static_p0_dynamic\\traffic96_static_stage3_pilot_shuffled_gamma_summary.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\default_static_p0_dynamic\\traffic96_static_stage3_pilot_test_selected_summary.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\default_static_p0_dynamic\\traffic96_static_stage3_pilot_val_fold_grid.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\default_static_p0_dynamic\\traffic96_static_stage3_pilot_val_grid.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\default_static_p0_dynamic\\traffic96_static_stage3_pilot_val_selected_recomputed_summary.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\audit_static_mean_dynamic\\traffic96_static_stage3_pilot_staticmean_manifest.json",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\audit_static_mean_dynamic\\traffic96_static_stage3_pilot_staticmean_selected_val_summary.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\audit_static_mean_dynamic\\traffic96_static_stage3_pilot_staticmean_shuffled_gamma_summary.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\audit_static_mean_dynamic\\traffic96_static_stage3_pilot_staticmean_test_selected_summary.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\audit_static_mean_dynamic\\traffic96_static_stage3_pilot_staticmean_val_fold_grid.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\audit_static_mean_dynamic\\traffic96_static_stage3_pilot_staticmean_val_grid.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\audit_static_mean_dynamic\\traffic96_static_stage3_pilot_staticmean_val_selected_recomputed_summary.csv"
+  ]
+}

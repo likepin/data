@@ -1,0 +1,54 @@
+{
+  "profile": "traffic96_static",
+  "tag": "stage3_pilot",
+  "stage2_dir": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_existing_prediction_ensemble_stage2_light_seed2026",
+  "closed_loop_dir": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_closed_loop_log_tail_quality_guard",
+  "interface_dir": "C:\\Users\\cyl\\Desktop\\data\\interfaces\\Traffic_graph_interface_parcorr",
+  "dynamic_source": "static_p0",
+  "eta_mults": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "target_masks": {
+    "all": 862,
+    "top_alpha_5": 44,
+    "top_alpha_10": 87
+  },
+  "candidate_count": 8,
+  "lambda_cfg": {
+    "mode": "change_slope_no_range",
+    "window": 40,
+    "k": 2,
+    "lambda_scale": "log_tail_adaptive",
+    "tail_target_width": 0.1,
+    "tail_alpha_min": 0.02,
+    "tail_alpha_max": 0.2,
+    "stable_candidate": false,
+    "stability_score": 0.0212109290918818,
+    "fold_spearman_mean": 0.0148683017728768,
+    "fold_bucket5_lift_mean": 4.300485929569671,
+    "source_file": "deltaA_signal_audit\\traffic96_lambda_feature_sweep_log_tail_adaptive\\traffic96_static_lambda_feature_sweep_validation_fold_stability.csv",
+    "quality_guard_reason": "passed_lambda_quality_guard",
+    "quality_score": 0.582380691648261,
+    "lambda_transform": "rank"
+  },
+  "schedule": {
+    "q_low": 0.9,
+    "q_high": 1.0,
+    "q_low_value": 0.9,
+    "q_high_value": 1.0,
+    "gamma_min": 0.01,
+    "gamma_max": 0.06,
+    "passes_selection": true,
+    "mode_status": "Selective",
+    "mode_reason": "selective_activation",
+    "selection_reason": "one_se_and_double_guard"
+  },
+  "chunk_size": 4,
+  "max_samples": 0,
+  "shuffle_count": 256,
+  "dynamic_source_note": "static_p0 matches the existing posthoc closed-loop dynamic-cache convention; static_mean is an audit option for using the mean static predictor as static_ref."
+}

@@ -1,0 +1,2 @@
+split,ensemble,eta_mult,target_mask,target_count,dynamic_source,anchor_mse,anchor_mae,mse,mae,mse_gain_vs_stage2_anchor_pct,mae_gain_vs_stage2_anchor_pct,n_samples,selection_reason
+val,stage3_eta1_all,1.0,all,862,static_mean,0.34988377078396243,0.2392190672287819,0.34938422516170314,0.23890423379162679,0.14277473377515895,0.13160883904542905,1661,best_val_mse_with_mae_guard
