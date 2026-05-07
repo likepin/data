@@ -1,0 +1,91 @@
+{
+  "package": "traffic96_stage2_light_seed2026_20260507",
+  "generated_at": "2026-05-07",
+  "source_dirs": {
+    "adaptive_outputs": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_existing_prediction_ensemble_stage2_light_seed2026",
+    "training_logs": "C:\\Users\\cyl\\Desktop\\data\\run_logs\\traffic_stage2_light_seed2026_20260507_0139",
+    "traffic_interface": "C:\\Users\\cyl\\Desktop\\data\\interfaces\\Traffic_graph_interface_parcorr"
+  },
+  "layout": {
+    "adaptive_alpha_ensemble": "performance/adaptive_alpha_ensemble"
+  },
+  "copied_file_groups": {
+    "raw_outputs": [
+      "traffic96_static_stage2_light_seed2026_adaptive_alpha_summary.csv",
+      "traffic96_static_stage2_light_seed2026_adaptive_alpha_summary.json",
+      "traffic96_static_stage2_light_seed2026_candidate_val.csv",
+      "traffic96_static_stage2_light_seed2026_manifest.json",
+      "traffic96_static_stage2_light_seed2026_selected_test_summary.csv",
+      "traffic96_static_stage2_light_seed2026_selected_weights.csv",
+      "traffic96_static_stage2_light_seed2026_val_grid.csv",
+      "traffic96_static_stage2_light_seed2026_variable_alpha.csv",
+      "traffic96_static_stage2_light_seed2026_weights_all.csv"
+    ],
+    "training_logs": [
+      "backfill_baseline_projection3_val.log",
+      "backfill_static_projection3_val.log",
+      "baseline_command.txt",
+      "baseline_projection3.log",
+      "run_stage2_light.ps1",
+      "stage2_status.log",
+      "staticcausal_command.txt",
+      "staticcausal_projection3.log"
+    ],
+    "frozen_tables": [
+      "traffic96_static_stage2_light_seed2026_frozen_table.csv",
+      "traffic96_static_stage2_light_seed2026_frozen_table.md"
+    ],
+    "diagnostic_tables": [
+      "traffic96_static_stage2_light_seed2026_target_diagnostics.csv",
+      "traffic96_static_stage2_light_seed2026_top_alpha_targets.csv",
+      "traffic96_static_stage2_light_seed2026_shuffled_negative_control.csv",
+      "traffic96_static_stage2_light_seed2026_shuffled_negative_control_summary.json",
+      "traffic96_static_stage2_light_seed2026_alignment_summary.csv"
+    ],
+    "figures": [
+      "traffic96_static_stage2_light_seed2026_alpha_distribution.png",
+      "traffic96_static_stage2_light_seed2026_alpha_gain_scatter.png",
+      "traffic96_static_stage2_light_seed2026_alpha_graph_scatter.png"
+    ]
+  },
+  "claims": {
+    "stage2_light_adaptive_alpha": {
+      "status": "stage2_light_performance_branch",
+      "claim": "One additional paired seed yields a small positive increment over Stage1.5 adaptive-alpha Traffic performance.",
+      "selected_ensemble": "blend_baseline_static_alpha_variable_shrink",
+      "selection_reason": "best_val_mse_with_mae_guard",
+      "candidate_count": 8,
+      "alpha_global_closed_form": 0.7559544649916917,
+      "alpha_variable_mean": 0.7848917329209765,
+      "alpha_variable_std": 0.144948453530372,
+      "val_mse": 0.3498837707832214,
+      "val_mae": 0.2392190672287817,
+      "test_mse": 0.3826398811674583,
+      "test_mae": 0.2594195388379919,
+      "test_mse_gain_vs_static_p1_pct": 2.437024782452333,
+      "test_mae_gain_vs_static_p1_pct": 3.3201408048480343,
+      "stage15_test_mse": 0.3829394988923393,
+      "stage15_test_mae": 0.259666001960563,
+      "stage2_test_mse": 0.3826398811674583,
+      "stage2_test_mae": 0.2594195388379919,
+      "mse_rel_improve_pct": 0.0782415305153083,
+      "mae_rel_improve_pct": 0.09491543779709995,
+      "shuffle_count": 256,
+      "observed_test_mse_gain_vs_shuffle_median_pct": 0.3904945634618938,
+      "observed_test_rank_fraction_lower_is_better": 0.0,
+      "data_repo_head_at_packaging": "862ed5436ca439504bd2d7d54a86ea88741b5e5c",
+      "itransformer_repo_head_at_packaging": ""
+    }
+  },
+  "large_artifacts_not_copied": [
+    "Traffic pred.npy/true.npy/val_pred.npy/val_true.npy arrays",
+    "Traffic graph interface deltaA_*.npy arrays",
+    "model checkpoints"
+  ],
+  "reproduction_entrypoints": [
+    "traffic_stage2_light_freeze_table.py",
+    "traffic_stage2_light_evidence_pack.py",
+    "traffic_existing_prediction_ensemble.py",
+    "backfill_posthoc_profile_preds.py"
+  ]
+}

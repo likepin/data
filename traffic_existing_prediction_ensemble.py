@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import glob
 import json
 import re
 from pathlib import Path
@@ -9,8 +10,7 @@ import numpy as np
 import pandas as pd
 
 from posthoc_calibration.evaluation import pct_gain
-from posthoc_calibration.io_utils import load_result_dirs
-from posthoc_calibration.profiles import PROFILES
+from posthoc_calibration.profiles import PROFILES, RESULT_ROOT
 from posthoc_ecl96_deltaA_manual_gate import mse_mae
 
 
@@ -48,6 +48,19 @@ def projection_id(path: Path) -> int:
     return int(match.group(1)) if match else 999
 
 
+def load_result_dirs_flexible(pattern: str, pred_file: str, true_file: str) -> list[Path]:
+    dirs = sorted((Path(path) for path in glob.glob(str(RESULT_ROOT / pattern))), key=projection_id)
+    if not dirs:
+        raise FileNotFoundError(f"No result dirs matched: {pattern}")
+    complete = []
+    for directory in dirs:
+        if (directory / pred_file).exists() and (directory / true_file).exists():
+            complete.append(directory)
+    if not complete:
+        raise FileNotFoundError(f"No complete result dirs matched: {pattern} with {pred_file}/{true_file}")
+    return complete
+
+
 def load_candidates(profile: dict) -> list[dict]:
     rows = []
     groups = [
@@ -55,8 +68,8 @@ def load_candidates(profile: dict) -> list[dict]:
         ("static", str(profile["static_pattern"])),
     ]
     for group, pattern in groups:
-        val_dirs = load_result_dirs(pattern, pred_file="val_pred.npy", true_file="val_true.npy")
-        test_dirs = load_result_dirs(pattern, pred_file="pred.npy", true_file="true.npy")
+        val_dirs = load_result_dirs_flexible(pattern, pred_file="val_pred.npy", true_file="val_true.npy")
+        test_dirs = load_result_dirs_flexible(pattern, pred_file="pred.npy", true_file="true.npy")
         val_by_projection = {projection_id(path): path for path in val_dirs}
         test_by_projection = {projection_id(path): path for path in test_dirs}
         for projection in sorted(val_by_projection):
@@ -374,7 +387,7 @@ def build_ensemble_specs(
         w[idx] = 1.0 / idx.size
         add(f"{group}_mean", "group_mean", w)
 
-    add("all6_mean", "simple_mean", np.full(n, 1.0 / n, dtype=np.float64))
+    add("all_candidate_mean", "simple_mean", np.full(n, 1.0 / n, dtype=np.float64))
 
     baseline_idx = np.asarray([i for i, g in enumerate(groups) if g == "baseline"], dtype=np.int64)
     static_idx = np.asarray([i for i, g in enumerate(groups) if g == "static"], dtype=np.int64)

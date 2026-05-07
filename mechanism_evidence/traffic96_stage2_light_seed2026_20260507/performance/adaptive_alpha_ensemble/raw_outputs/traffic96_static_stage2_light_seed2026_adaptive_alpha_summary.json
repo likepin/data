@@ -1,0 +1,17 @@
+{
+  "split": "val",
+  "alpha_global_raw": 0.7559544649916917,
+  "alpha_global_clipped": 0.7559544649916917,
+  "denominator_global": 890279.0727468119,
+  "var_alpha_shrink_prior_strength": 1.0,
+  "var_alpha_prior_denom": 658.7696711176441,
+  "var_alpha_mean": 0.7848917329209765,
+  "var_alpha_std": 0.144948453530372,
+  "var_alpha_min": 0.017675448106715064,
+  "var_alpha_max": 0.9717131059243963,
+  "var_alpha_q05": 0.5098802157715686,
+  "var_alpha_q50": 0.8385441938601338,
+  "var_alpha_q95": 0.9156633223419695,
+  "valid_variable_count": 862,
+  "variable_count": 862
+}
