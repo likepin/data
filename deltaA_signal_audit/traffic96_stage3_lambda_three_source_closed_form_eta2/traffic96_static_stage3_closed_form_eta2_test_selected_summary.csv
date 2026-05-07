@@ -1,0 +1,2 @@
+split,ensemble,eta_mode,eta_mult,eta_raw,eta_clip_reason,target_mask,target_count,dynamic_source,anchor_mse,anchor_mae,mse,mae,mse_gain_vs_stage2_anchor_pct,mae_gain_vs_stage2_anchor_pct,n_samples,selection_reason
+test,stage3_closed_form_all,closed_form,2.0,3.6704692131997687,clipped_high,all,862,static_p0,0.3826398811601901,0.25941953883799185,0.38237061261561256,0.2591701150510283,0.07037127017735276,0.09614687778752337,3413,best_val_mse_with_mae_guard

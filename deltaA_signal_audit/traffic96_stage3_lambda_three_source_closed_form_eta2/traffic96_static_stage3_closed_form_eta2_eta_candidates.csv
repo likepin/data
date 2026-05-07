@@ -1,0 +1,5 @@
+ensemble,eta_mode,eta_mult,eta_raw,eta_num,eta_den,eta_clip_reason,target_mask,target_count,dynamic_source
+stage2_anchor,anchor,0.0,0.0,0.0,0.0,anchor,all,862,static_p0
+stage3_closed_form_all,closed_form,2.0,3.6704692131997687,40190.77746229927,10949.765582494167,clipped_high,all,862,static_p0
+stage3_closed_form_top_alpha_5,closed_form,2.0,2.5441921005442807,2597.9601278835803,1021.1336350457959,clipped_high,top_alpha_5,44,static_p0
+stage3_closed_form_top_alpha_10,closed_form,2.0,2.5222933500313487,3048.3021243670737,1208.5438532870046,clipped_high,top_alpha_10,87,static_p0

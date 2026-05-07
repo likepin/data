@@ -1,0 +1,5 @@
+split,ensemble,eta_mode,eta_mult,eta_raw,eta_clip_reason,target_mask,target_count,dynamic_source,mse,mae,mse_gain_vs_stage2_anchor_pct,mae_gain_vs_stage2_anchor_pct,n_samples
+val,stage2_anchor,anchor,0.0,0.0,anchor,all,862,static_p0,0.34988377078396243,0.2392190672287819,0.0,0.0,1661
+val,stage3_closed_form_all,closed_form,2.0,3.6704692131997687,clipped_high,all,862,static_p0,0.34903282034797833,0.23880468960674833,0.2432094618385495,0.1732209839432485,1661
+val,stage3_closed_form_top_alpha_5,closed_form,2.0,2.5441921005442807,clipped_high,top_alpha_5,44,static_p0,0.3498378831351566,0.23917426030116867,0.013115112113657498,0.018730500094444734,1661
+val,stage3_closed_form_top_alpha_10,closed_form,2.0,2.5222933500313487,clipped_high,top_alpha_10,87,static_p0,0.3498302314875821,0.23916172409098757,0.0153020233720455,0.02397097290722137,1661

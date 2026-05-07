@@ -1,7 +1,7 @@
 {
   "package": "traffic96_stage3_lambda_three_source_20260507",
-  "status": "weak_positive_stage3_pilot",
-  "default_selected": {
+  "status": "weak_positive_stage3_pilot_with_closed_form_eta2",
+  "grid_selected": {
     "label": "Stage3 lambda three-source, static_p0 dynamic",
     "test_mse": 0.382431851067294,
     "test_mae": 0.259176242679475,
@@ -10,10 +10,23 @@
     "test_mse_gain_vs_static_p1_pct": 2.490066915553835,
     "test_mae_gain_vs_static_p1_pct": 3.4108118408598305
   },
-  "interpretation": "Stage3 lambda-gated dynamic increment adds a small positive gain over the Stage2 adaptive-alpha anchor, but the test shuffled-gamma negative control is thin; treat as weak positive increment, not a strong dynamic-branch success.",
+  "recommended_closed_form_eta2": {
+    "label": "Stage3 lambda three-source, closed-form eta2",
+    "test_mse": 0.3823706126156125,
+    "test_mae": 0.2591701150510283,
+    "test_mse_gain_vs_stage2_anchor_pct": 0.07037127207551529,
+    "test_mae_gain_vs_stage2_anchor_pct": 0.09614687778754474,
+    "test_mse_gain_vs_static_p1_pct": 2.5056810891876267,
+    "test_mae_gain_vs_static_p1_pct": 3.413095470913588,
+    "eta_raw": 3.6704692131997687,
+    "eta_mult": 2.0,
+    "eta_clip_reason": "clipped_high"
+  },
+  "interpretation": "Stage3 lambda-gated dynamic increment adds a small positive gain over the Stage2 adaptive-alpha anchor. Closed-form eta2 improves the grid pilot slightly, while keeping eta clipped by validation-only selection. The test shuffled-gamma negative control remains thin; treat as weak positive increment and risk-window evidence target, not a strong dynamic-branch success.",
   "source_outputs": {
     "default_static_p0_dynamic": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_stage3_lambda_three_source_pilot",
     "audit_static_mean_dynamic": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_stage3_lambda_three_source_pilot_staticmean",
+    "closed_form_eta2": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_stage3_lambda_three_source_closed_form_eta2",
     "stage2_frozen_table": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\traffic96_stage2_light_seed2026_20260507\\performance\\adaptive_alpha_ensemble\\tables\\traffic96_static_stage2_light_seed2026_frozen_table.csv"
   },
   "copied_files": [
@@ -30,6 +43,14 @@
     "performance\\stage3_lambda_three_source\\raw_outputs\\audit_static_mean_dynamic\\traffic96_static_stage3_pilot_staticmean_test_selected_summary.csv",
     "performance\\stage3_lambda_three_source\\raw_outputs\\audit_static_mean_dynamic\\traffic96_static_stage3_pilot_staticmean_val_fold_grid.csv",
     "performance\\stage3_lambda_three_source\\raw_outputs\\audit_static_mean_dynamic\\traffic96_static_stage3_pilot_staticmean_val_grid.csv",
-    "performance\\stage3_lambda_three_source\\raw_outputs\\audit_static_mean_dynamic\\traffic96_static_stage3_pilot_staticmean_val_selected_recomputed_summary.csv"
+    "performance\\stage3_lambda_three_source\\raw_outputs\\audit_static_mean_dynamic\\traffic96_static_stage3_pilot_staticmean_val_selected_recomputed_summary.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\closed_form_eta2\\traffic96_static_stage3_closed_form_eta2_eta_candidates.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\closed_form_eta2\\traffic96_static_stage3_closed_form_eta2_manifest.json",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\closed_form_eta2\\traffic96_static_stage3_closed_form_eta2_selected_val_summary.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\closed_form_eta2\\traffic96_static_stage3_closed_form_eta2_shuffled_gamma_summary.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\closed_form_eta2\\traffic96_static_stage3_closed_form_eta2_test_selected_summary.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\closed_form_eta2\\traffic96_static_stage3_closed_form_eta2_val_fold_grid.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\closed_form_eta2\\traffic96_static_stage3_closed_form_eta2_val_grid.csv",
+    "performance\\stage3_lambda_three_source\\raw_outputs\\closed_form_eta2\\traffic96_static_stage3_closed_form_eta2_val_selected_recomputed_summary.csv"
   ]
 }

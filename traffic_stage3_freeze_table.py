@@ -19,6 +19,7 @@ STAGE2_TABLE = (
 )
 DEFAULT_STAGE3_DIR = DATA_ROOT / "deltaA_signal_audit" / "traffic96_stage3_lambda_three_source_pilot"
 STATICMEAN_STAGE3_DIR = DATA_ROOT / "deltaA_signal_audit" / "traffic96_stage3_lambda_three_source_pilot_staticmean"
+CLOSED_FORM_ETA2_DIR = DATA_ROOT / "deltaA_signal_audit" / "traffic96_stage3_lambda_three_source_closed_form_eta2"
 PACKAGE_DIR = DATA_ROOT / "mechanism_evidence" / "traffic96_stage3_lambda_three_source_20260507"
 OUT_DIR = PACKAGE_DIR / "performance" / "stage3_lambda_three_source"
 TABLE_DIR = OUT_DIR / "tables"
@@ -134,6 +135,8 @@ def main() -> None:
     staticmean_test = read_one(
         STATICMEAN_STAGE3_DIR / "traffic96_static_stage3_pilot_staticmean_test_selected_summary.csv"
     )
+    eta2_val = read_one(CLOSED_FORM_ETA2_DIR / "traffic96_static_stage3_closed_form_eta2_selected_val_summary.csv")
+    eta2_test = read_one(CLOSED_FORM_ETA2_DIR / "traffic96_static_stage3_closed_form_eta2_test_selected_summary.csv")
 
     rows = [
         metric_row(
@@ -178,7 +181,7 @@ def main() -> None:
         metric_row(
             label="Stage3 lambda three-source, static_p0 dynamic",
             kind="lambda_gated_dynamic_increment",
-            selection_role="stage3_selected",
+            selection_role="stage3_grid_selected",
             val_mse=default_val["mse"],
             val_mae=default_val["mae"],
             test_mse=default_test["mse"],
@@ -187,6 +190,23 @@ def main() -> None:
             stage15_ref=stage15_ref,
             stage2_ref=stage2_ref,
             notes="Default Stage3 pilot; dynamic source matches existing posthoc static_p0 convention.",
+        ),
+        metric_row(
+            label="Stage3 lambda three-source, closed-form eta2",
+            kind="lambda_gated_dynamic_increment_closed_form_eta",
+            selection_role="stage3_recommended_closed_form_eta2",
+            val_mse=eta2_val["mse"],
+            val_mae=eta2_val["mae"],
+            test_mse=eta2_test["mse"],
+            test_mae=eta2_test["mae"],
+            static_ref=static_ref,
+            stage15_ref=stage15_ref,
+            stage2_ref=stage2_ref,
+            notes=(
+                "Validation-estimated closed-form eta with eta_max=2.0; selected all-variable mask. "
+                f"eta_raw={float(eta2_test['eta_raw']):.6f}, eta_mult={float(eta2_test['eta_mult']):.6f}, "
+                f"clip={eta2_test['eta_clip_reason']}."
+            ),
         ),
         metric_row(
             label="Stage3 lambda three-source, static_mean audit",
@@ -211,25 +231,35 @@ def main() -> None:
     default_fold.to_csv(TABLE_DIR / f"{PREFIX}_default_val_fold_grid.csv", index=False)
     selected_fold = default_fold[default_fold["ensemble"] == "stage3_eta1_all"].copy()
     selected_fold.to_csv(TABLE_DIR / f"{PREFIX}_default_selected_val_folds.csv", index=False)
+    eta2_fold = pd.read_csv(CLOSED_FORM_ETA2_DIR / "traffic96_static_stage3_closed_form_eta2_val_fold_grid.csv")
+    eta2_fold.to_csv(TABLE_DIR / f"{PREFIX}_closed_form_eta2_val_fold_grid.csv", index=False)
+    eta2_selected_fold = eta2_fold[eta2_fold["ensemble"] == "stage3_closed_form_all"].copy()
+    eta2_selected_fold.to_csv(TABLE_DIR / f"{PREFIX}_closed_form_eta2_selected_val_folds.csv", index=False)
+    eta2_candidates = pd.read_csv(CLOSED_FORM_ETA2_DIR / "traffic96_static_stage3_closed_form_eta2_eta_candidates.csv")
+    eta2_candidates.to_csv(TABLE_DIR / f"{PREFIX}_closed_form_eta2_candidates.csv", index=False)
 
     default_shuffle = pd.read_csv(DEFAULT_STAGE3_DIR / "traffic96_static_stage3_pilot_shuffled_gamma_summary.csv")
     staticmean_shuffle = pd.read_csv(
         STATICMEAN_STAGE3_DIR / "traffic96_static_stage3_pilot_staticmean_shuffled_gamma_summary.csv"
     )
+    eta2_shuffle = pd.read_csv(CLOSED_FORM_ETA2_DIR / "traffic96_static_stage3_closed_form_eta2_shuffled_gamma_summary.csv")
     default_shuffle["variant"] = "static_p0_dynamic"
     staticmean_shuffle["variant"] = "static_mean_dynamic"
-    shuffle = pd.concat([default_shuffle, staticmean_shuffle], ignore_index=True)
+    eta2_shuffle["variant"] = "closed_form_eta2"
+    shuffle = pd.concat([default_shuffle, staticmean_shuffle, eta2_shuffle], ignore_index=True)
     shuffle.to_csv(TABLE_DIR / f"{PREFIX}_shuffled_gamma_summary.csv", index=False)
 
     copied = []
     copied += copy_outputs(DEFAULT_STAGE3_DIR, RAW_DIR / "default_static_p0_dynamic")
     copied += copy_outputs(STATICMEAN_STAGE3_DIR, RAW_DIR / "audit_static_mean_dynamic")
+    copied += copy_outputs(CLOSED_FORM_ETA2_DIR, RAW_DIR / "closed_form_eta2")
 
-    selected_default = table[table["selection_role"] == "stage3_selected"].iloc[0]
+    selected_default = table[table["selection_role"] == "stage3_grid_selected"].iloc[0]
+    recommended_eta2 = table[table["selection_role"] == "stage3_recommended_closed_form_eta2"].iloc[0]
     manifest = {
         "package": "traffic96_stage3_lambda_three_source_20260507",
-        "status": "weak_positive_stage3_pilot",
-        "default_selected": {
+        "status": "weak_positive_stage3_pilot_with_closed_form_eta2",
+        "grid_selected": {
             "label": selected_default["label"],
             "test_mse": float(selected_default["test_mse"]),
             "test_mae": float(selected_default["test_mae"]),
@@ -238,14 +268,28 @@ def main() -> None:
             "test_mse_gain_vs_static_p1_pct": float(selected_default["test_mse_gain_vs_static_p1_pct"]),
             "test_mae_gain_vs_static_p1_pct": float(selected_default["test_mae_gain_vs_static_p1_pct"]),
         },
+        "recommended_closed_form_eta2": {
+            "label": recommended_eta2["label"],
+            "test_mse": float(recommended_eta2["test_mse"]),
+            "test_mae": float(recommended_eta2["test_mae"]),
+            "test_mse_gain_vs_stage2_anchor_pct": float(recommended_eta2["test_mse_gain_vs_stage2_anchor_pct"]),
+            "test_mae_gain_vs_stage2_anchor_pct": float(recommended_eta2["test_mae_gain_vs_stage2_anchor_pct"]),
+            "test_mse_gain_vs_static_p1_pct": float(recommended_eta2["test_mse_gain_vs_static_p1_pct"]),
+            "test_mae_gain_vs_static_p1_pct": float(recommended_eta2["test_mae_gain_vs_static_p1_pct"]),
+            "eta_raw": float(eta2_test["eta_raw"]),
+            "eta_mult": float(eta2_test["eta_mult"]),
+            "eta_clip_reason": str(eta2_test["eta_clip_reason"]),
+        },
         "interpretation": (
             "Stage3 lambda-gated dynamic increment adds a small positive gain over the Stage2 adaptive-alpha "
-            "anchor, but the test shuffled-gamma negative control is thin; treat as weak positive increment, "
-            "not a strong dynamic-branch success."
+            "anchor. Closed-form eta2 improves the grid pilot slightly, while keeping eta clipped by validation-only "
+            "selection. The test shuffled-gamma negative control remains thin; treat as weak positive increment and "
+            "risk-window evidence target, not a strong dynamic-branch success."
         ),
         "source_outputs": {
             "default_static_p0_dynamic": str(DEFAULT_STAGE3_DIR),
             "audit_static_mean_dynamic": str(STATICMEAN_STAGE3_DIR),
+            "closed_form_eta2": str(CLOSED_FORM_ETA2_DIR),
             "stage2_frozen_table": str(STAGE2_TABLE),
         },
         "copied_files": copied,
@@ -263,9 +307,11 @@ def main() -> None:
                 "- `Stage3`: add a lambda-gated posthoc dynamic increment on top of the Stage2 anchor.",
                 "- Default dynamic source: `static_p0`, matching the existing posthoc closed-loop convention.",
                 "- Audit dynamic source: `static_mean`, confirming the result is not projection-0-specific.",
+                "- Closed-form eta2: validation-estimated eta clipped by `eta_max=2.0`; this is the recommended Stage3 performance anchor for risk-window diagnostics.",
                 "",
                 "Interpretation:",
-                "- The default Stage3 result is weak positive over Stage2.",
+                "- The default grid Stage3 result is weak positive over Stage2.",
+                "- The closed-form eta2 result is slightly better than grid, but still a weak positive increment.",
                 "- The test shuffled-gamma negative control is thin.",
                 "- Use this as a small dynamic-aware increment, not as a strong dynamic-mainline success.",
                 "",

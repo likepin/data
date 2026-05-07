@@ -41,7 +41,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--pred-len", type=int, default=96)
     parser.add_argument("--train-ratio", type=float, default=0.7)
     parser.add_argument("--validation-folds", type=int, default=4)
+    parser.add_argument("--eta-mode", choices=["grid", "closed_form"], default="grid")
     parser.add_argument("--eta-mults", default="0,0.25,0.5,0.75,1.0")
+    parser.add_argument("--eta-max", type=float, default=2.0)
     parser.add_argument("--target-masks", default="all,top_alpha_5,top_alpha_10")
     parser.add_argument("--dynamic-source", choices=["static_p0", "static_mean"], default="static_p0")
     parser.add_argument("--select-mae-min-gain", type=float, default=0.0)
@@ -143,8 +145,21 @@ def build_target_masks(mask_names: list[str], alpha: np.ndarray) -> dict[str, np
     return masks
 
 
+def anchor_spec() -> dict:
+    return {
+        "ensemble": "stage2_anchor",
+        "eta_mode": "anchor",
+        "eta_mult": 0.0,
+        "eta_raw": 0.0,
+        "eta_num": 0.0,
+        "eta_den": 0.0,
+        "eta_clip_reason": "anchor",
+        "target_mask": "all",
+    }
+
+
 def candidate_specs(eta_mults: list[float], target_masks: dict[str, np.ndarray]) -> list[dict]:
-    specs = [{"ensemble": "stage2_anchor", "eta_mult": 0.0, "target_mask": "all"}]
+    specs = [anchor_spec()]
     for eta in eta_mults:
         eta = float(eta)
         if abs(eta) <= 1e-12:
@@ -153,7 +168,12 @@ def candidate_specs(eta_mults: list[float], target_masks: dict[str, np.ndarray])
             specs.append(
                 {
                     "ensemble": f"stage3_eta{eta:.3g}_{mask_name}",
+                    "eta_mode": "grid",
                     "eta_mult": eta,
+                    "eta_raw": eta,
+                    "eta_num": np.nan,
+                    "eta_den": np.nan,
+                    "eta_clip_reason": "grid",
                     "target_mask": mask_name,
                 }
             )
@@ -171,6 +191,93 @@ def compute_dynamic_chunk(source_pred: np.ndarray, delta_chunk: np.ndarray) -> n
         np.asarray(source_pred, dtype=np.float32),
         np.transpose(np.asarray(delta_chunk, dtype=np.float32), (0, 2, 1)),
     )
+
+
+def estimate_closed_form_specs(
+    *,
+    candidates: list[dict],
+    alpha: np.ndarray,
+    delta_path: Path,
+    gamma: np.ndarray,
+    target_masks: dict[str, np.ndarray],
+    dynamic_source: str,
+    chunk_size: int,
+    max_samples: int,
+    progress_every: int,
+    eta_max: float,
+) -> list[dict]:
+    if eta_max < 0:
+        raise ValueError(f"eta_max must be non-negative, got {eta_max}")
+    pred_arrays, true = open_prediction_arrays(candidates, "val")
+    baseline_idx, static_idx = group_indices(candidates)
+    delta = np.load(delta_path, mmap_mode="r")
+    expected_shape = true.shape
+    if delta.shape[0] != expected_shape[0] or delta.shape[1] != expected_shape[2] or delta.shape[2] != expected_shape[2]:
+        raise RuntimeError(f"Unexpected delta shape for val: {delta.shape}, true={expected_shape}")
+    if alpha.size != expected_shape[2]:
+        raise RuntimeError(f"Alpha length mismatch: {alpha.size} vs n_vars={expected_shape[2]}")
+
+    n_samples = expected_shape[0] if max_samples <= 0 else min(int(max_samples), expected_shape[0])
+    if len(gamma) < n_samples:
+        raise RuntimeError(f"Gamma length mismatch for val: gamma={len(gamma)} required={n_samples}")
+    gamma = np.asarray(gamma[:n_samples], dtype=np.float32)
+    alpha_view = alpha.reshape(1, 1, -1)
+    sums = {name: {"num": 0.0, "den": 0.0} for name in target_masks}
+
+    started = pd.Timestamp.now()
+    for start in range(0, n_samples, chunk_size):
+        end = min(start + chunk_size, n_samples)
+        baseline_mean = group_mean_chunk(pred_arrays, baseline_idx, start, end)
+        static_mean = group_mean_chunk(pred_arrays, static_idx, start, end)
+        anchor = baseline_mean + alpha_view * (static_mean - baseline_mean)
+        err_anchor = np.asarray(true[start:end], dtype=np.float32) - anchor
+        if dynamic_source == "static_mean":
+            source_pred = static_mean
+        else:
+            source_pred = np.asarray(pred_arrays[static_idx[0]][start:end], dtype=np.float32)
+        dynamic = compute_dynamic_chunk(source_pred, delta[start:end])
+        gamma_chunk = gamma[start:end].reshape(-1, 1, 1)
+
+        err64 = err_anchor.astype(np.float64, copy=False)
+        for mask_name, mask in target_masks.items():
+            z = (gamma_chunk * dynamic * mask.reshape(1, 1, -1)).astype(np.float64, copy=False)
+            sums[mask_name]["num"] += float((err64 * z).sum())
+            sums[mask_name]["den"] += float(np.square(z).sum())
+
+        if progress_every > 0 and (end % progress_every == 0 or end == n_samples):
+            elapsed = (pd.Timestamp.now() - started).total_seconds()
+            print(f"[val:eta_closed_form] {end}/{n_samples} elapsed={elapsed:.1f}s", flush=True)
+
+    specs = [anchor_spec()]
+    for mask_name, values in sums.items():
+        num = values["num"]
+        den = values["den"]
+        if den <= 1e-12:
+            eta_raw = 0.0
+            eta = 0.0
+            reason = "zero_dynamic_energy"
+        else:
+            eta_raw = num / den
+            eta = min(max(eta_raw, 0.0), float(eta_max))
+            if eta_raw < 0.0:
+                reason = "clipped_low"
+            elif eta_raw > float(eta_max):
+                reason = "clipped_high"
+            else:
+                reason = "unclipped"
+        specs.append(
+            {
+                "ensemble": f"stage3_closed_form_{mask_name}",
+                "eta_mode": "closed_form",
+                "eta_mult": float(eta),
+                "eta_raw": float(eta_raw),
+                "eta_num": float(num),
+                "eta_den": float(den),
+                "eta_clip_reason": reason,
+                "target_mask": mask_name,
+            }
+        )
+    return specs
 
 
 def fold_ids(n_samples: int, n_folds: int) -> np.ndarray:
@@ -271,7 +378,10 @@ def evaluate_specs(
             {
                 "split": split,
                 "ensemble": name,
+                "eta_mode": spec.get("eta_mode", "grid"),
                 "eta_mult": float(spec["eta_mult"]),
+                "eta_raw": float(spec.get("eta_raw", spec["eta_mult"])),
+                "eta_clip_reason": spec.get("eta_clip_reason", ""),
                 "target_mask": spec["target_mask"],
                 "target_count": int(target_masks[spec["target_mask"]].sum()),
                 "dynamic_source": dynamic_source,
@@ -298,7 +408,10 @@ def evaluate_specs(
                 "split": split,
                 "fold": fold,
                 "ensemble": name,
+                "eta_mode": spec.get("eta_mode", "grid"),
                 "eta_mult": float(spec["eta_mult"]),
+                "eta_raw": float(spec.get("eta_raw", spec["eta_mult"])),
+                "eta_clip_reason": spec.get("eta_clip_reason", ""),
                 "target_mask": spec["target_mask"],
                 "target_count": int(target_masks[spec["target_mask"]].sum()),
                 "dynamic_source": dynamic_source,
@@ -376,7 +489,10 @@ def evaluate_selected_with_sample_stats(
                     "split": split,
                     "sample_id": sample_id,
                     "gamma": float(gamma[sample_id]),
+                    "eta_mode": spec.get("eta_mode", "grid"),
                     "eta_mult": eta,
+                    "eta_raw": float(spec.get("eta_raw", eta)),
+                    "eta_clip_reason": spec.get("eta_clip_reason", ""),
                     "target_mask": spec["target_mask"],
                     "target_count": int(target_masks[spec["target_mask"]].sum()),
                     "anchor_sse": float(sample_anchor_sse[local]),
@@ -394,7 +510,10 @@ def evaluate_selected_with_sample_stats(
     summary = {
         "split": split,
         "ensemble": spec["ensemble"],
+        "eta_mode": spec.get("eta_mode", "grid"),
         "eta_mult": eta,
+        "eta_raw": float(spec.get("eta_raw", eta)),
+        "eta_clip_reason": spec.get("eta_clip_reason", ""),
         "target_mask": spec["target_mask"],
         "target_count": int(target_masks[spec["target_mask"]].sum()),
         "dynamic_source": dynamic_source,
@@ -407,6 +526,26 @@ def evaluate_selected_with_sample_stats(
         "n_samples": n_samples,
     }
     return summary, pd.DataFrame(sample_rows)
+
+
+def specs_to_frame(specs: list[dict], target_masks: dict[str, np.ndarray], dynamic_source: str) -> pd.DataFrame:
+    rows = []
+    for spec in specs:
+        rows.append(
+            {
+                "ensemble": spec["ensemble"],
+                "eta_mode": spec.get("eta_mode", "grid"),
+                "eta_mult": float(spec["eta_mult"]),
+                "eta_raw": float(spec.get("eta_raw", spec["eta_mult"])),
+                "eta_num": float(spec.get("eta_num", np.nan)),
+                "eta_den": float(spec.get("eta_den", np.nan)),
+                "eta_clip_reason": spec.get("eta_clip_reason", ""),
+                "target_mask": spec["target_mask"],
+                "target_count": int(target_masks[spec["target_mask"]].sum()),
+                "dynamic_source": dynamic_source,
+            }
+        )
+    return pd.DataFrame(rows)
 
 
 def mse_mae_sums(err: np.ndarray) -> tuple[float, float]:
@@ -460,7 +599,6 @@ def main() -> None:
 
     alpha = load_stage2_alpha(args.stage2_dir, stage2_prefix)
     target_masks = build_target_masks(args.target_masks.split(","), alpha)
-    specs = candidate_specs(parse_float_list(args.eta_mults), target_masks)
     lambda_cfg, schedule = load_closed_loop_config(args.closed_loop_dir, closed_loop_prefix)
     raw_lambda_splits = compute_selected_lambda_splits(
         profile,
@@ -476,6 +614,22 @@ def main() -> None:
     }
     candidates = load_candidates(profile)
     interface_dir = Path(profile["interface_dir"])
+    if args.eta_mode == "grid":
+        specs = candidate_specs(parse_float_list(args.eta_mults), target_masks)
+    else:
+        specs = estimate_closed_form_specs(
+            candidates=candidates,
+            alpha=alpha,
+            delta_path=interface_dir / "deltaA_val.npy",
+            gamma=gamma_splits["val"],
+            target_masks=target_masks,
+            dynamic_source=args.dynamic_source,
+            chunk_size=args.chunk_size,
+            max_samples=args.max_samples,
+            progress_every=args.progress_every,
+            eta_max=args.eta_max,
+        )
+    specs_to_frame(specs, target_masks, args.dynamic_source).to_csv(args.out_dir / f"{prefix}_eta_candidates.csv", index=False)
 
     manifest = {
         "profile": args.profile,
@@ -484,9 +638,12 @@ def main() -> None:
         "closed_loop_dir": str(args.closed_loop_dir),
         "interface_dir": str(interface_dir),
         "dynamic_source": args.dynamic_source,
+        "eta_mode": args.eta_mode,
         "eta_mults": parse_float_list(args.eta_mults),
+        "eta_max": args.eta_max,
         "target_masks": {name: int(mask.sum()) for name, mask in target_masks.items()},
         "candidate_count": len(candidates),
+        "ensemble_candidate_count": len(specs),
         "lambda_cfg": lambda_cfg,
         "schedule": schedule,
         "chunk_size": args.chunk_size,
