@@ -1,0 +1,27 @@
+{
+  "artifact": "etth196_adaptive_alpha_evidence",
+  "output_dir": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_adaptive_alpha_20260509",
+  "horizon": 96,
+  "adaptive_dir": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\etth196_existing_prediction_ensemble_parcorr",
+  "prefix": "etth196_static_parcorr_adaptive_alpha_pilot",
+  "posthoc_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\etth196_closed_loop_rank_quality_guard_parcorr_ridgebase_sparse\\etth196_static_parcorr_rank_quality_guard_parcorr_closed_loop_test_selected_summary.csv",
+  "selected_setting": "per_variable_shrinkage_alpha",
+  "reference_best_single": "static_p1",
+  "adaptive_summary": {
+    "split": "val",
+    "alpha_global_raw": 0.645142441040268,
+    "alpha_global_clipped": 0.645142441040268,
+    "denominator_global": 26737.69240576646,
+    "var_alpha_shrink_prior_strength": 1.0,
+    "var_alpha_prior_denom": 4164.590534266939,
+    "var_alpha_mean": 0.6157781244307517,
+    "var_alpha_std": 0.19156758721114497,
+    "var_alpha_min": 0.34224595445193645,
+    "var_alpha_max": 0.8384362568076441,
+    "var_alpha_q05": 0.3630787109753207,
+    "var_alpha_q50": 0.6118929642952167,
+    "var_alpha_q95": 0.8303608049883601,
+    "valid_variable_count": 7,
+    "variable_count": 7
+  }
+}

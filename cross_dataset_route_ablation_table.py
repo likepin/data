@@ -12,6 +12,9 @@ from posthoc_calibration.profiles import PROFILES, RESULT_ROOT
 
 
 OUT_DIR = Path(r"C:\Users\cyl\Desktop\data\mechanism_evidence\cross_dataset_route_ablation_20260507")
+ETTH1_ADAPTIVE_TABLE = Path(
+    r"C:\Users\cyl\Desktop\data\mechanism_evidence\etth196_adaptive_alpha_20260509\etth196_adaptive_alpha_frozen_table.csv"
+)
 SOLAR_ADAPTIVE_TABLE = Path(
     r"C:\Users\cyl\Desktop\data\mechanism_evidence\solar96_192_adaptive_alpha_20260508\solar_adaptive_alpha_frozen_table.csv"
 )
@@ -51,7 +54,7 @@ TRAFFIC_STAGE3_SUMMARY = Path(
 
 
 DATASET_PROFILES = {
-    "ETTh1": "etth196_static",
+    "ETTh1": "etth196_static_parcorr",
     "Weather": "weather96_static",
     "ECL": "ecl96_static",
     "Solar-96": "solar96_static",
@@ -71,7 +74,7 @@ DATASET_HORIZONS = {
 
 
 FINAL_HEADLINES = {
-    "ETTh1": "Hard negative overall; post-hoc is Selective vs static but still below baseline.",
+    "ETTh1": "Adaptive fusion headline; guarded post-hoc is still Selective vs static but weaker than the prediction-level fusion route.",
     "Weather": "Static anchor headline; post-hoc dynamic is MSE-positive but MAE-negative.",
     "ECL": "Static anchor headline; strict guarded dynamic branch bypasses.",
     "Solar-96": "Adaptive fusion headline; Stage3 lambda/dynamic is a weak positive add-on.",
@@ -226,11 +229,15 @@ def build_paper_table(full: pd.DataFrame) -> pd.DataFrame:
         )
         adaptive = "n/a"
         if not pd.isna(row["adaptive_fusion_mse"]):
-            adaptive = (
-                f"{metric_pair(row['adaptive_fusion_mse'], row['adaptive_fusion_mae'])}; "
-                f"dStatic {gain_pair(row['adaptive_fusion_mse_gain_vs_static_anchor_pct'], row['adaptive_fusion_mae_gain_vs_static_anchor_pct'])}; "
-                f"Stage3 dAdaptive {gain_pair(row['stage3_dynamic_mse_gain_vs_adaptive_pct'], row['stage3_dynamic_mae_gain_vs_adaptive_pct'])}"
-            )
+            adaptive_parts = [
+                metric_pair(row["adaptive_fusion_mse"], row["adaptive_fusion_mae"]),
+                f"dStatic {gain_pair(row['adaptive_fusion_mse_gain_vs_static_anchor_pct'], row['adaptive_fusion_mae_gain_vs_static_anchor_pct'])}",
+            ]
+            if not pd.isna(row["stage3_dynamic_mse"]):
+                adaptive_parts.append(
+                    f"Stage3 dAdaptive {gain_pair(row['stage3_dynamic_mse_gain_vs_adaptive_pct'], row['stage3_dynamic_mae_gain_vs_adaptive_pct'])}"
+                )
+            adaptive = "; ".join(adaptive_parts)
         rows.append(
             {
                 "Dataset": row["dataset"],
@@ -255,7 +262,7 @@ def write_readme(summary: pd.DataFrame, compact: pd.DataFrame, paper: pd.DataFra
         "Purpose:",
         "- Freeze a route-level ablation table across ETTh1/Weather/ECL/Solar/Traffic at horizon 96, with Solar-192 as a cross-horizon extension.",
         "- Keep train-time static residual, guarded post-hoc dynamic calibration, and prediction-level adaptive fusion separate.",
-        "- Prevent mixed claims such as treating Traffic adaptive-alpha gains as post-hoc dynamic gains.",
+        "- Prevent mixed claims such as treating prediction-level adaptive fusion gains as post-hoc dynamic gains.",
         "- ETTh1 is frozen under the current `ParCorr ridgebase_sparse` backend rather than the older `parcorr_regen` interface.",
         "",
         "Compact table:",
@@ -263,9 +270,10 @@ def write_readme(summary: pd.DataFrame, compact: pd.DataFrame, paper: pd.DataFra
         markdown_table(paper).rstrip(),
         "",
         "Interpretation:",
-        "- `Static Anchor` is the stable backbone on Weather/ECL and a useful candidate family on Traffic, but not a positive route on ETTh1.",
+        "- `Static Anchor` is the stable backbone on Weather/ECL and a useful candidate family on Traffic, but it is not itself a positive standalone route on ETTh1 or Solar.",
         "- `Post-hoc Dynamic` is selective rather than universal: ETTh1 and Solar can be Selective vs static, ECL bypasses, Weather is MSE-only, and Traffic's strict closed loop bypasses.",
-        "- `Adaptive Fusion` is currently the Traffic/Solar performance branch, not a universal dynamic-calibration result.",
+        "- `Adaptive Fusion` is now a prediction-level performance branch on Traffic, Solar, and ETTh1, but it should not be conflated with guarded post-hoc dynamic calibration.",
+        "- ETTh1 is no longer a hard negative overall once adaptive fusion is allowed, although its guarded post-hoc route still remains below the baseline branch.",
         "- Solar-96 gets a weak extra Stage3 lambda/dynamic gain; Solar-192 falls back to the adaptive-alpha anchor.",
         "- This table should be used as method-route ablation rather than a simple component-toggle ablation.",
         "",
@@ -287,6 +295,7 @@ def main() -> None:
         "horizon": "mixed: 96 main benchmark plus Solar-192 extension",
         "result_root": str(RESULT_ROOT),
         "posthoc_summaries": {k: str(v) for k, v in POSTHOC_SUMMARIES.items()},
+        "etth1_adaptive_table": str(ETTH1_ADAPTIVE_TABLE),
         "traffic_stage2_summary": str(TRAFFIC_STAGE2_SUMMARY),
         "traffic_stage3_summary": str(TRAFFIC_STAGE3_SUMMARY),
         "solar_adaptive_table": str(SOLAR_ADAPTIVE_TABLE),
@@ -328,6 +337,38 @@ def main() -> None:
             "stage3_dynamic_mae_gain_vs_adaptive_pct": np.nan,
             "final_headline_route": FINAL_HEADLINES[dataset],
         }
+
+        if dataset == "ETTh1":
+            adaptive = read_matching(
+                ETTH1_ADAPTIVE_TABLE,
+                horizon=horizon,
+                setting="per_variable_shrinkage_alpha",
+            )
+            row.update(
+                {
+                    "adaptive_fusion_mse": f(adaptive, "test_mse"),
+                    "adaptive_fusion_mae": f(adaptive, "test_mae"),
+                    "adaptive_fusion_mse_gain_vs_static_anchor_pct": pct_gain(
+                        route["static_anchor_mse"], f(adaptive, "test_mse")
+                    ),
+                    "adaptive_fusion_mae_gain_vs_static_anchor_pct": pct_gain(
+                        route["static_anchor_mae"], f(adaptive, "test_mae")
+                    ),
+                    "etth1_adaptive_gain_reference": s(adaptive, "reference_best_single"),
+                    "etth1_adaptive_mse_gain_vs_baseline_mean_pct": f(
+                        adaptive, "test_mse_gain_vs_baseline_mean_pct"
+                    ),
+                    "etth1_adaptive_mae_gain_vs_baseline_mean_pct": f(
+                        adaptive, "test_mae_gain_vs_baseline_mean_pct"
+                    ),
+                    "etth1_adaptive_mse_gain_vs_best_single_pct": f(
+                        adaptive, "test_mse_gain_vs_best_single_pct"
+                    ),
+                    "etth1_adaptive_mae_gain_vs_best_single_pct": f(
+                        adaptive, "test_mae_gain_vs_best_single_pct"
+                    ),
+                }
+            )
 
         if dataset.startswith("Solar-"):
             adaptive = read_matching(

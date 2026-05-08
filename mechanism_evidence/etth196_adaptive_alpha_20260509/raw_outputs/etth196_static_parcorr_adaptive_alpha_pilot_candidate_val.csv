@@ -1,0 +1,7 @@
+ensemble,kind,alpha_source,alpha,alpha_mean,alpha_std,alpha_min,alpha_max,val_mse,val_mae
+baseline_p0,single,,,,,,,0.6743455357762707,0.5437496409526429
+baseline_p1,single,,,,,,,0.6782733671522052,0.5471191869128865
+baseline_p2,single,,,,,,,0.6732475230793226,0.5432130261502671
+static_p0,single,,,,,,,0.6722131668699244,0.5448613660086418
+static_p1,single,,,,,,,0.6716557891711445,0.5440963192342004
+static_p2,single,,,,,,,0.6731648001093501,0.545677493340839
