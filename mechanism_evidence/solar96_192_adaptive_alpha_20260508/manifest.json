@@ -1,0 +1,16 @@
+{
+  "artifact": "solar_adaptive_alpha_evidence",
+  "output_dir": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\solar96_192_adaptive_alpha_20260508",
+  "runs": {
+    "96": {
+      "adaptive_dir": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_existing_prediction_ensemble",
+      "prefix": "solar96_static_adaptive_alpha",
+      "posthoc_test": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_closed_loop\\solar96_static_closed_loop_test_selected_summary.csv"
+    },
+    "192": {
+      "adaptive_dir": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_existing_prediction_ensemble",
+      "prefix": "solar192_static_adaptive_alpha",
+      "posthoc_test": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_closed_loop_rank_quality_guard\\solar192_static_rank_quality_guard_closed_loop_test_selected_summary.csv"
+    }
+  }
+}

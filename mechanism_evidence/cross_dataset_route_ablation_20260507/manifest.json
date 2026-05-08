@@ -1,0 +1,99 @@
+{
+  "created_for": "CACI route-level ablation",
+  "horizon": "mixed: 96 main benchmark plus Solar-192 extension",
+  "result_root": "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results",
+  "posthoc_summaries": {
+    "ETTh1": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\etth196_closed_loop_rank_quality_guard_parcorr_ridgebase_sparse\\etth196_static_parcorr_rank_quality_guard_parcorr_closed_loop_test_selected_summary.csv",
+    "Weather": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_closed_loop\\weather96_static_full_guard_v2_closed_loop_test_selected_summary.csv",
+    "ECL": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\ecl96_closed_loop_static\\ecl96_static_full_guard_v2_closed_loop_test_selected_summary.csv",
+    "Solar-96": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_closed_loop\\solar96_static_closed_loop_test_selected_summary.csv",
+    "Solar-192": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_closed_loop_rank_quality_guard\\solar192_static_rank_quality_guard_closed_loop_test_selected_summary.csv",
+    "Traffic": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_closed_loop_rank_quality_guard\\traffic96_static_rank_quality_guard_closed_loop_test_selected_summary.csv"
+  },
+  "traffic_stage2_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_existing_prediction_ensemble_stage2_light_seed2026\\traffic96_static_stage2_light_seed2026_selected_test_summary.csv",
+  "traffic_stage3_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_stage3_lambda_three_source_closed_form_eta2\\traffic96_static_stage3_closed_form_eta2_test_selected_summary.csv",
+  "solar_adaptive_table": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\solar96_192_adaptive_alpha_20260508\\solar_adaptive_alpha_frozen_table.csv",
+  "solar_stage3_table": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\solar96_192_stage3_lambda_three_source_20260508\\solar_stage3_lambda_three_source_frozen_table.csv",
+  "profiles": {
+    "ETTh1": "etth196_static",
+    "Weather": "weather96_static",
+    "ECL": "ecl96_static",
+    "Solar-96": "solar96_static",
+    "Solar-192": "solar192_static",
+    "Traffic": "traffic96_static"
+  },
+  "ETTh1_route_dirs": {
+    "baseline": [
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\etth196_validate_baseline_itr3_iTransformer_ETTh1_M_ft96_sl48_ll96_pl256_dm8_nh2_el1_dl256_df1_fctimeF_ebTrue_dtETTh1ValidateBase_projection_0",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\etth196_validate_baseline_itr3_iTransformer_ETTh1_M_ft96_sl48_ll96_pl256_dm8_nh2_el1_dl256_df1_fctimeF_ebTrue_dtETTh1ValidateBase_projection_1",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\etth196_validate_baseline_itr3_iTransformer_ETTh1_M_ft96_sl48_ll96_pl256_dm8_nh2_el1_dl256_df1_fctimeF_ebTrue_dtETTh1ValidateBase_projection_2"
+    ],
+    "static": [
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\etth196_validate_static_anchor_itr3_iTransformer_ETTh1_M_ft96_sl48_ll96_pl256_dm8_nh2_el1_dl256_df1_fctimeF_ebTrue_dtETTh1ValidateStaticAnchor_projection_0",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\etth196_validate_static_anchor_itr3_iTransformer_ETTh1_M_ft96_sl48_ll96_pl256_dm8_nh2_el1_dl256_df1_fctimeF_ebTrue_dtETTh1ValidateStaticAnchor_projection_1",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\etth196_validate_static_anchor_itr3_iTransformer_ETTh1_M_ft96_sl48_ll96_pl256_dm8_nh2_el1_dl256_df1_fctimeF_ebTrue_dtETTh1ValidateStaticAnchor_projection_2"
+    ]
+  },
+  "Weather_route_dirs": {
+    "baseline": [
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\weather_96_96_baseline_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh3_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_0",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\weather_96_96_baseline_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh3_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_1",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\weather_96_96_baseline_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh3_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_2"
+    ],
+    "static": [
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\weather_96_96_staticcausal_softmax_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh3_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_0",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\weather_96_96_staticcausal_softmax_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh3_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_1",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\weather_96_96_staticcausal_softmax_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh3_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_2"
+    ]
+  },
+  "ECL_route_dirs": {
+    "baseline": [
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\ecl96_confirm_lr5e4_baseline_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh3_el1_dl512_df1_fctimeF_ebTrue_dtECL96ConfirmBaseLR5e4_projection_0",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\ecl96_confirm_lr5e4_baseline_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh3_el1_dl512_df1_fctimeF_ebTrue_dtECL96ConfirmBaseLR5e4_projection_1",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\ecl96_confirm_lr5e4_baseline_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh3_el1_dl512_df1_fctimeF_ebTrue_dtECL96ConfirmBaseLR5e4_projection_2"
+    ],
+    "static": [
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\ecl96_confirm_lr5e4_static_anchor_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh3_el1_dl512_df1_fctimeF_ebTrue_dtECL96ConfirmAnchorLR5e4_projection_0",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\ecl96_confirm_lr5e4_static_anchor_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh3_el1_dl512_df1_fctimeF_ebTrue_dtECL96ConfirmAnchorLR5e4_projection_1",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\ecl96_confirm_lr5e4_static_anchor_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh3_el1_dl512_df1_fctimeF_ebTrue_dtECL96ConfirmAnchorLR5e4_projection_2"
+    ]
+  },
+  "Solar-96_route_dirs": {
+    "baseline": [
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\solar_96_96_baseline_itr3_iTransformer_Solar_M_ft96_sl48_ll96_pl512_dm8_nh2_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_0",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\solar_96_96_baseline_itr3_iTransformer_Solar_M_ft96_sl48_ll96_pl512_dm8_nh2_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_1",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\solar_96_96_baseline_itr3_iTransformer_Solar_M_ft96_sl48_ll96_pl512_dm8_nh2_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_2"
+    ],
+    "static": [
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\solar_96_96_staticcausal_softmax_itr3_iTransformer_Solar_M_ft96_sl48_ll96_pl512_dm8_nh2_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_0",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\solar_96_96_staticcausal_softmax_itr3_iTransformer_Solar_M_ft96_sl48_ll96_pl512_dm8_nh2_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_1",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\solar_96_96_staticcausal_softmax_itr3_iTransformer_Solar_M_ft96_sl48_ll96_pl512_dm8_nh2_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_2"
+    ]
+  },
+  "Solar-192_route_dirs": {
+    "baseline": [
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\solar_96_192_baseline_itr3_iTransformer_Solar_M_ft96_sl48_ll192_pl512_dm8_nh2_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_0",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\solar_96_192_baseline_itr3_iTransformer_Solar_M_ft96_sl48_ll192_pl512_dm8_nh2_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_1",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\solar_96_192_baseline_itr3_iTransformer_Solar_M_ft96_sl48_ll192_pl512_dm8_nh2_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_2"
+    ],
+    "static": [
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\solar_96_192_staticcausal_softmax_itr3_iTransformer_Solar_M_ft96_sl48_ll192_pl512_dm8_nh2_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_0",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\solar_96_192_staticcausal_softmax_itr3_iTransformer_Solar_M_ft96_sl48_ll192_pl512_dm8_nh2_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_1",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\solar_96_192_staticcausal_softmax_itr3_iTransformer_Solar_M_ft96_sl48_ll192_pl512_dm8_nh2_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_2"
+    ]
+  },
+  "Traffic_route_dirs": {
+    "baseline": [
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_baseline_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_0",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_baseline_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_1",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_baseline_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_2",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_baseline_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_baseline_itr3_projection_3"
+    ],
+    "static": [
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_staticcausal_softmax_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_0",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_staticcausal_softmax_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_1",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_staticcausal_softmax_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_2",
+      "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\traffic_96_96_staticcausal_softmax_itr3_iTransformer_custom_M_ft96_sl48_ll96_pl512_dm8_nh4_el1_dl512_df1_fctimeF_ebTrue_dtExp_staticcausal_softmax_itr3_projection_3"
+    ]
+  }
+}

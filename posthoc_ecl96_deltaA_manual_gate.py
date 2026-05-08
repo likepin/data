@@ -10,6 +10,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+from real_dataset_io import load_values_matrix
 from step5pp_utils import (
     build_window_features,
     kmeans_simple,
@@ -83,8 +84,21 @@ def local_delta_full_design(
     return sparsify_topk(delta, topk=topk)
 
 
-def load_ecl_zscore(data_csv: Path, columns: list[str], train_end: int) -> np.ndarray:
-    values = pd.read_csv(data_csv)[columns].to_numpy(dtype=np.float64)
+def load_ecl_zscore(
+    data_csv: Path,
+    columns: list[str],
+    train_end: int,
+    date_col: str | None = "date",
+    header_mode: str | None = "infer",
+    sep: str = ",",
+) -> np.ndarray:
+    values, _resolved_columns = load_values_matrix(
+        data_csv,
+        date_col=date_col,
+        value_cols=columns,
+        header_mode=header_mode,
+        sep=sep,
+    )
     train = values[:train_end]
     mean = train.mean(axis=0)
     std = train.std(axis=0)
@@ -229,7 +243,12 @@ def load_or_compute_lambda_splits(
     for split_name in ("train", "val", "test"):
         path = interface_dir / f"lambda_{split_name}.npy"
         if path.exists():
-            split_values[split_name] = np.load(path).reshape(-1).astype(np.float64)
+            values = np.load(path).reshape(-1).astype(np.float64)
+            expected = int(split_ranges[split_name]["border2"]) - int(split_ranges[split_name]["border1"]) - seq_len - pred_len + 1
+            if values.shape[0] == expected:
+                split_values[split_name] = values
+            else:
+                missing.append(split_name)
         else:
             missing.append(split_name)
     if not missing:
@@ -278,7 +297,7 @@ def build_dynamic_cache(args):
     graph = manifest["graph_contract"]
     columns = manifest["dataset_contract"]["columns"]
     seq_len = int(geom["seq_len"])
-    pred_len = int(geom.get("pred_len", args.pred_len))
+    pred_len = int(args.pred_len)
     tau_max = int(graph["tau_max"])
     ridge_alpha = float(graph["ridge_alpha"])
     topk = int(graph["window_delta_topk"])
@@ -286,10 +305,18 @@ def build_dynamic_cache(args):
     eval_split = str(args.eval_split)
     eval_border1 = int(split_ranges[eval_split]["border1"])
     train_end = int(geom["train_interval"][1])
+    dataset_contract = manifest.get("dataset_contract", {})
 
     a_base = np.load(interface_dir / "a_base_agg.npy").astype(np.float32)
     support = np.load(interface_dir / "support.npy").astype(np.float32)
-    full_z = load_ecl_zscore(Path(args.data_csv), columns=columns, train_end=train_end)
+    full_z = load_ecl_zscore(
+        Path(args.data_csv),
+        columns=columns,
+        train_end=train_end,
+        date_col=dataset_contract.get("date_col", "date"),
+        header_mode=dataset_contract.get("header_mode", "infer"),
+        sep=dataset_contract.get("sep", ","),
+    )
     lambda_splits = load_or_compute_lambda_splits(
         interface_dir=interface_dir,
         manifest=manifest,

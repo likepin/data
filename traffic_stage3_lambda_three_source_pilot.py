@@ -34,7 +34,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--profile", choices=sorted(PROFILES), default="traffic96_static")
     parser.add_argument("--stage2-dir", type=Path, default=DEFAULT_STAGE2_DIR)
+    parser.add_argument("--stage2-prefix", default="")
     parser.add_argument("--closed-loop-dir", type=Path, default=DEFAULT_CLOSED_LOOP_DIR)
+    parser.add_argument("--closed-loop-prefix", default="")
     parser.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     parser.add_argument("--tag", default="stage3_pilot")
     parser.add_argument("--seq-len", type=int, default=96)
@@ -212,7 +214,7 @@ def estimate_closed_form_specs(
     baseline_idx, static_idx = group_indices(candidates)
     delta = np.load(delta_path, mmap_mode="r")
     expected_shape = true.shape
-    if delta.shape[0] != expected_shape[0] or delta.shape[1] != expected_shape[2] or delta.shape[2] != expected_shape[2]:
+    if delta.shape[0] < expected_shape[0] or delta.shape[1] != expected_shape[2] or delta.shape[2] != expected_shape[2]:
         raise RuntimeError(f"Unexpected delta shape for val: {delta.shape}, true={expected_shape}")
     if alpha.size != expected_shape[2]:
         raise RuntimeError(f"Alpha length mismatch: {alpha.size} vs n_vars={expected_shape[2]}")
@@ -306,7 +308,7 @@ def evaluate_specs(
     baseline_idx, static_idx = group_indices(candidates)
     delta = np.load(delta_path, mmap_mode="r")
     expected_shape = true.shape
-    if delta.shape[0] != expected_shape[0] or delta.shape[1] != expected_shape[2] or delta.shape[2] != expected_shape[2]:
+    if delta.shape[0] < expected_shape[0] or delta.shape[1] != expected_shape[2] or delta.shape[2] != expected_shape[2]:
         raise RuntimeError(f"Unexpected delta shape for {split}: {delta.shape}, true={expected_shape}")
     if alpha.size != expected_shape[2]:
         raise RuntimeError(f"Alpha length mismatch: {alpha.size} vs n_vars={expected_shape[2]}")
@@ -589,12 +591,10 @@ def shuffled_gamma_summary(sample_stats: pd.DataFrame, shuffle_count: int, seed:
 
 def main() -> None:
     args = parse_args()
-    if args.profile != "traffic96_static":
-        raise ValueError("Stage3 three-source pilot is currently scoped to --profile traffic96_static.")
     profile = dict(PROFILES[args.profile])
     prefix = f"{args.profile}_{args.tag}"
-    stage2_prefix = "traffic96_static_stage2_light_seed2026"
-    closed_loop_prefix = "traffic96_static_log_tail_quality_guard"
+    stage2_prefix = args.stage2_prefix or f"{args.profile}_adaptive_alpha"
+    closed_loop_prefix = args.closed_loop_prefix or args.profile
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
     alpha = load_stage2_alpha(args.stage2_dir, stage2_prefix)

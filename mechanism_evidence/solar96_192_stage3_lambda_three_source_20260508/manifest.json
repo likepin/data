@@ -1,0 +1,35 @@
+{
+  "artifact": "solar_stage3_lambda_three_source_evidence",
+  "adaptive_table": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\solar96_192_adaptive_alpha_20260508\\solar_adaptive_alpha_frozen_table.csv",
+  "raw_refs": [
+    {
+      "horizon": 96,
+      "variant": "static_p0_dynamic",
+      "summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage3_lambda_three_source_closed_form_eta2\\solar96_static_stage3_closed_form_eta2_test_selected_summary.csv",
+      "val_grid": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage3_lambda_three_source_closed_form_eta2\\solar96_static_stage3_closed_form_eta2_val_grid.csv",
+      "eta_candidates": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage3_lambda_three_source_closed_form_eta2\\solar96_static_stage3_closed_form_eta2_eta_candidates.csv"
+    },
+    {
+      "horizon": 96,
+      "variant": "static_mean_dynamic",
+      "summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage3_lambda_three_source_closed_form_eta2_staticmean\\solar96_static_stage3_closed_form_eta2_staticmean_test_selected_summary.csv",
+      "val_grid": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage3_lambda_three_source_closed_form_eta2_staticmean\\solar96_static_stage3_closed_form_eta2_staticmean_val_grid.csv",
+      "eta_candidates": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage3_lambda_three_source_closed_form_eta2_staticmean\\solar96_static_stage3_closed_form_eta2_staticmean_eta_candidates.csv"
+    },
+    {
+      "horizon": 192,
+      "variant": "static_p0_dynamic",
+      "summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage3_lambda_three_source_closed_form_eta2\\solar192_static_stage3_closed_form_eta2_test_selected_summary.csv",
+      "val_grid": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage3_lambda_three_source_closed_form_eta2\\solar192_static_stage3_closed_form_eta2_val_grid.csv",
+      "eta_candidates": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage3_lambda_three_source_closed_form_eta2\\solar192_static_stage3_closed_form_eta2_eta_candidates.csv"
+    },
+    {
+      "horizon": 192,
+      "variant": "static_mean_dynamic",
+      "summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage3_lambda_three_source_closed_form_eta2_staticmean\\solar192_static_stage3_closed_form_eta2_staticmean_test_selected_summary.csv",
+      "val_grid": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage3_lambda_three_source_closed_form_eta2_staticmean\\solar192_static_stage3_closed_form_eta2_staticmean_val_grid.csv",
+      "eta_candidates": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage3_lambda_three_source_closed_form_eta2_staticmean\\solar192_static_stage3_closed_form_eta2_staticmean_eta_candidates.csv"
+    }
+  ],
+  "output_dir": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\solar96_192_stage3_lambda_three_source_20260508"
+}

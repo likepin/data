@@ -217,6 +217,15 @@ synthetic_step3_v2/exports_step5pp/graph_interface/
 synthetic_step3_v2/exports_step5pp/phaseD_interface/
 synthetic_step3_v2/exports_step5pp/*_graph_interface/
 
+# Real-data posthoc raw outputs and local scratch
+deltaA_signal_audit/
+run_logs/
+logs/
+pilot_data/
+_tmp_export_real_estimated_smoke/
+_tmp_caiformer.txt
+tmp_weather_resume.csv
+
 # Marimo
 marimo/_static/
 marimo/_lsp/

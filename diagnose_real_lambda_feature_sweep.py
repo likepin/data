@@ -74,6 +74,16 @@ PROFILES = {
         "header_mode": "none",
         "sep": ",",
     },
+    "solar192_static": {
+        "data_csv": DATASET_DIR / "Solar" / "solar_AL.txt",
+        "result_pattern": "solar_96_192_staticcausal_softmax_itr3_*projection_*",
+        "output_prefix": "solar192_static",
+        "out_dir": AUDIT_ROOT / "solar192_lambda_feature_sweep",
+        "split": "custom_ratio",
+        "date_col": None,
+        "header_mode": "none",
+        "sep": ",",
+    },
 }
 
 
