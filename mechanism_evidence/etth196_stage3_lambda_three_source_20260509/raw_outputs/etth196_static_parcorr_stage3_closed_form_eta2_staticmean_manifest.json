@@ -1,0 +1,57 @@
+{
+  "profile": "etth196_static_parcorr",
+  "tag": "stage3_closed_form_eta2_staticmean",
+  "stage2_dir": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\etth196_existing_prediction_ensemble_parcorr",
+  "closed_loop_dir": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\etth196_closed_loop_rank_quality_guard_parcorr_ridgebase_sparse",
+  "interface_dir": "C:\\Users\\cyl\\Desktop\\data\\interfaces\\ETTh1_graph_interface_parcorr_ridgebase_sparse",
+  "dynamic_source": "static_mean",
+  "eta_mode": "closed_form",
+  "eta_mults": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "eta_max": 2.0,
+  "target_masks": {
+    "all": 7,
+    "top_alpha_14": 1,
+    "top_alpha_29": 3
+  },
+  "candidate_count": 6,
+  "ensemble_candidate_count": 4,
+  "lambda_cfg": {
+    "mode": "current",
+    "window": 20,
+    "k": 5,
+    "lambda_scale": "legacy_clipped",
+    "tail_target_width": 0.1,
+    "tail_alpha_min": 0.02,
+    "tail_alpha_max": 0.2,
+    "stable_candidate": true,
+    "stability_score": 0.421852014025308,
+    "fold_spearman_mean": 0.3429414773529057,
+    "fold_bucket5_lift_mean": 60.23084979975633,
+    "source_file": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\etth196_lambda_feature_sweep\\etth196_lambda_feature_sweep_validation_fold_stability.csv",
+    "quality_guard_reason": "passed_lambda_quality_guard",
+    "quality_score": 0.5448289472861043,
+    "lambda_transform": "rank"
+  },
+  "schedule": {
+    "q_low": 0.8,
+    "q_high": 0.9,
+    "q_low_value": 0.8000718355178833,
+    "q_high_value": 0.9034111499786376,
+    "gamma_min": 0.03,
+    "gamma_max": 0.06,
+    "passes_selection": true,
+    "mode_status": "Selective",
+    "mode_reason": "selective_activation",
+    "selection_reason": "one_se_and_double_guard"
+  },
+  "chunk_size": 64,
+  "max_samples": 0,
+  "shuffle_count": 256,
+  "dynamic_source_note": "static_p0 matches the existing posthoc closed-loop dynamic-cache convention; static_mean is an audit option for using the mean static predictor as static_ref."
+}

@@ -1,0 +1,37 @@
+{
+  "artifact": "etth196_stage3_lambda_three_source_evidence",
+  "adaptive_table": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_adaptive_alpha_20260509\\etth196_adaptive_alpha_frozen_table.csv",
+  "raw_refs": [
+    {
+      "variant": "static_p0_dynamic",
+      "dir": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\etth196_stage3_lambda_three_source_closed_form_eta2",
+      "prefix": "etth196_static_parcorr_stage3_closed_form_eta2",
+      "copied_outputs": [
+        "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\raw_outputs\\etth196_static_parcorr_stage3_closed_form_eta2_eta_candidates.csv",
+        "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\raw_outputs\\etth196_static_parcorr_stage3_closed_form_eta2_manifest.json",
+        "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\raw_outputs\\etth196_static_parcorr_stage3_closed_form_eta2_selected_val_summary.csv",
+        "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\raw_outputs\\etth196_static_parcorr_stage3_closed_form_eta2_shuffled_gamma_summary.csv",
+        "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\raw_outputs\\etth196_static_parcorr_stage3_closed_form_eta2_test_selected_summary.csv",
+        "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\raw_outputs\\etth196_static_parcorr_stage3_closed_form_eta2_val_fold_grid.csv",
+        "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\raw_outputs\\etth196_static_parcorr_stage3_closed_form_eta2_val_grid.csv",
+        "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\raw_outputs\\etth196_static_parcorr_stage3_closed_form_eta2_val_selected_recomputed_summary.csv"
+      ]
+    },
+    {
+      "variant": "static_mean_dynamic",
+      "dir": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\etth196_stage3_lambda_three_source_closed_form_eta2_staticmean",
+      "prefix": "etth196_static_parcorr_stage3_closed_form_eta2_staticmean",
+      "copied_outputs": [
+        "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\raw_outputs\\etth196_static_parcorr_stage3_closed_form_eta2_staticmean_eta_candidates.csv",
+        "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\raw_outputs\\etth196_static_parcorr_stage3_closed_form_eta2_staticmean_manifest.json",
+        "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\raw_outputs\\etth196_static_parcorr_stage3_closed_form_eta2_staticmean_selected_val_summary.csv",
+        "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\raw_outputs\\etth196_static_parcorr_stage3_closed_form_eta2_staticmean_shuffled_gamma_summary.csv",
+        "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\raw_outputs\\etth196_static_parcorr_stage3_closed_form_eta2_staticmean_test_selected_summary.csv",
+        "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\raw_outputs\\etth196_static_parcorr_stage3_closed_form_eta2_staticmean_val_fold_grid.csv",
+        "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\raw_outputs\\etth196_static_parcorr_stage3_closed_form_eta2_staticmean_val_grid.csv",
+        "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\raw_outputs\\etth196_static_parcorr_stage3_closed_form_eta2_staticmean_val_selected_recomputed_summary.csv"
+      ]
+    }
+  ],
+  "output_dir": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509"
+}

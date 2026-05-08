@@ -15,6 +15,9 @@ OUT_DIR = Path(r"C:\Users\cyl\Desktop\data\mechanism_evidence\cross_dataset_rout
 ETTH1_ADAPTIVE_TABLE = Path(
     r"C:\Users\cyl\Desktop\data\mechanism_evidence\etth196_adaptive_alpha_20260509\etth196_adaptive_alpha_frozen_table.csv"
 )
+ETTH1_STAGE3_TABLE = Path(
+    r"C:\Users\cyl\Desktop\data\mechanism_evidence\etth196_stage3_lambda_three_source_20260509\etth196_stage3_lambda_three_source_frozen_table.csv"
+)
 SOLAR_ADAPTIVE_TABLE = Path(
     r"C:\Users\cyl\Desktop\data\mechanism_evidence\solar96_192_adaptive_alpha_20260508\solar_adaptive_alpha_frozen_table.csv"
 )
@@ -74,7 +77,7 @@ DATASET_HORIZONS = {
 
 
 FINAL_HEADLINES = {
-    "ETTh1": "Adaptive fusion headline; guarded post-hoc is still Selective vs static but weaker than the prediction-level fusion route.",
+    "ETTh1": "Adaptive fusion headline; Stage3 lambda/dynamic add-on is negative, and guarded post-hoc stays Selective but weaker than the fusion route.",
     "Weather": "Static anchor headline; post-hoc dynamic is MSE-positive but MAE-negative.",
     "ECL": "Static anchor headline; strict guarded dynamic branch bypasses.",
     "Solar-96": "Adaptive fusion headline; Stage3 lambda/dynamic is a weak positive add-on.",
@@ -273,7 +276,7 @@ def write_readme(summary: pd.DataFrame, compact: pd.DataFrame, paper: pd.DataFra
         "- `Static Anchor` is the stable backbone on Weather/ECL and a useful candidate family on Traffic, but it is not itself a positive standalone route on ETTh1 or Solar.",
         "- `Post-hoc Dynamic` is selective rather than universal: ETTh1 and Solar can be Selective vs static, ECL bypasses, Weather is MSE-only, and Traffic's strict closed loop bypasses.",
         "- `Adaptive Fusion` is now a prediction-level performance branch on Traffic, Solar, and ETTh1, but it should not be conflated with guarded post-hoc dynamic calibration.",
-        "- ETTh1 is no longer a hard negative overall once adaptive fusion is allowed, although its guarded post-hoc route still remains below the baseline branch.",
+        "- ETTh1 is no longer a hard negative overall once adaptive fusion is allowed, although its guarded post-hoc route stays below baseline and its Stage3 dynamic add-on is currently negative.",
         "- Solar-96 gets a weak extra Stage3 lambda/dynamic gain; Solar-192 falls back to the adaptive-alpha anchor.",
         "- This table should be used as method-route ablation rather than a simple component-toggle ablation.",
         "",
@@ -296,6 +299,7 @@ def main() -> None:
         "result_root": str(RESULT_ROOT),
         "posthoc_summaries": {k: str(v) for k, v in POSTHOC_SUMMARIES.items()},
         "etth1_adaptive_table": str(ETTH1_ADAPTIVE_TABLE),
+        "etth1_stage3_table": str(ETTH1_STAGE3_TABLE),
         "traffic_stage2_summary": str(TRAFFIC_STAGE2_SUMMARY),
         "traffic_stage3_summary": str(TRAFFIC_STAGE3_SUMMARY),
         "solar_adaptive_table": str(SOLAR_ADAPTIVE_TABLE),
@@ -344,6 +348,11 @@ def main() -> None:
                 horizon=horizon,
                 setting="per_variable_shrinkage_alpha",
             )
+            stage3 = read_matching(
+                ETTH1_STAGE3_TABLE,
+                label="Stage3 closed-form eta2",
+                variant="static_p0_dynamic",
+            )
             row.update(
                 {
                     "adaptive_fusion_mse": f(adaptive, "test_mse"),
@@ -366,6 +375,14 @@ def main() -> None:
                     ),
                     "etth1_adaptive_mae_gain_vs_best_single_pct": f(
                         adaptive, "test_mae_gain_vs_best_single_pct"
+                    ),
+                    "stage3_dynamic_mse": f(stage3, "test_mse"),
+                    "stage3_dynamic_mae": f(stage3, "test_mae"),
+                    "stage3_dynamic_mse_gain_vs_adaptive_pct": f(
+                        stage3, "test_mse_gain_vs_adaptive_anchor_pct"
+                    ),
+                    "stage3_dynamic_mae_gain_vs_adaptive_pct": f(
+                        stage3, "test_mae_gain_vs_adaptive_anchor_pct"
                     ),
                 }
             )
