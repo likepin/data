@@ -1,0 +1,17 @@
+{
+  "artifact": "etth196_stage3_dynamic_oracle_audit",
+  "profile": "etth196_static_parcorr",
+  "stage2_dir": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\etth196_existing_prediction_ensemble_parcorr",
+  "stage2_prefix": "etth196_static_parcorr_adaptive_alpha_pilot",
+  "closed_loop_dir": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\etth196_closed_loop_rank_quality_guard_parcorr_ridgebase_sparse",
+  "closed_loop_prefix": "etth196_static_parcorr_rank_quality_guard_parcorr",
+  "stage3_dirs": {
+    "static_p0_dynamic": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\etth196_stage3_lambda_three_source_closed_form_eta2",
+    "static_mean_dynamic": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\etth196_stage3_lambda_three_source_closed_form_eta2_staticmean"
+  },
+  "output_dir": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_oracle_audit_20260509",
+  "seq_len": 96,
+  "pred_len": 96,
+  "train_ratio": 0.7,
+  "chunk_size": 64
+}
