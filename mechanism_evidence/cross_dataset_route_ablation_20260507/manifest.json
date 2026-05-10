@@ -16,7 +16,7 @@
   "traffic_stage3_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_stage3_lambda_three_source_closed_form_eta2\\traffic96_static_stage3_closed_form_eta2_test_selected_summary.csv",
   "solar_adaptive_table": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\solar96_192_adaptive_alpha_20260508\\solar_adaptive_alpha_frozen_table.csv",
   "solar_stage3_table": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\solar96_192_stage3_lambda_three_source_20260508\\solar_stage3_lambda_three_source_frozen_table.csv",
-  "solar_mse_primary_table": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\solar96_mse_primary_target_gate_20260510\\solar96_mse_primary_target_gate_frozen_table.csv",
+  "solar_mse_primary_table": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\solar96_192_mse_primary_target_gate_20260510\\solar96_192_mse_primary_target_gate_frozen_table.csv",
   "profiles": {
     "ETTh1": "etth196_static_parcorr",
     "Weather": "weather96_static",

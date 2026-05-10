@@ -1,0 +1,124 @@
+{
+  "artifact": "solar96_192_mse_primary_target_gate",
+  "horizons": [
+    {
+      "dataset": "Solar-96",
+      "horizon": 96,
+      "adaptive_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_existing_prediction_ensemble\\solar96_static_adaptive_alpha_selected_test_summary.csv",
+      "run_dir": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate"
+    },
+    {
+      "dataset": "Solar-192",
+      "horizon": 192,
+      "adaptive_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_existing_prediction_ensemble\\solar192_static_adaptive_alpha_selected_test_summary.csv",
+      "run_dir": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate"
+    }
+  ],
+  "raw_refs": [
+    {
+      "dataset": "Solar-96",
+      "horizon": 96,
+      "route": "strict_target_gate",
+      "variant": "static_p0",
+      "suffix": "stage31_target_quantile_gate_valref",
+      "policy": "Strict route: MSE/MAE guard plus fold stability; fallback allowed.",
+      "prefix": "solar96_static_stage31_target_quantile_gate_valref",
+      "selected_val_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate\\solar96_static_stage31_target_quantile_gate_valref_selected_val_summary.csv",
+      "test_selected_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate\\solar96_static_stage31_target_quantile_gate_valref_test_selected_summary.csv",
+      "manifest": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate\\solar96_static_stage31_target_quantile_gate_valref_manifest.json",
+      "shuffle_controls": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate\\solar96_static_stage31_target_quantile_gate_valref_shuffle_controls.csv"
+    },
+    {
+      "dataset": "Solar-96",
+      "horizon": 96,
+      "route": "strict_target_gate",
+      "variant": "static_mean",
+      "suffix": "stage31_target_quantile_gate_staticmean_valref",
+      "policy": "Strict route: MSE/MAE guard plus fold stability; fallback allowed.",
+      "prefix": "solar96_static_stage31_target_quantile_gate_staticmean_valref",
+      "selected_val_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate\\solar96_static_stage31_target_quantile_gate_staticmean_valref_selected_val_summary.csv",
+      "test_selected_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate\\solar96_static_stage31_target_quantile_gate_staticmean_valref_test_selected_summary.csv",
+      "manifest": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate\\solar96_static_stage31_target_quantile_gate_staticmean_valref_manifest.json",
+      "shuffle_controls": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate\\solar96_static_stage31_target_quantile_gate_staticmean_valref_shuffle_controls.csv"
+    },
+    {
+      "dataset": "Solar-96",
+      "horizon": 96,
+      "route": "mse_primary_target_gate",
+      "variant": "static_p0",
+      "suffix": "stage31_target_quantile_gate_valref_msefirst",
+      "policy": "MSE-primary route: validation MSE first; MAE is an audit/non-degradation readout.",
+      "prefix": "solar96_static_stage31_target_quantile_gate_valref_msefirst",
+      "selected_val_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate\\solar96_static_stage31_target_quantile_gate_valref_msefirst_selected_val_summary.csv",
+      "test_selected_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate\\solar96_static_stage31_target_quantile_gate_valref_msefirst_test_selected_summary.csv",
+      "manifest": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate\\solar96_static_stage31_target_quantile_gate_valref_msefirst_manifest.json",
+      "shuffle_controls": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate\\solar96_static_stage31_target_quantile_gate_valref_msefirst_shuffle_controls.csv"
+    },
+    {
+      "dataset": "Solar-96",
+      "horizon": 96,
+      "route": "mse_primary_target_gate",
+      "variant": "static_mean",
+      "suffix": "stage31_target_quantile_gate_staticmean_valref_msefirst",
+      "policy": "MSE-primary route: validation MSE first; MAE is an audit/non-degradation readout.",
+      "prefix": "solar96_static_stage31_target_quantile_gate_staticmean_valref_msefirst",
+      "selected_val_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate\\solar96_static_stage31_target_quantile_gate_staticmean_valref_msefirst_selected_val_summary.csv",
+      "test_selected_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate\\solar96_static_stage31_target_quantile_gate_staticmean_valref_msefirst_test_selected_summary.csv",
+      "manifest": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate\\solar96_static_stage31_target_quantile_gate_staticmean_valref_msefirst_manifest.json",
+      "shuffle_controls": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_stage31_target_quantile_gate\\solar96_static_stage31_target_quantile_gate_staticmean_valref_msefirst_shuffle_controls.csv"
+    },
+    {
+      "dataset": "Solar-192",
+      "horizon": 192,
+      "route": "strict_target_gate",
+      "variant": "static_p0",
+      "suffix": "stage31_target_quantile_gate_valref",
+      "policy": "Strict route: MSE/MAE guard plus fold stability; fallback allowed.",
+      "prefix": "solar192_static_stage31_target_quantile_gate_valref",
+      "selected_val_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate\\solar192_static_stage31_target_quantile_gate_valref_selected_val_summary.csv",
+      "test_selected_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate\\solar192_static_stage31_target_quantile_gate_valref_test_selected_summary.csv",
+      "manifest": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate\\solar192_static_stage31_target_quantile_gate_valref_manifest.json",
+      "shuffle_controls": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate\\solar192_static_stage31_target_quantile_gate_valref_shuffle_controls.csv"
+    },
+    {
+      "dataset": "Solar-192",
+      "horizon": 192,
+      "route": "strict_target_gate",
+      "variant": "static_mean",
+      "suffix": "stage31_target_quantile_gate_staticmean_valref",
+      "policy": "Strict route: MSE/MAE guard plus fold stability; fallback allowed.",
+      "prefix": "solar192_static_stage31_target_quantile_gate_staticmean_valref",
+      "selected_val_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate\\solar192_static_stage31_target_quantile_gate_staticmean_valref_selected_val_summary.csv",
+      "test_selected_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate\\solar192_static_stage31_target_quantile_gate_staticmean_valref_test_selected_summary.csv",
+      "manifest": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate\\solar192_static_stage31_target_quantile_gate_staticmean_valref_manifest.json",
+      "shuffle_controls": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate\\solar192_static_stage31_target_quantile_gate_staticmean_valref_shuffle_controls.csv"
+    },
+    {
+      "dataset": "Solar-192",
+      "horizon": 192,
+      "route": "mse_primary_target_gate",
+      "variant": "static_p0",
+      "suffix": "stage31_target_quantile_gate_valref_msefirst",
+      "policy": "MSE-primary route: validation MSE first; MAE is an audit/non-degradation readout.",
+      "prefix": "solar192_static_stage31_target_quantile_gate_valref_msefirst",
+      "selected_val_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate\\solar192_static_stage31_target_quantile_gate_valref_msefirst_selected_val_summary.csv",
+      "test_selected_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate\\solar192_static_stage31_target_quantile_gate_valref_msefirst_test_selected_summary.csv",
+      "manifest": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate\\solar192_static_stage31_target_quantile_gate_valref_msefirst_manifest.json",
+      "shuffle_controls": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate\\solar192_static_stage31_target_quantile_gate_valref_msefirst_shuffle_controls.csv"
+    },
+    {
+      "dataset": "Solar-192",
+      "horizon": 192,
+      "route": "mse_primary_target_gate",
+      "variant": "static_mean",
+      "suffix": "stage31_target_quantile_gate_staticmean_valref_msefirst",
+      "policy": "MSE-primary route: validation MSE first; MAE is an audit/non-degradation readout.",
+      "prefix": "solar192_static_stage31_target_quantile_gate_staticmean_valref_msefirst",
+      "selected_val_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate\\solar192_static_stage31_target_quantile_gate_staticmean_valref_msefirst_selected_val_summary.csv",
+      "test_selected_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate\\solar192_static_stage31_target_quantile_gate_staticmean_valref_msefirst_test_selected_summary.csv",
+      "manifest": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate\\solar192_static_stage31_target_quantile_gate_staticmean_valref_msefirst_manifest.json",
+      "shuffle_controls": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_stage31_target_quantile_gate\\solar192_static_stage31_target_quantile_gate_staticmean_valref_msefirst_shuffle_controls.csv"
+    }
+  ],
+  "output_dir": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\solar96_192_mse_primary_target_gate_20260510"
+}

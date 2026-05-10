@@ -8,34 +8,50 @@ import pandas as pd
 
 
 DATA_ROOT = Path(r"C:\Users\cyl\Desktop\data")
-RUN_DIR = DATA_ROOT / "deltaA_signal_audit" / "solar96_stage31_target_quantile_gate"
-ADAPTIVE_DIR = DATA_ROOT / "deltaA_signal_audit" / "solar96_existing_prediction_ensemble"
-ADAPTIVE_PREFIX = "solar96_static_adaptive_alpha"
-OUT_DIR = DATA_ROOT / "mechanism_evidence" / "solar96_mse_primary_target_gate_20260510"
+OUT_DIR = DATA_ROOT / "mechanism_evidence" / "solar96_192_mse_primary_target_gate_20260510"
 
-RUNS = [
+HORIZONS = [
+    {
+        "dataset": "Solar-96",
+        "horizon": 96,
+        "run_dir": DATA_ROOT / "deltaA_signal_audit" / "solar96_stage31_target_quantile_gate",
+        "adaptive_dir": DATA_ROOT / "deltaA_signal_audit" / "solar96_existing_prediction_ensemble",
+        "adaptive_prefix": "solar96_static_adaptive_alpha",
+        "run_prefix": "solar96_static",
+    },
+    {
+        "dataset": "Solar-192",
+        "horizon": 192,
+        "run_dir": DATA_ROOT / "deltaA_signal_audit" / "solar192_stage31_target_quantile_gate",
+        "adaptive_dir": DATA_ROOT / "deltaA_signal_audit" / "solar192_existing_prediction_ensemble",
+        "adaptive_prefix": "solar192_static_adaptive_alpha",
+        "run_prefix": "solar192_static",
+    },
+]
+
+RUN_SUFFIXES = [
     {
         "route": "strict_target_gate",
         "variant": "static_p0",
-        "prefix": "solar96_static_stage31_target_quantile_gate_valref",
+        "suffix": "stage31_target_quantile_gate_valref",
         "policy": "Strict route: MSE/MAE guard plus fold stability; fallback allowed.",
     },
     {
         "route": "strict_target_gate",
         "variant": "static_mean",
-        "prefix": "solar96_static_stage31_target_quantile_gate_staticmean_valref",
+        "suffix": "stage31_target_quantile_gate_staticmean_valref",
         "policy": "Strict route: MSE/MAE guard plus fold stability; fallback allowed.",
     },
     {
         "route": "mse_primary_target_gate",
         "variant": "static_p0",
-        "prefix": "solar96_static_stage31_target_quantile_gate_valref_msefirst",
+        "suffix": "stage31_target_quantile_gate_valref_msefirst",
         "policy": "MSE-primary route: validation MSE first; MAE is an audit/non-degradation readout.",
     },
     {
         "route": "mse_primary_target_gate",
         "variant": "static_mean",
-        "prefix": "solar96_static_stage31_target_quantile_gate_staticmean_valref_msefirst",
+        "suffix": "stage31_target_quantile_gate_staticmean_valref_msefirst",
         "policy": "MSE-primary route: validation MSE first; MAE is an audit/non-degradation readout.",
     },
 ]
@@ -84,6 +100,8 @@ def fmt_pct(value: float, digits: int = 4) -> str:
 
 def markdown_table(df: pd.DataFrame) -> str:
     columns = [
+        "dataset",
+        "horizon",
         "route",
         "variant",
         "selected_ensemble",
@@ -91,11 +109,11 @@ def markdown_table(df: pd.DataFrame) -> str:
         "test_mae",
         "test_mse_gain_vs_adaptive_anchor_pct",
         "test_mae_gain_vs_adaptive_anchor_pct",
-        "val_mse_gain_vs_adaptive_anchor_pct",
-        "val_mae_gain_vs_adaptive_anchor_pct",
         "selection_reason",
     ]
     headers = [
+        "dataset",
+        "horizon",
         "route",
         "variant",
         "selected",
@@ -103,19 +121,21 @@ def markdown_table(df: pd.DataFrame) -> str:
         "test MAE",
         "test MSE vs adaptive",
         "test MAE vs adaptive",
-        "val MSE vs adaptive",
-        "val MAE vs adaptive",
         "selection",
     ]
     lines = [
         "| " + " | ".join(headers) + " |",
-        "| " + " | ".join(["---", "---", "---", "---:", "---:", "---:", "---:", "---:", "---:", "---"]) + " |",
+        "| "
+        + " | ".join(["---", "---:", "---", "---", "---", "---:", "---:", "---:", "---:", "---"])
+        + " |",
     ]
     for _, row in df[columns].iterrows():
         lines.append(
             "| "
             + " | ".join(
                 [
+                    str(row["dataset"]),
+                    str(int(row["horizon"])),
                     str(row["route"]),
                     str(row["variant"]),
                     str(row["selected_ensemble"]),
@@ -123,8 +143,6 @@ def markdown_table(df: pd.DataFrame) -> str:
                     fmt_float(row["test_mae"]),
                     fmt_pct(row["test_mse_gain_vs_adaptive_anchor_pct"]),
                     fmt_pct(row["test_mae_gain_vs_adaptive_anchor_pct"]),
-                    fmt_pct(row["val_mse_gain_vs_adaptive_anchor_pct"]),
-                    fmt_pct(row["val_mae_gain_vs_adaptive_anchor_pct"]),
                     str(row["selection_reason"]),
                 ]
             )
@@ -133,8 +151,18 @@ def markdown_table(df: pd.DataFrame) -> str:
     return "\n".join(lines)
 
 
-def control_rows(prefix: str, adaptive_test_mse: float, adaptive_test_mae: float) -> list[dict]:
-    path = RUN_DIR / f"{prefix}_shuffle_controls.csv"
+def run_prefix(horizon_cfg: dict, suffix: str) -> str:
+    return f"{horizon_cfg['run_prefix']}_{suffix}"
+
+
+def control_rows(
+    horizon_cfg: dict,
+    run: dict,
+    prefix: str,
+    adaptive_test_mse: float,
+    adaptive_test_mae: float,
+) -> list[dict]:
+    path = horizon_cfg["run_dir"] / f"{prefix}_shuffle_controls.csv"
     if not path.exists():
         return []
     try:
@@ -145,8 +173,13 @@ def control_rows(prefix: str, adaptive_test_mse: float, adaptive_test_mae: float
         return []
     rows = []
     for _, row in frame.iterrows():
+        is_test = s(row, "split") == "test"
         rows.append(
             {
+                "dataset": horizon_cfg["dataset"],
+                "horizon": horizon_cfg["horizon"],
+                "route": run["route"],
+                "variant": run["variant"],
                 "source_prefix": prefix,
                 "split": s(row, "split"),
                 "control_mode": s(row, "control_mode"),
@@ -154,12 +187,12 @@ def control_rows(prefix: str, adaptive_test_mse: float, adaptive_test_mae: float
                 "selected_ensemble": s(row, "selected_ensemble"),
                 "mse_median": f(row, "mse_median"),
                 "mae_median": f(row, "mae_median"),
-                "mse_gain_vs_adaptive_anchor_pct": pct_gain(adaptive_test_mse, f(row, "mse_median"))
-                if s(row, "split") == "test"
-                else np.nan,
-                "mae_gain_vs_adaptive_anchor_pct": pct_gain(adaptive_test_mae, f(row, "mae_median"))
-                if s(row, "split") == "test"
-                else np.nan,
+                "mse_gain_vs_adaptive_anchor_pct": (
+                    pct_gain(adaptive_test_mse, f(row, "mse_median")) if is_test else np.nan
+                ),
+                "mae_gain_vs_adaptive_anchor_pct": (
+                    pct_gain(adaptive_test_mae, f(row, "mae_median")) if is_test else np.nan
+                ),
                 "target_gate_active_ratio_median": f(row, "target_gate_active_ratio_median"),
             }
         )
@@ -172,9 +205,10 @@ def normalized_selection_reason(run: dict, test: dict) -> str:
     return s(test, "selection_reason")
 
 
-def main() -> None:
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    adaptive = read_one(ADAPTIVE_DIR / f"{ADAPTIVE_PREFIX}_selected_test_summary.csv")
+def build_rows_for_horizon(horizon_cfg: dict) -> tuple[list[dict], list[dict], list[dict]]:
+    adaptive = read_one(
+        horizon_cfg["adaptive_dir"] / f"{horizon_cfg['adaptive_prefix']}_selected_test_summary.csv"
+    )
     adaptive_val_mse = f(adaptive, "val_mse")
     adaptive_val_mae = f(adaptive, "val_mae")
     adaptive_test_mse = f(adaptive, "test_mse")
@@ -182,6 +216,8 @@ def main() -> None:
 
     rows = [
         {
+            "dataset": horizon_cfg["dataset"],
+            "horizon": horizon_cfg["horizon"],
             "route": "adaptive_anchor",
             "variant": "per_variable_shrinkage_alpha",
             "policy": "Prediction-level adaptive baseline/static anchor.",
@@ -207,15 +243,18 @@ def main() -> None:
     ]
     controls = []
     raw_refs = []
-    for run in RUNS:
-        val_path = RUN_DIR / f"{run['prefix']}_selected_val_summary.csv"
-        test_path = RUN_DIR / f"{run['prefix']}_test_selected_summary.csv"
-        manifest_path = RUN_DIR / f"{run['prefix']}_manifest.json"
+    for run in RUN_SUFFIXES:
+        prefix = run_prefix(horizon_cfg, run["suffix"])
+        val_path = horizon_cfg["run_dir"] / f"{prefix}_selected_val_summary.csv"
+        test_path = horizon_cfg["run_dir"] / f"{prefix}_test_selected_summary.csv"
+        manifest_path = horizon_cfg["run_dir"] / f"{prefix}_manifest.json"
         val = read_one(val_path)
         test = read_one(test_path)
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         rows.append(
             {
+                "dataset": horizon_cfg["dataset"],
+                "horizon": horizon_cfg["horizon"],
                 "route": run["route"],
                 "variant": run["variant"],
                 "policy": run["policy"],
@@ -239,92 +278,161 @@ def main() -> None:
                 "selection_reason": normalized_selection_reason(run, test),
             }
         )
-        controls.extend(control_rows(run["prefix"], adaptive_test_mse, adaptive_test_mae))
+        controls.extend(control_rows(horizon_cfg, run, prefix, adaptive_test_mse, adaptive_test_mae))
         raw_refs.append(
             {
+                "dataset": horizon_cfg["dataset"],
+                "horizon": horizon_cfg["horizon"],
                 **run,
+                "prefix": prefix,
                 "selected_val_summary": str(val_path),
                 "test_selected_summary": str(test_path),
                 "manifest": str(manifest_path),
-                "shuffle_controls": str(RUN_DIR / f"{run['prefix']}_shuffle_controls.csv"),
+                "shuffle_controls": str(horizon_cfg["run_dir"] / f"{prefix}_shuffle_controls.csv"),
             }
         )
+    return rows, controls, raw_refs
+
+
+def best_mse_primary(table: pd.DataFrame, dataset: str) -> pd.Series:
+    subset = table[(table["dataset"] == dataset) & (table["route"] == "mse_primary_target_gate")]
+    if subset.empty:
+        raise ValueError(f"No MSE-primary rows for {dataset}")
+    return subset.sort_values("test_mse_gain_vs_adaptive_anchor_pct", ascending=False).iloc[0]
+
+
+def strict_static_p0(table: pd.DataFrame, dataset: str) -> pd.Series:
+    subset = table[
+        (table["dataset"] == dataset)
+        & (table["route"] == "strict_target_gate")
+        & (table["variant"] == "static_p0")
+    ]
+    if subset.empty:
+        raise ValueError(f"No strict static_p0 row for {dataset}")
+    return subset.iloc[0]
+
+
+def controls_for_best(controls_df: pd.DataFrame, best: pd.Series) -> list[str]:
+    if controls_df.empty:
+        return []
+    subset = controls_df[
+        (controls_df["dataset"] == best["dataset"])
+        & (controls_df["route"] == best["route"])
+        & (controls_df["variant"] == best["variant"])
+        & (controls_df["split"] == "test")
+    ]
+    lines = []
+    for _, row in subset.iterrows():
+        lines.append(
+            f"- {best['dataset']} `{row['control_mode']}` median: "
+            f"`{fmt_float(row['mse_median'])} / {fmt_float(row['mae_median'])}`, "
+            f"gain vs adaptive `{fmt_pct(row['mse_gain_vs_adaptive_anchor_pct'])} / "
+            f"{fmt_pct(row['mae_gain_vs_adaptive_anchor_pct'])}`."
+        )
+    return lines
+
+
+def write_readme(table: pd.DataFrame, controls_df: pd.DataFrame) -> None:
+    readme_lines = [
+        "# Solar-96/192 MSE-Primary Target-Gated Dynamic Route",
+        "",
+        "Purpose:",
+        "- Freeze `MSE-primary target-gated dynamic route` as a secondary Stage3 route, separate from the strict CACI double-guard route.",
+        "- Compare Solar-96 and Solar-192 under the same strict-vs-MSE-primary protocol.",
+        "- Preserve the main strict route while documenting a loss-specific route for MSE-sensitive Solar settings.",
+        "",
+        "Selection rule:",
+        "- Strict route keeps MSE/MAE guard plus fold stability and may fall back to the adaptive anchor.",
+        "- MSE-primary route selects by validation MSE; MAE is retained as an audit/non-degradation readout.",
+        "- Test is evaluated once for the validation-selected route.",
+        "- Shuffle controls break gamma time alignment or target alignment to audit route specificity.",
+        "",
+        "Key results:",
+    ]
+    for cfg in HORIZONS:
+        strict = strict_static_p0(table, cfg["dataset"])
+        best = best_mse_primary(table, cfg["dataset"])
+        readme_lines.extend(
+            [
+                (
+                    f"- {cfg['dataset']} strict target gate selected `{strict['selected_ensemble']}`: "
+                    f"`{fmt_float(strict['test_mse'])} / {fmt_float(strict['test_mae'])}`, "
+                    f"gain vs adaptive `{fmt_pct(strict['test_mse_gain_vs_adaptive_anchor_pct'])} / "
+                    f"{fmt_pct(strict['test_mae_gain_vs_adaptive_anchor_pct'])}`."
+                ),
+                (
+                    f"- {cfg['dataset']} MSE-primary best variant `{best['variant']}` selected "
+                    f"`{best['selected_ensemble']}` "
+                    f"(`gamma_active_ratio={fmt_float(best['gamma_active_ratio'], 2)}`, "
+                    f"`dynamic_active_ratio={fmt_float(best['dynamic_active_ratio'], 2)}`), "
+                    f"test `{fmt_float(best['test_mse'])} / {fmt_float(best['test_mae'])}`, "
+                    f"gain vs adaptive `{fmt_pct(best['test_mse_gain_vs_adaptive_anchor_pct'])} / "
+                    f"{fmt_pct(best['test_mae_gain_vs_adaptive_anchor_pct'])}`."
+                ),
+            ]
+        )
+
+    control_lines = []
+    for cfg in HORIZONS:
+        control_lines.extend(controls_for_best(controls_df, best_mse_primary(table, cfg["dataset"])))
+    readme_lines.extend(
+        [
+            "",
+            "Controls:",
+            *(control_lines or ["- No shuffle controls were found for the best MSE-primary variants."]),
+            "",
+            "Interpretation:",
+            "- Strict CACI remains the conservative route and falls back on Solar-96/192 under this target-gate design.",
+            "- MSE-primary is not a replacement for strict CACI; it is a secondary loss-specific route.",
+            "- Solar-96 shows a small but repeatable MSE-sensitive gain; Solar-192 shows a smaller gain that still beats shuffle medians for the best variant.",
+            "- Because shuffle controls retain some positive gain, the evidence supports weak target/gamma specificity plus sparse dynamic regularization rather than a pure causal-localization claim.",
+            "",
+            "Files:",
+            "- `solar96_192_mse_primary_target_gate_frozen_table.csv/md`: frozen route table.",
+            "- `solar96_192_mse_primary_target_gate_controls.csv`: shuffle control summary.",
+            "- `manifest.json`: source outputs and raw run references.",
+        ]
+    )
+    (OUT_DIR / "README.md").write_text("\n".join(readme_lines) + "\n", encoding="utf-8")
+
+
+def main() -> None:
+    OUT_DIR.mkdir(parents=True, exist_ok=True)
+    rows = []
+    controls = []
+    raw_refs = []
+    for cfg in HORIZONS:
+        cfg_rows, cfg_controls, cfg_refs = build_rows_for_horizon(cfg)
+        rows.extend(cfg_rows)
+        controls.extend(cfg_controls)
+        raw_refs.extend(cfg_refs)
 
     table = pd.DataFrame(rows)
     controls_df = pd.DataFrame(controls)
-    table.to_csv(OUT_DIR / "solar96_mse_primary_target_gate_frozen_table.csv", index=False)
-    (OUT_DIR / "solar96_mse_primary_target_gate_frozen_table.md").write_text(
-        "# Solar-96 MSE-Primary Target-Gated Dynamic Route\n\n"
+    table.to_csv(OUT_DIR / "solar96_192_mse_primary_target_gate_frozen_table.csv", index=False)
+    (OUT_DIR / "solar96_192_mse_primary_target_gate_frozen_table.md").write_text(
+        "# Solar-96/192 MSE-Primary Target-Gated Dynamic Route\n\n"
         + markdown_table(table)
         + "\n",
         encoding="utf-8",
     )
-    controls_df.to_csv(OUT_DIR / "solar96_mse_primary_target_gate_controls.csv", index=False)
-
-    mse_primary = table[
-        (table["route"] == "mse_primary_target_gate") & (table["variant"] == "static_p0")
-    ].iloc[0]
-    strict = table[
-        (table["route"] == "strict_target_gate") & (table["variant"] == "static_p0")
-    ].iloc[0]
-    test_controls = controls_df[
-        (controls_df["source_prefix"] == "solar96_static_stage31_target_quantile_gate_valref_msefirst")
-        & (controls_df["split"] == "test")
-    ]
-    control_lines = []
-    for _, row in test_controls.iterrows():
-        control_lines.append(
-            f"- `{row['control_mode']}` median: `{fmt_float(row['mse_median'])} / {fmt_float(row['mae_median'])}`, "
-            f"gain vs adaptive `{fmt_pct(row['mse_gain_vs_adaptive_anchor_pct'])} / "
-            f"{fmt_pct(row['mae_gain_vs_adaptive_anchor_pct'])}`."
-        )
-
-    readme_lines = [
-        "# Solar-96 MSE-Primary Target-Gated Dynamic Route",
-        "",
-        "Purpose:",
-        "- Freeze `MSE-primary target-gated dynamic route` as a secondary Stage3 route, separate from the strict CACI double-guard route.",
-        "- Preserve the main strict route while documenting an MSE-sensitive route for Solar-96 volatility/risk applications.",
-        "",
-        "Selection rule:",
-        "- Validation MSE is the primary selector.",
-        "- MAE is retained as an audit/non-degradation readout rather than a hard double guard.",
-        "- Test is evaluated once for the validation-selected route.",
-        "- Shuffle controls break gamma time alignment or target alignment to test whether the gain is route-specific.",
-        "",
-        "Key results:",
-        (
-            f"- Strict target gate selected `{strict['selected_ensemble']}` and therefore reports the adaptive anchor: "
-            f"`{fmt_float(strict['test_mse'])} / {fmt_float(strict['test_mae'])}`."
-        ),
-        (
-            f"- MSE-primary target gate selected `{mse_primary['selected_ensemble']}` "
-            f"(`gamma_active_ratio={fmt_float(mse_primary['gamma_active_ratio'], 2)}`, "
-            f"`dynamic_active_ratio={fmt_float(mse_primary['dynamic_active_ratio'], 2)}`), "
-            f"test `{fmt_float(mse_primary['test_mse'])} / {fmt_float(mse_primary['test_mae'])}`, "
-            f"gain vs adaptive `{fmt_pct(mse_primary['test_mse_gain_vs_adaptive_anchor_pct'])} / "
-            f"{fmt_pct(mse_primary['test_mae_gain_vs_adaptive_anchor_pct'])}`."
-        ),
-        "",
-        "Controls:",
-        *control_lines,
-        "",
-        "Interpretation:",
-        "- `MSE-primary` is not a replacement for strict CACI; it is a secondary route for MSE-sensitive settings.",
-        "- The observed route beats both shuffle controls, but controls retain some positive gain, so the evidence supports weak target/gamma specificity plus sparse dynamic regularization rather than a pure causal-localization claim.",
-        "",
-        "Files:",
-        "- `solar96_mse_primary_target_gate_frozen_table.csv/md`: frozen route table.",
-        "- `solar96_mse_primary_target_gate_controls.csv`: shuffle control summary.",
-        "- `manifest.json`: source outputs and raw run references.",
-    ]
-    (OUT_DIR / "README.md").write_text("\n".join(readme_lines) + "\n", encoding="utf-8")
+    controls_df.to_csv(OUT_DIR / "solar96_192_mse_primary_target_gate_controls.csv", index=False)
+    write_readme(table, controls_df)
     (OUT_DIR / "manifest.json").write_text(
         json.dumps(
             {
-                "artifact": "solar96_mse_primary_target_gate",
-                "adaptive_summary": str(ADAPTIVE_DIR / f"{ADAPTIVE_PREFIX}_selected_test_summary.csv"),
-                "run_dir": str(RUN_DIR),
+                "artifact": "solar96_192_mse_primary_target_gate",
+                "horizons": [
+                    {
+                        "dataset": cfg["dataset"],
+                        "horizon": cfg["horizon"],
+                        "adaptive_summary": str(
+                            cfg["adaptive_dir"] / f"{cfg['adaptive_prefix']}_selected_test_summary.csv"
+                        ),
+                        "run_dir": str(cfg["run_dir"]),
+                    }
+                    for cfg in HORIZONS
+                ],
                 "raw_refs": raw_refs,
                 "output_dir": str(OUT_DIR),
             },

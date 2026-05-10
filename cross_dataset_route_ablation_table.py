@@ -25,7 +25,7 @@ SOLAR_STAGE3_TABLE = Path(
     r"C:\Users\cyl\Desktop\data\mechanism_evidence\solar96_192_stage3_lambda_three_source_20260508\solar_stage3_lambda_three_source_frozen_table.csv"
 )
 SOLAR_MSE_PRIMARY_TABLE = Path(
-    r"C:\Users\cyl\Desktop\data\mechanism_evidence\solar96_mse_primary_target_gate_20260510\solar96_mse_primary_target_gate_frozen_table.csv"
+    r"C:\Users\cyl\Desktop\data\mechanism_evidence\solar96_192_mse_primary_target_gate_20260510\solar96_192_mse_primary_target_gate_frozen_table.csv"
 )
 
 
@@ -84,7 +84,7 @@ FINAL_HEADLINES = {
     "Weather": "Static anchor headline; post-hoc dynamic is MSE-positive but MAE-negative.",
     "ECL": "Static anchor headline; strict guarded dynamic branch bypasses.",
     "Solar-96": "Adaptive fusion headline; strict Stage3 is a weak add-on, while MSE-primary target gate is a secondary MSE-sensitive route.",
-    "Solar-192": "Adaptive fusion headline; Stage3 lambda/dynamic falls back to the adaptive anchor.",
+    "Solar-192": "Adaptive fusion headline; strict Stage3 falls back, while MSE-primary target gate is a small secondary MSE-sensitive route.",
     "Traffic": "Adaptive fusion headline; Stage3 lambda/dynamic is a weak add-on.",
 }
 
@@ -167,6 +167,26 @@ def read_matching(path: Path, **criteria: object) -> dict:
     if matched.empty:
         raise ValueError(f"No row in {path} matching {criteria}")
     return matched.iloc[0].to_dict()
+
+
+def read_best_matching(path: Path, sort_key: str, **criteria: object) -> dict:
+    if not path.exists():
+        raise FileNotFoundError(path)
+    df = pd.read_csv(path)
+    if df.empty:
+        raise ValueError(f"Empty CSV: {path}")
+    mask = pd.Series(True, index=df.index)
+    for key, value in criteria.items():
+        if key not in df.columns:
+            raise KeyError(f"Missing column {key!r} in {path}")
+        mask &= df[key].astype(str) == str(value)
+    matched = df.loc[mask].copy()
+    if matched.empty:
+        raise ValueError(f"No row in {path} matching {criteria}")
+    if sort_key not in matched.columns:
+        raise KeyError(f"Missing sort column {sort_key!r} in {path}")
+    matched[sort_key] = pd.to_numeric(matched[sort_key], errors="coerce")
+    return matched.sort_values(sort_key, ascending=False).iloc[0].to_dict()
 
 
 def f(row: dict, key: str, default=np.nan) -> float:
@@ -283,9 +303,9 @@ def write_readme(summary: pd.DataFrame, compact: pd.DataFrame, paper: pd.DataFra
         "- `Static Anchor` is the stable backbone on Weather/ECL and a useful candidate family on Traffic, but it is not itself a positive standalone route on ETTh1 or Solar.",
         "- `Post-hoc Dynamic` is selective rather than universal: ETTh1 and Solar can be Selective vs static, ECL bypasses, Weather is MSE-only, and Traffic's strict closed loop bypasses.",
         "- `Adaptive Fusion` is now a prediction-level performance branch on Traffic, Solar, and ETTh1, but it should not be conflated with guarded post-hoc dynamic calibration.",
-        "- `MSE-primary` is a secondary dynamic route for MSE-sensitive settings; it is currently frozen for Solar-96 and is not a replacement for strict CACI.",
+        "- `MSE-primary` is a secondary dynamic route for MSE-sensitive settings; it is currently frozen for Solar-96/192 and is not a replacement for strict CACI.",
         "- ETTh1 is no longer a hard negative overall once adaptive fusion is allowed, although its guarded post-hoc route stays below baseline and its Stage3 dynamic add-on is currently negative.",
-        "- Solar-96 gets a weak extra Stage3 lambda/dynamic gain; Solar-192 falls back to the adaptive-alpha anchor.",
+        "- Solar-96/192 both fall back under strict target-gated Stage3, while MSE-primary admits small loss-specific dynamic gains.",
         "- This table should be used as method-route ablation rather than a simple component-toggle ablation.",
         "",
         "Files:",
@@ -444,11 +464,12 @@ def main() -> None:
                     ),
                 }
             )
-            if dataset == "Solar-96" and SOLAR_MSE_PRIMARY_TABLE.exists():
-                mse_primary = read_matching(
+            if SOLAR_MSE_PRIMARY_TABLE.exists():
+                mse_primary = read_best_matching(
                     SOLAR_MSE_PRIMARY_TABLE,
+                    "test_mse_gain_vs_adaptive_anchor_pct",
+                    horizon=horizon,
                     route="mse_primary_target_gate",
-                    variant="static_p0",
                 )
                 row.update(
                     {
@@ -461,6 +482,7 @@ def main() -> None:
                             mse_primary, "test_mae_gain_vs_adaptive_anchor_pct"
                         ),
                         "solar_mse_primary_selected_ensemble": s(mse_primary, "selected_ensemble"),
+                        "solar_mse_primary_variant": s(mse_primary, "variant"),
                         "solar_mse_primary_selection_reason": s(mse_primary, "selection_reason"),
                     }
                 )
