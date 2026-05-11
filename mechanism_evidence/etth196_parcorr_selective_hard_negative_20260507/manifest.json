@@ -1,0 +1,20 @@
+{
+  "dataset": "ETTh1",
+  "horizon": 96,
+  "purpose": "Freeze ETTh1-96 ParCorr hard-negative route evidence",
+  "baseline_pattern": "etth196_validate_baseline_itr3_*projection_*",
+  "static_pattern": "etth196_validate_static_anchor_itr3_*projection_*",
+  "baseline_dirs": [
+    "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\etth196_validate_baseline_itr3_iTransformer_ETTh1_M_ft96_sl48_ll96_pl256_dm8_nh2_el1_dl256_df1_fctimeF_ebTrue_dtETTh1ValidateBase_projection_0",
+    "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\etth196_validate_baseline_itr3_iTransformer_ETTh1_M_ft96_sl48_ll96_pl256_dm8_nh2_el1_dl256_df1_fctimeF_ebTrue_dtETTh1ValidateBase_projection_1",
+    "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\etth196_validate_baseline_itr3_iTransformer_ETTh1_M_ft96_sl48_ll96_pl256_dm8_nh2_el1_dl256_df1_fctimeF_ebTrue_dtETTh1ValidateBase_projection_2"
+  ],
+  "static_dirs": [
+    "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\etth196_validate_static_anchor_itr3_iTransformer_ETTh1_M_ft96_sl48_ll96_pl256_dm8_nh2_el1_dl256_df1_fctimeF_ebTrue_dtETTh1ValidateStaticAnchor_projection_0",
+    "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\etth196_validate_static_anchor_itr3_iTransformer_ETTh1_M_ft96_sl48_ll96_pl256_dm8_nh2_el1_dl256_df1_fctimeF_ebTrue_dtETTh1ValidateStaticAnchor_projection_1",
+    "C:\\Users\\cyl\\Desktop\\iTransformer-phasec-clean\\results\\etth196_validate_static_anchor_itr3_iTransformer_ETTh1_M_ft96_sl48_ll96_pl256_dm8_nh2_el1_dl256_df1_fctimeF_ebTrue_dtETTh1ValidateStaticAnchor_projection_2"
+  ],
+  "cmiknn_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\etth196_closed_loop_rank_quality_guard\\etth196_static_rank_quality_guard_closed_loop_test_selected_summary.csv",
+  "parcorr_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\etth196_closed_loop_rank_quality_guard_parcorr_ridgebase_sparse\\etth196_static_parcorr_rank_quality_guard_parcorr_closed_loop_test_selected_summary.csv",
+  "parcorr_interface_dir": "C:\\Users\\cyl\\Desktop\\data\\interfaces\\ETTh1_graph_interface_parcorr_ridgebase_sparse"
+}

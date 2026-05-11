@@ -27,6 +27,9 @@ SOLAR_STAGE3_TABLE = Path(
 SOLAR_MSE_PRIMARY_TABLE = Path(
     r"C:\Users\cyl\Desktop\data\mechanism_evidence\solar96_192_mse_primary_target_gate_20260510\solar96_192_mse_primary_target_gate_frozen_table.csv"
 )
+WEATHER_MSE_PRIMARY_TABLE = Path(
+    r"C:\Users\cyl\Desktop\data\mechanism_evidence\weather96_mse_primary_target_gate_20260510\weather96_mse_primary_target_gate_frozen_table.csv"
+)
 
 
 POSTHOC_SUMMARIES = {
@@ -81,7 +84,7 @@ DATASET_HORIZONS = {
 
 FINAL_HEADLINES = {
     "ETTh1": "Adaptive fusion headline; Stage3 lambda/dynamic add-on is negative, and guarded post-hoc stays Selective but weaker than the fusion route.",
-    "Weather": "Static anchor headline; post-hoc dynamic is MSE-positive but MAE-negative.",
+    "Weather": "Adaptive fusion headline; strict target gate falls back, while MSE-primary is MSE-positive but MAE-negative.",
     "ECL": "Static anchor headline; strict guarded dynamic branch bypasses.",
     "Solar-96": "Adaptive fusion headline; strict Stage3 is a weak add-on, while MSE-primary target gate is a secondary MSE-sensitive route.",
     "Solar-192": "Adaptive fusion headline; strict Stage3 falls back, while MSE-primary target gate is a small secondary MSE-sensitive route.",
@@ -300,12 +303,12 @@ def write_readme(summary: pd.DataFrame, compact: pd.DataFrame, paper: pd.DataFra
         markdown_table(paper).rstrip(),
         "",
         "Interpretation:",
-        "- `Static Anchor` is the stable backbone on Weather/ECL and a useful candidate family on Traffic, but it is not itself a positive standalone route on ETTh1 or Solar.",
+        "- `Static Anchor` is the stable backbone on ECL and a useful candidate family on Weather/Traffic, but it is not itself a positive standalone route on ETTh1 or Solar.",
         "- `Post-hoc Dynamic` is selective rather than universal: ETTh1 and Solar can be Selective vs static, ECL bypasses, Weather is MSE-only, and Traffic's strict closed loop bypasses.",
         "- `Adaptive Fusion` is now a prediction-level performance branch on Traffic, Solar, and ETTh1, but it should not be conflated with guarded post-hoc dynamic calibration.",
-        "- `MSE-primary` is a secondary dynamic route for MSE-sensitive settings; it is currently frozen for Solar-96/192 and is not a replacement for strict CACI.",
+        "- `MSE-primary` is a secondary dynamic route for MSE-sensitive settings; it is currently frozen for Weather and Solar-96/192 and is not a replacement for strict CACI.",
         "- ETTh1 is no longer a hard negative overall once adaptive fusion is allowed, although its guarded post-hoc route stays below baseline and its Stage3 dynamic add-on is currently negative.",
-        "- Solar-96/192 both fall back under strict target-gated Stage3, while MSE-primary admits small loss-specific dynamic gains.",
+        "- Weather and Solar-96/192 fall back under strict target-gated Stage3, while MSE-primary admits small loss-specific dynamic gains.",
         "- This table should be used as method-route ablation rather than a simple component-toggle ablation.",
         "",
         "Files:",
@@ -333,6 +336,7 @@ def main() -> None:
         "solar_adaptive_table": str(SOLAR_ADAPTIVE_TABLE),
         "solar_stage3_table": str(SOLAR_STAGE3_TABLE),
         "solar_mse_primary_table": str(SOLAR_MSE_PRIMARY_TABLE),
+        "weather_mse_primary_table": str(WEATHER_MSE_PRIMARY_TABLE),
         "profiles": DATASET_PROFILES,
     }
 
@@ -417,6 +421,39 @@ def main() -> None:
                     "stage3_dynamic_mae_gain_vs_adaptive_pct": f(
                         stage3, "test_mae_gain_vs_adaptive_anchor_pct"
                     ),
+                }
+            )
+        if dataset == "Weather" and WEATHER_MSE_PRIMARY_TABLE.exists():
+            adaptive = read_matching(
+                WEATHER_MSE_PRIMARY_TABLE,
+                route="adaptive_anchor",
+            )
+            mse_primary = read_best_matching(
+                WEATHER_MSE_PRIMARY_TABLE,
+                "test_mse_gain_vs_adaptive_anchor_pct",
+                route="mse_primary_target_gate",
+            )
+            row.update(
+                {
+                    "adaptive_fusion_mse": f(adaptive, "test_mse"),
+                    "adaptive_fusion_mae": f(adaptive, "test_mae"),
+                    "adaptive_fusion_mse_gain_vs_static_anchor_pct": pct_gain(
+                        route["static_anchor_mse"], f(adaptive, "test_mse")
+                    ),
+                    "adaptive_fusion_mae_gain_vs_static_anchor_pct": pct_gain(
+                        route["static_anchor_mae"], f(adaptive, "test_mae")
+                    ),
+                    "mse_primary_dynamic_mse": f(mse_primary, "test_mse"),
+                    "mse_primary_dynamic_mae": f(mse_primary, "test_mae"),
+                    "mse_primary_dynamic_mse_gain_vs_adaptive_pct": f(
+                        mse_primary, "test_mse_gain_vs_adaptive_anchor_pct"
+                    ),
+                    "mse_primary_dynamic_mae_gain_vs_adaptive_pct": f(
+                        mse_primary, "test_mae_gain_vs_adaptive_anchor_pct"
+                    ),
+                    "weather_mse_primary_selected_ensemble": s(mse_primary, "selected_ensemble"),
+                    "weather_mse_primary_variant": s(mse_primary, "variant"),
+                    "weather_mse_primary_selection_reason": s(mse_primary, "selection_reason"),
                 }
             )
         if dataset.startswith("Solar-"):

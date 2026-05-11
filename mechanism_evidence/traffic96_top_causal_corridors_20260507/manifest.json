@@ -1,0 +1,28 @@
+{
+  "profile": "traffic96_static",
+  "stage2_dir": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_existing_prediction_ensemble_stage2_light_seed2026",
+  "interface_dir": "C:\\Users\\cyl\\Desktop\\data\\interfaces\\Traffic_graph_interface_parcorr",
+  "risk_dir": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\traffic96_stage3_lambda_three_source_20260507\\mechanism\\risk_windows",
+  "best_single_reference": "static_p1",
+  "n_targets": 862,
+  "candidate_count": 8,
+  "top_pcts": [
+    0.01,
+    0.05
+  ],
+  "top_k_nodes": 32,
+  "stage2_test_mse": 0.3826398811674581,
+  "best_single_test_mse": 0.3921978397176193,
+  "stage2_test_mae": 0.25941953883799196,
+  "best_single_test_mae": 0.2683284202083329,
+  "stage2_test_mse_gain_vs_best_single_pct": 2.437024782452361,
+  "stage2_test_mae_gain_vs_best_single_pct": 3.3201408048480343,
+  "alpha_mean": 0.7848917329209765,
+  "alpha_std": 0.14494845353037192,
+  "alpha_min": 0.017675448106715,
+  "alpha_max": 0.9717131059243964,
+  "plot_files": [
+    "alpha_vs_weighted_degree.png",
+    "gain_vs_correction_energy.png"
+  ]
+}

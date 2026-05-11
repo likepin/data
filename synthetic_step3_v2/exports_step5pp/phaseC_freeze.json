@@ -182,7 +182,21 @@
     "training_entrypoint": "run.py",
     "experiment_class": "experiments.exp_long_term_forecasting.Exp_Long_Term_Forecast",
     "data_provider": "data_provider.data_factory.data_provider",
-    "training_config_status": "frozen_against_real_code",
-    "synthetic_dataset_adapter_status": "required_before_round1_training"
+    "training_config_status": "validated_against_real_code",
+    "synthetic_dataset_adapter_status": "implemented_and_validated",
+    "seed_override_status": "implemented_and_validated",
+    "baseline_validation_status": "passed",
+    "gating_noop_validation_status": "passed",
+    "baseline_metrics": {
+      "mse": 0.891771674156189,
+      "mae": 0.7162291407585144
+    },
+    "next_integration_step": "gating-only loss weighting"
+  },
+  "phase_c_protocol_alignment": {
+    "status": "complete",
+    "dataset_smoke_check_passed": true,
+    "baseline_deterministic_repeat_passed": true,
+    "gating_noop_control_passed": true
   }
 }

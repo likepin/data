@@ -1,0 +1,4 @@
+route,backend,mse,mae,mse_gain_vs_baseline_pct,mae_gain_vs_baseline_pct,mse_gain_vs_static_pct,mae_gain_vs_static_pct,mode_status,mode_reason
+baseline,projection_mean,0.38686542709668476,0.4048621455828349,0.0,0.0,,,,
+static_anchor,projection_mean,0.38821375370025635,0.40604230761528015,-0.34852600132568085,-0.29149725290970474,0.0,0.0,,
+guarded_posthoc_selected,ParCorr_ridgebase_sparse,0.3880877046079523,0.4057792693568773,-0.31594384653091595,-0.22652742027094794,0.032468991915570816,0.06478099780973397,Selective,selective_activation

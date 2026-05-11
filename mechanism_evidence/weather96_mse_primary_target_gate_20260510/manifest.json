@@ -1,0 +1,47 @@
+{
+  "artifact": "weather96_mse_primary_target_gate",
+  "run_dir": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate",
+  "raw_refs": [
+    {
+      "route": "strict_target_gate",
+      "variant": "static_p0",
+      "prefix": "weather96_static_stage31_target_quantile_gate_valref",
+      "policy": "Strict route: MSE/MAE guard plus fold stability; fallback allowed.",
+      "selected_val_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate\\weather96_static_stage31_target_quantile_gate_valref_selected_val_summary.csv",
+      "test_selected_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate\\weather96_static_stage31_target_quantile_gate_valref_test_selected_summary.csv",
+      "manifest": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate\\weather96_static_stage31_target_quantile_gate_valref_manifest.json",
+      "shuffle_controls": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate\\weather96_static_stage31_target_quantile_gate_valref_shuffle_controls.csv"
+    },
+    {
+      "route": "strict_target_gate",
+      "variant": "static_mean",
+      "prefix": "weather96_static_stage31_target_quantile_gate_staticmean_valref",
+      "policy": "Strict route: MSE/MAE guard plus fold stability; fallback allowed.",
+      "selected_val_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate\\weather96_static_stage31_target_quantile_gate_staticmean_valref_selected_val_summary.csv",
+      "test_selected_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate\\weather96_static_stage31_target_quantile_gate_staticmean_valref_test_selected_summary.csv",
+      "manifest": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate\\weather96_static_stage31_target_quantile_gate_staticmean_valref_manifest.json",
+      "shuffle_controls": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate\\weather96_static_stage31_target_quantile_gate_staticmean_valref_shuffle_controls.csv"
+    },
+    {
+      "route": "mse_primary_target_gate",
+      "variant": "static_p0",
+      "prefix": "weather96_static_stage31_target_quantile_gate_valref_msefirst",
+      "policy": "MSE-primary route: validation MSE first; MAE is an audit/non-degradation readout.",
+      "selected_val_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate\\weather96_static_stage31_target_quantile_gate_valref_msefirst_selected_val_summary.csv",
+      "test_selected_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate\\weather96_static_stage31_target_quantile_gate_valref_msefirst_test_selected_summary.csv",
+      "manifest": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate\\weather96_static_stage31_target_quantile_gate_valref_msefirst_manifest.json",
+      "shuffle_controls": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate\\weather96_static_stage31_target_quantile_gate_valref_msefirst_shuffle_controls.csv"
+    },
+    {
+      "route": "mse_primary_target_gate",
+      "variant": "static_mean",
+      "prefix": "weather96_static_stage31_target_quantile_gate_staticmean_valref_msefirst",
+      "policy": "MSE-primary route: validation MSE first; MAE is an audit/non-degradation readout.",
+      "selected_val_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate\\weather96_static_stage31_target_quantile_gate_staticmean_valref_msefirst_selected_val_summary.csv",
+      "test_selected_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate\\weather96_static_stage31_target_quantile_gate_staticmean_valref_msefirst_test_selected_summary.csv",
+      "manifest": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate\\weather96_static_stage31_target_quantile_gate_staticmean_valref_msefirst_manifest.json",
+      "shuffle_controls": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_stage31_target_quantile_gate\\weather96_static_stage31_target_quantile_gate_staticmean_valref_msefirst_shuffle_controls.csv"
+    }
+  ],
+  "output_dir": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\weather96_mse_primary_target_gate_20260510"
+}

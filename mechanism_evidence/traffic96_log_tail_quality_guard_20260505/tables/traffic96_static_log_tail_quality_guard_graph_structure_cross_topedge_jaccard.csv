@@ -1,0 +1,10 @@
+left,right,top_k,intersection,union,jaccard
+fold1_all,fold4_all,50,0,100,0.0
+fold1_all,fold4_all,100,2,198,0.010101010101010102
+fold1_all,fold4_all,379,24,734,0.0326975476839237
+fold1_all,fold4_active,50,2,98,0.02040816326530612
+fold1_all,fold4_active,100,3,197,0.015228426395939087
+fold1_all,fold4_active,379,37,721,0.05131761442441054
+fold4_inactive,fold4_active,50,24,76,0.3157894736842105
+fold4_inactive,fold4_active,100,54,146,0.3698630136986301
+fold4_inactive,fold4_active,379,244,514,0.47470817120622566

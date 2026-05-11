@@ -1,7 +1,7 @@
 {
   "artifact_name": "phaseC_round1_train_config",
   "created_at": "2026-03-18T22:10:00+08:00",
-  "status": "code_backed_protocol_freeze_not_yet_runnable",
+  "status": "protocol_alignment_validated",
   "purpose": "Freeze the Phase C round-1 model-side training protocol against the real iTransformer codebase before any integration edits.",
   "model_repo_root": "C:/Users/cyl/Desktop/iTransformer-main",
   "code_references": {
@@ -103,7 +103,7 @@
     ]
   },
   "synthetic_dataset_adapter": {
-    "status": "required_before_round1_training",
+    "status": "implemented_and_validated",
     "current_upstream_incompatibilities": [
       "run.py hardcodes fix_seed = 2023 and does not expose a seed argument, while Phase C round 1 is frozen to seed 2026.",
       "Dataset_Custom hardcodes a 70/10/20 split and ignores the frozen split artifact.",
@@ -146,5 +146,69 @@
       "arm": "gating+regime",
       "integration": "Only after the single-signal arms run under the same frozen split and training budget."
     }
-  ]
+  ],
+  "seed_override": {
+    "status": "implemented_and_validated",
+    "effective_seed": 2026,
+    "upstream_default_seed": 2023,
+    "implementation": "run.py now exposes --seed and applies it after argparse before experiment construction."
+  },
+  "validation": {
+    "dataset_smoke_check": {
+      "status": "passed",
+      "train_windows": 3218,
+      "val_windows": 618,
+      "test_windows": 618,
+      "seq_x_shape": [
+        96,
+        10
+      ],
+      "seq_y_shape": [
+        144,
+        10
+      ],
+      "seq_x_mark_shape": [
+        96,
+        4
+      ],
+      "seq_y_mark_shape": [
+        144,
+        4
+      ],
+      "split_artifact": "phaseC_round1_split.json"
+    },
+    "baseline_run": {
+      "status": "passed",
+      "seed": 2026,
+      "early_stopping_triggered": true,
+      "epochs_completed": 4,
+      "metrics": {
+        "mse": 0.891771674156189,
+        "mae": 0.7162291407585144
+      }
+    },
+    "baseline_repeat_run": {
+      "status": "passed",
+      "seed": 2026,
+      "metrics": {
+        "mse": 0.891771674156189,
+        "mae": 0.7162291407585144
+      },
+      "matches_first_run": true
+    },
+    "gating_noop_control": {
+      "status": "passed",
+      "artifact": "lambda_gating_locked.npy",
+      "metrics": {
+        "mse": 0.891771674156189,
+        "mae": 0.7162291407585144
+      },
+      "matches_baseline": true
+    }
+  },
+  "next_step": {
+    "arm": "gating-only",
+    "integration": "loss weighting",
+    "reason": "Protocol alignment, baseline validation, and no-op gating read-in are all complete."
+  }
 }

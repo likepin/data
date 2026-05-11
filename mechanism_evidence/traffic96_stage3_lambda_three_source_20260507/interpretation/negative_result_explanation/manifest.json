@@ -1,0 +1,21 @@
+{
+  "package": "traffic96_stage3_negative_result_explanation",
+  "date": "2026-05-07",
+  "scope": "Traffic96 Stage3.5 closed-form eta2 and Risk Windows interpretation.",
+  "status": "negative_mechanism_result_for_high_risk_localization",
+  "main_result": "weak_positive_performance_addon",
+  "main_negative_result": "active high-gamma windows are not the source of the test gain",
+  "source_tables": {
+    "frozen_table": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\traffic96_stage3_lambda_three_source_20260507\\performance\\stage3_lambda_three_source\\tables\\traffic96_static_stage3_lambda_three_source_frozen_table.csv",
+    "risk_group_table": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\traffic96_stage3_lambda_three_source_20260507\\mechanism\\risk_windows\\traffic96_stage3_eta2_risk_group_table.csv",
+    "fold_table": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\traffic96_stage3_lambda_three_source_20260507\\mechanism\\risk_windows\\traffic96_stage3_eta2_fold_contribution.csv",
+    "risk_windows_readme": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\traffic96_stage3_lambda_three_source_20260507\\mechanism\\risk_windows\\README.md"
+  },
+  "outputs": [
+    "negative_result_explanation.md",
+    "negative_result_evidence_snapshot.csv",
+    "negative_result_evidence_snapshot.md",
+    "negative_result_claim_verdict_matrix.csv",
+    "negative_result_claim_verdict_matrix.md"
+  ]
+}

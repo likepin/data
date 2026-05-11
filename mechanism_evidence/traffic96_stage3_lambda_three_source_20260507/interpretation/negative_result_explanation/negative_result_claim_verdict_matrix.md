@@ -1,0 +1,8 @@
+| candidate_claim | evidence | verdict | paper_safe_framing |
+| --- | --- | --- | --- |
+| Stage3.5 is a strong Traffic performance module. | Closed-form eta2 test gain vs Stage2 is MSE +0.0704%, MAE +0.0961%. | reject_strong_claim | Stage3.5 provides a weak positive add-on over the adaptive static anchor. |
+| Lambda-gated dynamics successfully localize high-risk windows on Traffic test. | test gamma_active_gt_floor MSE gain is -0.0343%; top_rank_5pct_gamma MSE gain is -0.0591%. | rejected_on_test | Current lambda-aware correction does not yet provide reliable high-risk-window localization. |
+| The overall gain is driven by active high-gamma windows. | gamma_floor covers 90.54% of test windows and contributes 103.94% of SSE gain. | rejected_by_contribution | Traffic Stage3.5 gain is mostly a weak global / gamma-floor correction effect. |
+| Validation Fold 4 evidence is enough to claim test-time risk localization. | Validation Fold 4 MSE gain is +0.5723%, but high-gamma active windows are negative on test. | not_generalized | Fold 4 is useful as anomaly evidence, but it does not justify a broad dynamic localization claim. |
+| The dynamic branch should become the mainline for Traffic. | Stage2 adaptive-alpha remains the stable performance anchor; Stage3.5 adds only a very small post-hoc increment. | reject_mainline_shift | Keep static anchor as the main result; dynamic branch remains guarded and subordinate. |
+| The post-hoc guards can be relaxed after Stage3.5. | Eta is clipped (`eta_raw=3.670469`, `eta_mult=2.0`) and high-gamma test windows are unstable. | reject_guard_relaxation | Stage3.5 supports guard necessity rather than guard relaxation. |

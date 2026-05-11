@@ -1,0 +1,7 @@
+metric_a,metric_b,spearman,pearson
+alpha_shrunk,weighted_total_degree,0.05104465495251821,0.02392590100583572
+alpha_shrunk,val_correction_energy,0.2513776538268749,-0.2744789613875204
+alpha_shrunk,test_stage2_mse_gain_vs_best_single_pct,-0.4105585499258172,-0.3355335477418609
+weighted_total_degree,test_stage2_mse_gain_vs_best_single_pct,-0.0645027638322031,-0.0433790812889576
+val_correction_energy,test_stage2_mse_gain_vs_best_single_pct,-0.09064420309894348,0.057447474594554404
+val_correction_energy,weighted_total_degree,-0.0013061202114526646,-0.024577511561031627

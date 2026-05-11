@@ -1,0 +1,116 @@
+{
+  "package_name": "traffic96_log_tail_quality_guard_20260505",
+  "generated_at": "2026-05-05",
+  "purpose": "Lightweight Traffic-96 mechanism evidence package for CACI post-hoc calibration.",
+  "repo": {
+    "path": "C:\\Users\\cyl\\Desktop\\data",
+    "branch": "caci-posthoc-quality-guard",
+    "commit": "3b366ea5c71c1a28cf0ee32f3fd0db76885b637c",
+    "remote": "git@github.com:likepin/data.git"
+  },
+  "source_dirs": {
+    "closed_loop": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_closed_loop_log_tail_quality_guard",
+    "lambda_sweep": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_lambda_feature_sweep_log_tail_adaptive",
+    "traffic_interface": "C:\\Users\\cyl\\Desktop\\data\\interfaces\\Traffic_graph_interface_parcorr"
+  },
+  "main_claim": "Traffic-96 is best treated as mechanism evidence: log_tail_adaptive plus rank lambda scaling converts saturation or rejection into guarded Selective activation, localizes non-stationary residual risk, and exposes fixed-support graph correction reconfiguration.",
+  "non_claim": "Traffic-96 is not a headline final-test performance gain case in this run.",
+  "closed_loop_summary": {
+    "profile": "traffic96_static",
+    "mode_status": "Selective",
+    "mode_reason": "selective_activation",
+    "lambda_mode": "change_slope_no_range",
+    "lambda_window": 40,
+    "lambda_k": 2,
+    "lambda_scale": "log_tail_adaptive",
+    "lambda_transform": "rank",
+    "quality_guard_reason": "passed_lambda_quality_guard",
+    "quality_score": 0.582380691648261,
+    "active_ratio_target": 0.10,
+    "gamma_min": 0.01,
+    "gamma_max": 0.06,
+    "val_mse_gain_pct": 0.054923271001241745,
+    "val_mae_gain_pct": 0.14625177026536154,
+    "test_mse_gain_pct": -0.0023760047035975332,
+    "test_mae_gain_pct": 0.1255488380432158
+  },
+  "risk_localization_summary": {
+    "active_ratio_target": 0.10,
+    "active_count_total": 167,
+    "active_fold_coverage": 0.5,
+    "active_fold_entropy_norm": 0.13871325435016238,
+    "active_effective_folds": 1.2120309241758773,
+    "active_fold_concentration": 0.9520958083832335
+  },
+  "graph_structure_summary": {
+    "note": "Windowed ridge DeltaA on fixed PCMCI support, not fold-specific PCMCI rediscovery.",
+    "fold1_all": {
+      "edge_count_mean": 53.53125,
+      "l1_mean": 44.79072570800781,
+      "effective_targets": 27.559029276511456
+    },
+    "fold4_active": {
+      "edge_count_mean": 145.0440251572327,
+      "l1_mean": 146.0972900390625,
+      "effective_targets": 6.406480394777112,
+      "top_target": 840,
+      "top_target_mass_share": 0.5388453981167075,
+      "top_target_active_source_count": 312,
+      "top_source_for_top_target": 858
+    },
+    "jaccard": {
+      "fold1_all_vs_fold4_active_top100": 0.015228426395939087,
+      "fold1_all_vs_fold4_active_top379": 0.05131761442441054,
+      "fold4_inactive_vs_fold4_active_top100": 0.3698630136986301,
+      "fold4_inactive_vs_fold4_active_top379": 0.47470817120622566
+    }
+  },
+  "copied_files": {
+    "tables": [
+      "tables\\traffic96_static_log_tail_quality_guard_closed_loop_lambda_selected.csv",
+      "tables\\traffic96_static_log_tail_quality_guard_closed_loop_schedule_selected.csv",
+      "tables\\traffic96_static_log_tail_quality_guard_closed_loop_val_selected_summary.csv",
+      "tables\\traffic96_static_log_tail_quality_guard_closed_loop_test_selected_summary.csv",
+      "tables\\traffic96_static_log_tail_quality_guard_active_ratio_fold_consistency.csv",
+      "tables\\traffic96_static_log_tail_quality_guard_rolling_local_activation_summary.csv",
+      "tables\\traffic96_static_log_tail_quality_guard_graph_structure_cross_summary.csv",
+      "tables\\traffic96_static_log_tail_quality_guard_graph_structure_cross_topedge_jaccard.csv",
+      "tables\\traffic96_static_log_tail_quality_guard_graph_structure_cross_top_targets.csv"
+    ],
+    "figures": [
+      "figures\\traffic96_static_log_tail_quality_guard_residual_complexity_alignment.png",
+      "figures\\traffic96_static_log_tail_quality_guard_active_p10_overlay.png"
+    ],
+    "raw_refs": [
+      "raw_refs\\interface_manifest.json"
+    ]
+  },
+  "large_artifacts_not_copied": [
+    {
+      "path": "C:\\Users\\cyl\\Desktop\\data\\interfaces\\Traffic_graph_interface_parcorr\\deltaA_train.npy",
+      "bytes": 35930635792,
+      "reason": "large recomputation array, not needed for curated evidence review"
+    },
+    {
+      "path": "C:\\Users\\cyl\\Desktop\\data\\interfaces\\Traffic_graph_interface_parcorr\\deltaA_val.npy",
+      "bytes": 4936784464,
+      "reason": "large recomputation array, not needed for curated evidence review"
+    },
+    {
+      "path": "C:\\Users\\cyl\\Desktop\\data\\interfaces\\Traffic_graph_interface_parcorr\\deltaA_test.npy",
+      "bytes": 10144036816,
+      "reason": "large recomputation array, not needed for curated evidence review"
+    },
+    {
+      "path": "C:\\Users\\cyl\\Desktop\\data\\interfaces\\Traffic_graph_interface_parcorr\\support.npy",
+      "bytes": 743172,
+      "reason": "small enough to copy, but kept as a raw reference to avoid mixing review evidence with recomputation inputs"
+    }
+  ],
+  "reproduction_entrypoints": [
+    "diagnose_real_lambda_feature_sweep.py",
+    "posthoc_selected_lambda_closed_loop.py",
+    "diagnose_rolling_local_activation.py",
+    "diagnose_graph_structure_evolution.py"
+  ]
+}

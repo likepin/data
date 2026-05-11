@@ -178,3 +178,11 @@ Use the following interpretation for the first round:
 3. If `gating+regime` is best overall or shows complementary gains without harming the switch-window metrics, then the two signals are complementary.
 
 These criteria are meant to decide whether the signal-side work from Phase A/Phase B transfers into model-side value. They are not meant to re-open the synthetic benchmark itself.
+
+## Current Model-side Status
+
+- Phase C protocol-alignment milestone is complete.
+- `Dataset_PhaseC_Synthetic` is implemented and validated against `phaseC_round1_split.json`.
+- `run.py` now exposes `--seed`; round-1 baseline was validated under `seed=2026`.
+- A no-op gating control using `lambda_gating_locked.npy` runs and matches baseline exactly.
+- Next step: real `gating-only` with minimal `loss weighting`.
