@@ -1,0 +1,38 @@
+{
+  "package": "solar96_dynamic_gate_diagnostic_20260511",
+  "generated_at": "2026-05-11",
+  "dataset": "Solar",
+  "horizon": 96,
+  "profile": "solar96_static",
+  "purpose": "Freeze dynamic-gate mixed/guarded mechanism evidence for Solar-96.",
+  "git_head": "05071950c591215c45e22c82b18a6f8b1908e5c9",
+  "source_dirs": {
+    "lambda_adequacy": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_static_lambda_adequacy",
+    "lambda_gate_probe": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_static_lambda_gate_logistic_probe"
+  },
+  "copied_tables": [
+    "solar96_static_lambda_adequacy_split_summary.csv",
+    "solar96_static_lambda_adequacy_feature_alignment.csv",
+    "solar96_static_lambda_gate_logistic_probe_target_metrics.csv",
+    "solar96_static_lambda_gate_logistic_probe_target_coefficients.csv",
+    "solar96_static_lambda_gate_logistic_probe_target_gain_metrics.csv",
+    "solar96_static_lambda_gate_logistic_probe_target_gain_coefficients.csv",
+    "solar96_static_lambda_gate_logistic_probe_target_gain_topk_cvar.csv",
+    "solar96_static_lambda_gate_logistic_probe_target_gain_quantile_bins.csv",
+    "solar96_static_lambda_gate_logistic_probe_window_gain_topk_cvar.csv",
+    "solar96_static_lambda_gate_logistic_probe_window_gain_quantile_bins.csv"
+  ],
+  "copied_figures": [
+    "solar96_static_lambda_gate_logistic_probe_target_gain_risk_return_frontier.png",
+    "solar96_static_lambda_gate_logistic_probe_target_test_top5_gain_distribution.png",
+    "solar96_static_lambda_gate_logistic_probe_window_gain_risk_return_frontier.png",
+    "solar96_static_lambda_gate_logistic_probe_window_test_top5_gain_distribution.png",
+    "solar96_static_lambda_adequacy_feature_alignment_spearman.png"
+  ],
+  "source_scripts": [
+    "lambda_adequacy_audit.py",
+    "lambda_gate_logistic_probe.py",
+    "solar_dynamic_gate_diagnostic_evidence_pack.py"
+  ],
+  "key_verdict": "Solar has stronger oracle dynamic signal than Weather, but current deployable gates still justify guarded selective/bypass framing."
+}
