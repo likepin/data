@@ -306,6 +306,50 @@ def gain_topk_capture(
     return pd.DataFrame(rows)
 
 
+def gain_quantile_bins(
+    scored: pd.DataFrame,
+    score_col: str,
+    label_col: str,
+    energy_col: str,
+    n_bins: int = 10,
+    tail_frac: float = 0.05,
+) -> pd.DataFrame:
+    rows = []
+    for (model, split), group in scored.groupby(["gain_model", "split"], sort=False):
+        group = group.copy()
+        group["_score"] = group[score_col].to_numpy(dtype=float)
+        group["_gain"] = group[label_col].to_numpy(dtype=float)
+        group = group.sort_values("_score", ascending=False).reset_index(drop=True)
+        n = len(group)
+        for bin_id, idx in enumerate(np.array_split(np.arange(n), n_bins), start=1):
+            if len(idx) == 0:
+                continue
+            part = group.iloc[idx]
+            gains = part["_gain"].to_numpy(dtype=float)
+            tail_n = max(1, int(round(len(gains) * tail_frac)))
+            tail = np.sort(gains)[:tail_n]
+            rows.append(
+                {
+                    "model": model,
+                    "split": split,
+                    "rank_bin": int(bin_id),
+                    "rank_bin_label": f"top_{(bin_id - 1) * 100 // n_bins}_{bin_id * 100 // n_bins}pct",
+                    "n": int(len(part)),
+                    "pred_gain_mean": float(part["_score"].mean()),
+                    "pred_gain_min": float(part["_score"].min()),
+                    "pred_gain_max": float(part["_score"].max()),
+                    "oracle_gain_mean": float(gains.mean()),
+                    "positive_rate": float(np.mean(gains > 0.0)),
+                    "nonzero_dynamic_rate": float(np.mean(part[energy_col].to_numpy(dtype=float) > 1e-12)),
+                    "worst_5pct_gain_mean": float(tail.mean()),
+                    "p05_gain": float(np.quantile(gains, tail_frac)),
+                    "p50_gain": float(np.quantile(gains, 0.50)),
+                    "p95_gain": float(np.quantile(gains, 0.95)),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
 def load_alpha(profile_name: str, alpha_csv_arg: str, n_vars: int) -> pd.DataFrame:
     alpha_csv = Path(alpha_csv_arg) if alpha_csv_arg else default_alpha_csv(profile_name)
     if alpha_csv is None or not alpha_csv.exists():
@@ -413,6 +457,89 @@ def target_summary(scored: pd.DataFrame, score_col: str) -> pd.DataFrame:
     ).reset_index()
 
 
+def write_gain_figures(
+    out_dir: Path,
+    prefix: str,
+    window_gain_topk: pd.DataFrame,
+    target_gain_topk: pd.DataFrame,
+    window_gain_scored: pd.DataFrame,
+    target_gain_scored: pd.DataFrame,
+) -> None:
+    try:
+        import matplotlib.pyplot as plt
+    except Exception as exc:  # pragma: no cover - optional dependency
+        print(f"[Warn] skip gain figures: {exc}", flush=True)
+        return
+
+    def frontier(frame: pd.DataFrame, title: str, path: Path) -> None:
+        fig, ax = plt.subplots(figsize=(7.2, 4.8))
+        for (model, split), group in frame.groupby(["model", "split"], sort=False):
+            ordered = group.sort_values("top_frac")
+            label = f"{model}-{split}"
+            ax.plot(
+                ordered["worst_5pct_gain_mean_top"],
+                ordered["oracle_gain_mean_top"],
+                marker="o",
+                label=label,
+            )
+            for _, row in ordered.iterrows():
+                ax.annotate(
+                    f"{float(row['top_frac']):.0%}",
+                    (row["worst_5pct_gain_mean_top"], row["oracle_gain_mean_top"]),
+                    fontsize=8,
+                )
+        ax.axhline(0.0, color="black", linewidth=0.8)
+        ax.axvline(0.0, color="black", linewidth=0.8)
+        ax.set_xlabel("worst 5% mean gain in selected set")
+        ax.set_ylabel("mean oracle gain in selected set")
+        ax.set_title(title)
+        ax.legend(fontsize=8)
+        fig.tight_layout()
+        fig.savefig(path, dpi=170)
+        plt.close(fig)
+
+    def top5_hist(frame: pd.DataFrame, score_prefix: str, title: str, path: Path) -> None:
+        fig, ax = plt.subplots(figsize=(7.2, 4.8))
+        test = frame[frame["split"] == "test"].copy()
+        for model, group in test.groupby("gain_model", sort=False):
+            score_col = f"{score_prefix}_{model}_pred_gain"
+            order = group[score_col].to_numpy(dtype=float).argsort(kind="mergesort")[::-1]
+            n_top = max(1, int(round(len(group) * 0.05)))
+            selected = group.iloc[order[:n_top]]["oracle_unit_mse_gain"].to_numpy(dtype=float)
+            ax.hist(selected, bins=60, alpha=0.45, density=True, label=f"{model} top 5%")
+        ax.axvline(0.0, color="black", linewidth=0.8)
+        ax.set_xlabel("oracle unit MSE gain")
+        ax.set_ylabel("density")
+        ax.set_title(title)
+        ax.legend(fontsize=8)
+        fig.tight_layout()
+        fig.savefig(path, dpi=170)
+        plt.close(fig)
+
+    frontier(
+        window_gain_topk,
+        f"{prefix}: window gain risk-return frontier",
+        out_dir / f"{prefix}_window_gain_risk_return_frontier.png",
+    )
+    frontier(
+        target_gain_topk,
+        f"{prefix}: target-wise gain risk-return frontier",
+        out_dir / f"{prefix}_target_gain_risk_return_frontier.png",
+    )
+    top5_hist(
+        window_gain_scored,
+        "window_gain",
+        f"{prefix}: window test top-5% gain distribution",
+        out_dir / f"{prefix}_window_test_top5_gain_distribution.png",
+    )
+    top5_hist(
+        target_gain_scored,
+        "target_gain",
+        f"{prefix}: target-wise test top-5% gain distribution",
+        out_dir / f"{prefix}_target_test_top5_gain_distribution.png",
+    )
+
+
 def markdown_table(frame: pd.DataFrame) -> str:
     if frame.empty:
         return "_empty_"
@@ -447,6 +574,8 @@ def write_readme(
     target_gain_coef: pd.DataFrame,
     target_gain_metrics: pd.DataFrame,
     target_gain_topk: pd.DataFrame,
+    window_gain_bins: pd.DataFrame,
+    target_gain_bins: pd.DataFrame,
 ) -> None:
     lines = [
         f"# {prefix} Logistic Gate Probe",
@@ -497,6 +626,14 @@ def write_readme(
         "",
         markdown_table(target_gain_topk),
         "",
+        "## Window-Level Gain Quantile Bins",
+        "",
+        markdown_table(window_gain_bins),
+        "",
+        "## Target-Wise Gain Quantile Bins",
+        "",
+        markdown_table(target_gain_bins),
+        "",
     ]
     (out_dir / "README.md").write_text("\n".join(lines), encoding="utf-8")
 
@@ -539,6 +676,18 @@ def main() -> None:
                 score_col=f"window_gain_{model}_pred_gain",
                 label_col="oracle_unit_mse_gain",
                 top_fracs=parse_float_list(args.top_fracs),
+            )
+            for model in sorted(window_gain_scored["gain_model"].unique())
+        ],
+        ignore_index=True,
+    )
+    window_gain_bins = pd.concat(
+        [
+            gain_quantile_bins(
+                window_gain_scored[window_gain_scored["gain_model"] == model].copy(),
+                score_col=f"window_gain_{model}_pred_gain",
+                label_col="oracle_unit_mse_gain",
+                energy_col="dynamic_energy",
             )
             for model in sorted(window_gain_scored["gain_model"].unique())
         ],
@@ -599,6 +748,18 @@ def main() -> None:
         ],
         ignore_index=True,
     )
+    target_gain_bins = pd.concat(
+        [
+            gain_quantile_bins(
+                target_gain_scored[target_gain_scored["gain_model"] == model].copy(),
+                score_col=f"target_gain_{model}_pred_gain",
+                label_col="oracle_unit_mse_gain",
+                energy_col="dynamic_energy_target",
+            )
+            for model in sorted(target_gain_scored["gain_model"].unique())
+        ],
+        ignore_index=True,
+    )
     target_by_var = target_summary(target_scored, score_col="target_gate_score")
 
     window_coef.to_csv(out_dir / f"{prefix}_window_coefficients.csv", index=False)
@@ -610,9 +771,11 @@ def main() -> None:
     window_gain_coef.to_csv(out_dir / f"{prefix}_window_gain_coefficients.csv", index=False)
     window_gain_metrics.to_csv(out_dir / f"{prefix}_window_gain_metrics.csv", index=False)
     window_gain_topk.to_csv(out_dir / f"{prefix}_window_gain_topk_cvar.csv", index=False)
+    window_gain_bins.to_csv(out_dir / f"{prefix}_window_gain_quantile_bins.csv", index=False)
     target_gain_coef.to_csv(out_dir / f"{prefix}_target_gain_coefficients.csv", index=False)
     target_gain_metrics.to_csv(out_dir / f"{prefix}_target_gain_metrics.csv", index=False)
     target_gain_topk.to_csv(out_dir / f"{prefix}_target_gain_topk_cvar.csv", index=False)
+    target_gain_bins.to_csv(out_dir / f"{prefix}_target_gain_quantile_bins.csv", index=False)
     target_by_var.to_csv(out_dir / f"{prefix}_target_by_variable.csv", index=False)
     if args.write_target_scores:
         target_scored.to_csv(out_dir / f"{prefix}_target_scores.csv", index=False)
@@ -631,6 +794,16 @@ def main() -> None:
         target_gain_coef,
         target_gain_metrics,
         target_gain_topk,
+        window_gain_bins,
+        target_gain_bins,
+    )
+    write_gain_figures(
+        out_dir,
+        prefix,
+        window_gain_topk,
+        target_gain_topk,
+        window_gain_scored,
+        target_gain_scored,
     )
 
     print("[Window metrics]", flush=True)
@@ -643,6 +816,8 @@ def main() -> None:
     print(target_gain_metrics.to_string(index=False), flush=True)
     print("[Target gain top-k / CVaR]", flush=True)
     print(target_gain_topk.to_string(index=False), flush=True)
+    print("[Target gain quantile bins]", flush=True)
+    print(target_gain_bins[target_gain_bins["split"] == "test"].to_string(index=False), flush=True)
     print(f"[Done] outputs written to {out_dir}", flush=True)
 
 
