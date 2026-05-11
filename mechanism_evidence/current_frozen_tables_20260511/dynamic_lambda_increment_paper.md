@@ -1,0 +1,15 @@
+| dataset | horizon | route_family | reference | mode | gain_mse_mae | active_ratio | paper_status |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| ETTh1 | 96 | guarded_posthoc_dynamic | static_anchor | Selective | +0.032% / +0.065% | 0.0815 | positive_but_small |
+| Weather | 96 | guarded_posthoc_dynamic | static_anchor_patience3 | Selective | +0.062% / +0.008% | 0.0507 | tiny_positive_guarded_dynamic |
+| ECL | 96 | guarded_posthoc_dynamic | static_anchor | Bypass | +0.000% / +0.000% | 0.0000 | bypass_or_neutral |
+| Solar-96 | 96 | guarded_posthoc_dynamic | static_anchor | Selective | +0.253% / +0.319% | 0.0412 | positive_but_small |
+| Solar-192 | 192 | guarded_posthoc_dynamic | static_anchor | Selective | +0.057% / +0.001% | 0.0482 | positive_but_small |
+| Traffic | 96 | guarded_posthoc_dynamic | static_anchor | Selective | -0.002% / +0.126% | 0.0946 | mixed_metric |
+| ETTh1 | 96 | stage3_lambda_three_source | adaptive_anchor | stage3_closed_form_all | -0.425% / -0.086% |  | negative_addon |
+| Solar-96 | 96 | stage3_lambda_three_source | adaptive_anchor | stage3_closed_form_top_alpha_5 | +0.045% / +0.025% |  | weak_positive_addon |
+| Solar-192 | 192 | stage3_lambda_three_source | adaptive_anchor | stage2_anchor | +0.000% / +0.000% |  | fallback_to_anchor |
+| Traffic | 96 | stage3_lambda_three_source | adaptive_anchor | Stage3 lambda three-source, closed-form eta2 | +0.070% / +0.096% |  | weak_positive_addon |
+| Weather | 96 | mse_primary_target_gate | audit_adaptive_anchor_not_pat3_headline | target_gate_g20_d40 | +0.066% / -0.028% | 0.4000 | audit_only_mse_positive_mae_negative |
+| Solar-96 | 96 | mse_primary_target_gate | adaptive_anchor | target_gate_g10_d20 | +0.225% / +0.076% | 0.2000 | mse_primary_positive_audit |
+| Solar-192 | 192 | mse_primary_target_gate | adaptive_anchor | target_gate_g10_d20 | +0.055% / +0.014% | 0.2000 | mse_primary_positive_audit |

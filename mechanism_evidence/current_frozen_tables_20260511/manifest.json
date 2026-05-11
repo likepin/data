@@ -1,0 +1,26 @@
+{
+  "artifact": "current_frozen_caci_tables",
+  "date": "2026-05-11",
+  "git_head": "8299771",
+  "output_dir": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\current_frozen_tables_20260511",
+  "sources": {
+    "cross_dataset_route_ablation_full": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\cross_dataset_route_ablation_20260507\\cross_dataset_route_ablation_full.csv",
+    "weather_pat3_summary": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_pat3_summary\\weather96_pat3_adaptive_posthoc_summary.csv",
+    "guarded_summaries": {
+      "ETTh1": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\etth196_closed_loop_rank_quality_guard_parcorr_ridgebase_sparse\\etth196_static_parcorr_rank_quality_guard_parcorr_closed_loop_test_selected_summary.csv",
+      "ECL": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\ecl96_closed_loop_static\\ecl96_static_full_guard_v2_closed_loop_test_selected_summary.csv",
+      "Solar-96": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar96_closed_loop\\solar96_static_closed_loop_test_selected_summary.csv",
+      "Solar-192": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\solar192_closed_loop_rank_quality_guard\\solar192_static_rank_quality_guard_closed_loop_test_selected_summary.csv",
+      "Traffic": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\traffic96_closed_loop_log_tail_quality_guard\\traffic96_static_log_tail_quality_guard_closed_loop_test_selected_summary.csv"
+    },
+    "stage3_tables": {
+      "ETTh1": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\etth196_stage3_lambda_three_source_20260509\\etth196_stage3_lambda_three_source_frozen_table.csv",
+      "Solar": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\solar96_192_stage3_lambda_three_source_20260508\\solar_stage3_lambda_three_source_frozen_table.csv",
+      "Traffic": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\traffic96_stage3_lambda_three_source_20260507\\performance\\stage3_lambda_three_source\\tables\\traffic96_static_stage3_lambda_three_source_frozen_table.csv"
+    },
+    "mse_primary_tables": {
+      "Weather": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\weather96_mse_primary_target_gate_20260510\\weather96_mse_primary_target_gate_frozen_table.csv",
+      "Solar": "C:\\Users\\cyl\\Desktop\\data\\mechanism_evidence\\solar96_192_mse_primary_target_gate_20260510\\solar96_192_mse_primary_target_gate_frozen_table.csv"
+    }
+  }
+}
