@@ -1,0 +1,8 @@
+| candidate_claim | evidence | verdict | paper_safe_framing |
+| --- | --- | --- | --- |
+| Weather-96 dynamic branch can be made a stable positive performance route by better lambda gating. | mean -0.032225; positive-rate 24.886%; worst5 -0.390679 | reject_for_now | Dynamic correction is diagnosable but should remain guard-suppressed on Weather-96. |
+| The current lambda_rank is the right primary gate signal. | lambda Spearman -0.253034; gamma Spearman 0.009317 | reject | lambda_rank is a weak risk proxy; dynamic energy/shape carries more diagnostic information. |
+| A probability gate is sufficient. | Logistic probe improves positive-rate, but gain-aware top-k remains negative on average. | reject | Expected gain and downside risk must be audited, not only hit probability. |
+| Gain-aware regression proves a deployable positive dynamic route. | Pearson 0.855251; Spearman 0.473427; R2 0.715685 / mean -0.048829; positive-rate 21.113%; worst5 -0.457355 | not_supported | Gain regression is useful for risk ordering, but not sufficient for positive Weather-96 deployment. |
+| Huber can rescue the dynamic branch. | mean 0.000001; positive-rate 0.078%; nonzero dynamics approximately zero in top bin | reject_as_gain_route | Huber behaves as a conservative bypass selector. |
+| Weather-96 should be used as a negative mechanism case. | mean -0.228528; positive-rate 3.782% / mean 0.005348 | support | Weather-96 supports the guard philosophy: dynamic information exists, but forced activation is unsafe. |

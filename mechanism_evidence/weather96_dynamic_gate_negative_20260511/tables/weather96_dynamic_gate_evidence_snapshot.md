@@ -1,0 +1,14 @@
+| evidence_id | split | metric | value | interpretation |
+| --- | --- | --- | --- | --- |
+| lambda_alignment_test | test | lambda/gamma vs unit oracle MSE gain | lambda Spearman -0.253034; gamma Spearman 0.009317 | Current lambda is weakly aligned with where raw dynamic correction is truly beneficial. |
+| unit_dynamic_gain_test | test | raw unit dynamic gain | mean -0.228528; positive-rate 3.782% | The uncalibrated dynamic increment is mostly harmful on Weather-96. |
+| oracle_eta2_gain_test | test | oracle eta2 gain | mean 0.005348 | There is weak recoverable signal under ideal scaling, but the magnitude is small. |
+| ridge_gain_regression_test | test | gain regression rank quality | Pearson 0.855251; Spearman 0.473427; R2 0.715685 | Ridge learns a strong continuous gain ranking, so the probe is informative. |
+| huber_gain_regression_test | test | robust gain regression rank quality | Pearson 0.860943; Spearman 0.741797; R2 0.740570 | Huber learns a conservative risk-avoidance ordering. |
+| ridge_top10_test | test | Ridge top-10% risk-return | mean -0.032225; positive-rate 24.886%; worst5 -0.390679 | Ridge reduces expected loss sharply but does not turn the selected set positive. |
+| ridge_top1_test | test | Ridge top-1% risk-return | mean -0.048829; positive-rate 21.113%; worst5 -0.457355 | Even the most optimistic Ridge slice remains negative on average. |
+| huber_top10_test | test | Huber top-10% risk-return | mean 0.000001; positive-rate 0.078%; nonzero dynamics approximately zero in top bin | Huber mainly selects zero-dynamic / zero-gain windows, i.e. safe bypass behavior. |
+| ridge_bin_contrast | test | Ridge top vs bottom decile | top decile mean -0.032223; bottom decile mean -1.403961 | The ranking separates catastrophic negative windows from less harmful windows. |
+| huber_zero_region | test | Huber top decile | mean 0.000001; nonzero-dynamic-rate 0.155% | The robust route identifies a near-bypass safety zone rather than an active gain zone. |
+| val_test_consistency | val/test | raw dynamic positive-rate | val 6.493%; test 3.782% | The positive raw-dynamic region is sparse on both splits. |
+| top_coefficients | val-fit | dominant gain-regression features | huber:dynamic_energy_target=-1.239613; huber:dynamic_abs_mean_target=-0.009319; ridge:dynamic_energy_target=-1.328644; ridge:dynamic_abs_mean_target=0.158931 | Dynamic energy/shape dominate gain prediction; lambda_rank is not the main signal. |

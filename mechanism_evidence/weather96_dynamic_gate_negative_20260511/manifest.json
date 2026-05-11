@@ -1,0 +1,38 @@
+{
+  "package": "weather96_dynamic_gate_negative_20260511",
+  "generated_at": "2026-05-11",
+  "dataset": "Weather",
+  "horizon": 96,
+  "profile": "weather96_static_pat3",
+  "purpose": "Freeze dynamic-gate negative mechanism evidence for Weather-96.",
+  "git_head": "858bb65c5158eed2921d10b738fe8fdd7d7b428c",
+  "source_dirs": {
+    "lambda_adequacy": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_static_pat3_lambda_adequacy",
+    "lambda_gate_probe": "C:\\Users\\cyl\\Desktop\\data\\deltaA_signal_audit\\weather96_static_pat3_lambda_gate_logistic_probe"
+  },
+  "copied_tables": [
+    "weather96_static_pat3_lambda_adequacy_split_summary.csv",
+    "weather96_static_pat3_lambda_adequacy_feature_alignment.csv",
+    "weather96_static_pat3_lambda_gate_logistic_probe_target_metrics.csv",
+    "weather96_static_pat3_lambda_gate_logistic_probe_target_coefficients.csv",
+    "weather96_static_pat3_lambda_gate_logistic_probe_target_gain_metrics.csv",
+    "weather96_static_pat3_lambda_gate_logistic_probe_target_gain_coefficients.csv",
+    "weather96_static_pat3_lambda_gate_logistic_probe_target_gain_topk_cvar.csv",
+    "weather96_static_pat3_lambda_gate_logistic_probe_target_gain_quantile_bins.csv",
+    "weather96_static_pat3_lambda_gate_logistic_probe_window_gain_topk_cvar.csv",
+    "weather96_static_pat3_lambda_gate_logistic_probe_window_gain_quantile_bins.csv"
+  ],
+  "copied_figures": [
+    "weather96_static_pat3_lambda_gate_logistic_probe_target_gain_risk_return_frontier.png",
+    "weather96_static_pat3_lambda_gate_logistic_probe_target_test_top5_gain_distribution.png",
+    "weather96_static_pat3_lambda_gate_logistic_probe_window_gain_risk_return_frontier.png",
+    "weather96_static_pat3_lambda_gate_logistic_probe_window_test_top5_gain_distribution.png",
+    "weather96_static_pat3_lambda_adequacy_feature_alignment_spearman.png"
+  ],
+  "source_scripts": [
+    "lambda_adequacy_audit.py",
+    "lambda_gate_logistic_probe.py",
+    "weather_dynamic_gate_negative_evidence_pack.py"
+  ],
+  "key_verdict": "Dynamic information is detectable but unsafe to force on Weather-96; use guarded bypass/static-adaptive anchor framing."
+}
