@@ -5,8 +5,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import average_precision_score, roc_auc_score
+from sklearn.linear_model import HuberRegressor, LogisticRegression, Ridge
+from sklearn.metrics import average_precision_score, mean_squared_error, r2_score, roc_auc_score
 
 from lambda_adequacy_audit import (
     DATA_ROOT,
@@ -95,6 +95,13 @@ def safe_ap(y_true: np.ndarray, score: np.ndarray) -> float:
     return float(average_precision_score(y_true, score)) if len(np.unique(y_true)) == 2 else float("nan")
 
 
+def safe_corr(a: np.ndarray, b: np.ndarray, method: str) -> float:
+    frame = pd.DataFrame({"a": a, "b": b}).replace([np.inf, -np.inf], np.nan).dropna()
+    if len(frame) < 2 or frame["a"].nunique() < 2 or frame["b"].nunique() < 2:
+        return float("nan")
+    return float(frame["a"].corr(frame["b"], method=method))
+
+
 def fit_probe(frame: pd.DataFrame, features: list[str], label_col: str, score_prefix: str) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     frame = finite_features(frame, features)
     train = frame[frame["split"] == "val"].copy()
@@ -152,6 +159,77 @@ def fit_probe(frame: pd.DataFrame, features: list[str], label_col: str, score_pr
     return coef, metrics, scored
 
 
+def fit_gain_regressors(
+    frame: pd.DataFrame,
+    features: list[str],
+    label_col: str,
+    score_prefix: str,
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    frame = finite_features(frame, features)
+    train = frame[frame["split"] == "val"].copy()
+    test = frame[frame["split"] == "test"].copy()
+    if train.empty or test.empty:
+        raise RuntimeError("Expected both val and test rows")
+
+    y_train = train[label_col].to_numpy(dtype=float)
+    y_test = test[label_col].to_numpy(dtype=float)
+    x_train, x_test, mean, std = standardize(train, test, features)
+    models = {
+        "ridge": Ridge(alpha=1.0),
+        "huber": HuberRegressor(alpha=1e-4, epsilon=1.35, max_iter=500),
+    }
+
+    coef_rows = []
+    metric_rows = []
+    scored_frames = []
+    for model_name, model in models.items():
+        model.fit(x_train, y_train)
+        train_pred = model.predict(x_train)
+        test_pred = model.predict(x_test)
+        train_scored = train.copy()
+        test_scored = test.copy()
+        score_col = f"{score_prefix}_{model_name}_pred_gain"
+        train_scored[score_col] = train_pred
+        test_scored[score_col] = test_pred
+        train_scored["gain_model"] = model_name
+        test_scored["gain_model"] = model_name
+        scored_frames.extend([train_scored, test_scored])
+
+        for split, y_true, y_pred in (("val", y_train, train_pred), ("test", y_test, test_pred)):
+            metric_rows.append(
+                {
+                    "model": model_name,
+                    "split": split,
+                    "n": int(len(y_true)),
+                    "actual_gain_mean": float(np.mean(y_true)),
+                    "pred_gain_mean": float(np.mean(y_pred)),
+                    "rmse": float(np.sqrt(mean_squared_error(y_true, y_pred))),
+                    "r2": float(r2_score(y_true, y_pred)),
+                    "pearson": safe_corr(y_true, y_pred, "pearson"),
+                    "spearman": safe_corr(y_true, y_pred, "spearman"),
+                    "positive_rate": float(np.mean(y_true > 0.0)),
+                }
+            )
+
+        coefficients = np.asarray(getattr(model, "coef_", np.zeros(len(features))), dtype=float)
+        for feature, coef in zip(features, coefficients):
+            coef_rows.append(
+                {
+                    "model": model_name,
+                    "feature": feature,
+                    "coef_standardized": float(coef),
+                    "abs_coef": float(abs(coef)),
+                    "train_mean": float(mean[feature]),
+                    "train_std": float(std[feature]),
+                }
+            )
+
+    coef = pd.DataFrame(coef_rows).sort_values(["model", "abs_coef"], ascending=[True, False])
+    metrics = pd.DataFrame(metric_rows)
+    scored = pd.concat(scored_frames, ignore_index=True)
+    return coef, metrics, scored
+
+
 def topk_capture(scored: pd.DataFrame, score_col: str, label_col: str, top_fracs: list[float]) -> pd.DataFrame:
     rows = []
     for split, group in scored.groupby("split", sort=False):
@@ -174,6 +252,52 @@ def topk_capture(scored: pd.DataFrame, score_col: str, label_col: str, top_fracs
                     "oracle_gain_mean_all": float(gains.mean()),
                     "positive_gain_capture_share": (
                         float(np.clip(gains[idx], 0.0, None).sum() / total_pos_gain)
+                        if total_pos_gain > 0
+                        else float("nan")
+                    ),
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def gain_topk_capture(
+    scored: pd.DataFrame,
+    score_col: str,
+    label_col: str,
+    top_fracs: list[float],
+    tail_frac: float = 0.05,
+) -> pd.DataFrame:
+    rows = []
+    for (model, split), group in scored.groupby(["gain_model", "split"], sort=False):
+        gains = group[label_col].to_numpy(dtype=float)
+        scores = group[score_col].to_numpy(dtype=float)
+        order = np.argsort(scores, kind="mergesort")[::-1]
+        all_tail_n = max(1, int(round(len(gains) * tail_frac)))
+        all_tail = np.sort(gains)[:all_tail_n]
+        total_pos_gain = float(np.clip(gains, 0.0, None).sum())
+        for frac in top_fracs:
+            n_top = max(1, int(round(len(group) * frac)))
+            idx = order[:n_top]
+            selected = gains[idx]
+            selected_tail_n = max(1, int(round(len(selected) * tail_frac)))
+            selected_tail = np.sort(selected)[:selected_tail_n]
+            rows.append(
+                {
+                    "model": model,
+                    "split": split,
+                    "top_frac": float(frac),
+                    "top_n": int(n_top),
+                    "pred_gain_mean_top": float(scores[idx].mean()),
+                    "oracle_gain_mean_top": float(selected.mean()),
+                    "oracle_gain_mean_all": float(gains.mean()),
+                    "positive_rate_top": float(np.mean(selected > 0.0)),
+                    "positive_rate_all": float(np.mean(gains > 0.0)),
+                    "worst_5pct_gain_mean_top": float(selected_tail.mean()),
+                    "worst_5pct_gain_mean_all": float(all_tail.mean()),
+                    "p05_gain_top": float(np.quantile(selected, tail_frac)),
+                    "p05_gain_all": float(np.quantile(gains, tail_frac)),
+                    "positive_gain_capture_share": (
+                        float(np.clip(selected, 0.0, None).sum() / total_pos_gain)
                         if total_pos_gain > 0
                         else float("nan")
                     ),
@@ -317,6 +441,12 @@ def write_readme(
     target_coef: pd.DataFrame,
     target_metrics: pd.DataFrame,
     target_topk: pd.DataFrame,
+    window_gain_coef: pd.DataFrame,
+    window_gain_metrics: pd.DataFrame,
+    window_gain_topk: pd.DataFrame,
+    target_gain_coef: pd.DataFrame,
+    target_gain_metrics: pd.DataFrame,
+    target_gain_topk: pd.DataFrame,
 ) -> None:
     lines = [
         f"# {prefix} Logistic Gate Probe",
@@ -342,6 +472,30 @@ def write_readme(
         "## Target-Wise Top-K Capture",
         "",
         markdown_table(target_topk),
+        "",
+        "## Window-Level Gain Regression Metrics",
+        "",
+        markdown_table(window_gain_metrics),
+        "",
+        "## Window-Level Gain Regression Coefficients",
+        "",
+        markdown_table(window_gain_coef),
+        "",
+        "## Window-Level Gain Regression Top-K / CVaR",
+        "",
+        markdown_table(window_gain_topk),
+        "",
+        "## Target-Wise Gain Regression Metrics",
+        "",
+        markdown_table(target_gain_metrics),
+        "",
+        "## Target-Wise Gain Regression Coefficients",
+        "",
+        markdown_table(target_gain_coef),
+        "",
+        "## Target-Wise Gain Regression Top-K / CVaR",
+        "",
+        markdown_table(target_gain_topk),
         "",
     ]
     (out_dir / "README.md").write_text("\n".join(lines), encoding="utf-8")
@@ -371,6 +525,24 @@ def main() -> None:
         score_col="window_gate_score",
         label_col="oracle_unit_mse_gain",
         top_fracs=parse_float_list(args.top_fracs),
+    )
+    window_gain_coef, window_gain_metrics, window_gain_scored = fit_gain_regressors(
+        sample,
+        WINDOW_FEATURES,
+        label_col="oracle_unit_mse_gain",
+        score_prefix="window_gain",
+    )
+    window_gain_topk = pd.concat(
+        [
+            gain_topk_capture(
+                window_gain_scored[window_gain_scored["gain_model"] == model].copy(),
+                score_col=f"window_gain_{model}_pred_gain",
+                label_col="oracle_unit_mse_gain",
+                top_fracs=parse_float_list(args.top_fracs),
+            )
+            for model in sorted(window_gain_scored["gain_model"].unique())
+        ],
+        ignore_index=True,
     )
 
     closed_loop_prefix = run_prefix(args.profile, args.closed_loop_tag)
@@ -409,6 +581,24 @@ def main() -> None:
         label_col="oracle_unit_mse_gain",
         top_fracs=parse_float_list(args.top_fracs),
     )
+    target_gain_coef, target_gain_metrics, target_gain_scored = fit_gain_regressors(
+        target,
+        TARGET_FEATURES,
+        label_col="oracle_unit_mse_gain",
+        score_prefix="target_gain",
+    )
+    target_gain_topk = pd.concat(
+        [
+            gain_topk_capture(
+                target_gain_scored[target_gain_scored["gain_model"] == model].copy(),
+                score_col=f"target_gain_{model}_pred_gain",
+                label_col="oracle_unit_mse_gain",
+                top_fracs=parse_float_list(args.top_fracs),
+            )
+            for model in sorted(target_gain_scored["gain_model"].unique())
+        ],
+        ignore_index=True,
+    )
     target_by_var = target_summary(target_scored, score_col="target_gate_score")
 
     window_coef.to_csv(out_dir / f"{prefix}_window_coefficients.csv", index=False)
@@ -417,10 +607,31 @@ def main() -> None:
     target_coef.to_csv(out_dir / f"{prefix}_target_coefficients.csv", index=False)
     target_metrics.to_csv(out_dir / f"{prefix}_target_metrics.csv", index=False)
     target_topk.to_csv(out_dir / f"{prefix}_target_topk_capture.csv", index=False)
+    window_gain_coef.to_csv(out_dir / f"{prefix}_window_gain_coefficients.csv", index=False)
+    window_gain_metrics.to_csv(out_dir / f"{prefix}_window_gain_metrics.csv", index=False)
+    window_gain_topk.to_csv(out_dir / f"{prefix}_window_gain_topk_cvar.csv", index=False)
+    target_gain_coef.to_csv(out_dir / f"{prefix}_target_gain_coefficients.csv", index=False)
+    target_gain_metrics.to_csv(out_dir / f"{prefix}_target_gain_metrics.csv", index=False)
+    target_gain_topk.to_csv(out_dir / f"{prefix}_target_gain_topk_cvar.csv", index=False)
     target_by_var.to_csv(out_dir / f"{prefix}_target_by_variable.csv", index=False)
     if args.write_target_scores:
         target_scored.to_csv(out_dir / f"{prefix}_target_scores.csv", index=False)
-    write_readme(out_dir, prefix, window_coef, window_metrics, target_coef, target_metrics, target_topk)
+        target_gain_scored.to_csv(out_dir / f"{prefix}_target_gain_scores.csv", index=False)
+    write_readme(
+        out_dir,
+        prefix,
+        window_coef,
+        window_metrics,
+        target_coef,
+        target_metrics,
+        target_topk,
+        window_gain_coef,
+        window_gain_metrics,
+        window_gain_topk,
+        target_gain_coef,
+        target_gain_metrics,
+        target_gain_topk,
+    )
 
     print("[Window metrics]", flush=True)
     print(window_metrics.to_string(index=False), flush=True)
@@ -428,6 +639,10 @@ def main() -> None:
     print(target_metrics.to_string(index=False), flush=True)
     print("[Target coefficients]", flush=True)
     print(target_coef.to_string(index=False), flush=True)
+    print("[Target gain metrics]", flush=True)
+    print(target_gain_metrics.to_string(index=False), flush=True)
+    print("[Target gain top-k / CVaR]", flush=True)
+    print(target_gain_topk.to_string(index=False), flush=True)
     print(f"[Done] outputs written to {out_dir}", flush=True)
 
 
